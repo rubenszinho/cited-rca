@@ -76,65 +76,65 @@ def env_fingerprint() -> dict:
     }
 
 
-def main() -> int:
+def run_seed(args, seed: int, commit: str) -> dict:
+    """Execute one seed and return the record describing what happened."""
+    env = {**os.environ, "SEED": str(seed), "VARIANT": args.variant,
+           "PYTHONHASHSEED": str(seed)}
+    if args.metrics_file and args.metrics_file.exists():
+        args.metrics_file.unlink()
+
+    started = datetime.now(timezone.utc)
+    t0 = time.perf_counter()
+    proc = subprocess.run(args.cmd, shell=True, capture_output=True, text=True,
+                          env=env, cwd=REPO_ROOT, timeout=args.timeout)
+    record = {
+        "variant": args.variant, "seed": seed, "commit": commit, "cmd": args.cmd,
+        "started_at": started.isoformat(),
+        "duration_s": round(time.perf_counter() - t0, 4),
+        "exit_code": proc.returncode,
+        "env": env_fingerprint(),
+        "metrics": {},
+    }
+    if proc.returncode != 0:
+        record["error"] = proc.stderr[-2000:]
+        return record
+    try:
+        record["metrics"] = parse_metrics(proc.stdout, args.metrics_file)
+    except ValueError as exc:
+        record["error"] = str(exc)
+    return record
+
+
+def parse_args():
     ap = argparse.ArgumentParser()
     ap.add_argument("--variant", required=True,
-                    help="baseline, improved, or an ablation label like improved-nocache")
+                    help="baseline, agent, or an ablation label like agent-noverify")
     ap.add_argument("--cmd", required=True, help="shell command that runs the solution")
     ap.add_argument("--seeds", type=int, default=5)
     ap.add_argument("--seed-start", type=int, default=0)
     ap.add_argument("--metrics-file", type=Path, default=None,
                     help="path the command writes its metrics JSON to")
     ap.add_argument("--timeout", type=int, default=1800)
-    args = ap.parse_args()
+    return ap.parse_args()
 
+
+def main() -> int:
+    args = parse_args()
     RESULTS.mkdir(parents=True, exist_ok=True)
     commit = git_commit()
     failures = 0
 
     for seed in range(args.seed_start, args.seed_start + args.seeds):
-        env = {**os.environ, "SEED": str(seed), "VARIANT": args.variant,
-               "PYTHONHASHSEED": str(seed)}
-        if args.metrics_file and args.metrics_file.exists():
-            args.metrics_file.unlink()
-
-        started = datetime.now(timezone.utc)
-        t0 = time.perf_counter()
-        proc = subprocess.run(args.cmd, shell=True, capture_output=True,
-                              text=True, env=env, cwd=REPO_ROOT,
-                              timeout=args.timeout)
-        duration = time.perf_counter() - t0
-
-        record = {
-            "variant": args.variant,
-            "seed": seed,
-            "commit": commit,
-            "cmd": args.cmd,
-            "started_at": started.isoformat(),
-            "duration_s": round(duration, 4),
-            "exit_code": proc.returncode,
-            "env": env_fingerprint(),
-        }
-
-        if proc.returncode != 0:
+        record = run_seed(args, seed, commit)
+        if record.get("error") or record["exit_code"] != 0:
             failures += 1
-            record["metrics"] = {}
-            record["error"] = proc.stderr[-2000:]
-            print(f"seed {seed}: FAILED (exit {proc.returncode})", file=sys.stderr)
-        else:
-            try:
-                record["metrics"] = parse_metrics(proc.stdout, args.metrics_file)
-            except ValueError as exc:
-                failures += 1
-                record["metrics"] = {}
-                record["error"] = str(exc)
-                print(f"seed {seed}: {exc}", file=sys.stderr)
+            print(f"seed {seed}: FAILED ({record.get('error', '')[:120]})", file=sys.stderr)
 
         dest = RESULTS / f"{args.variant}-seed{seed}.json"
-        dest.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n",
-                        encoding="utf-8")
+        dest.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         summary = ", ".join(f"{k}={v}" for k, v in record["metrics"].items())
-        print(f"seed {seed}: {duration:7.3f}s  {summary or '(no metrics)'}  -> {dest.name}")
+        print(f"seed {seed}: {record['duration_s']:7.3f}s  "
+              f"{summary or '(no metrics)'}  -> {dest.name}")
 
     print(f"\n{args.seeds - failures}/{args.seeds} runs ok for variant '{args.variant}'")
     return 1 if failures else 0

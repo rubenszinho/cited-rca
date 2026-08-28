@@ -1,0 +1,2 @@
+{"ts":"2026-03-17T09:04:00.000Z","kind":"deploy","ref":"v2026.3.16-f3","actor":"ci-bot","summary":"checkout: bump logging library"}
+{"ts":"2026-03-17T09:22:00.000Z","kind":"deploy","ref":"v2026.3.17-a1","actor":"ci-bot","summary":"checkout: add tiered discount support"}

@@ -1,0 +1,29 @@
+{
+  "name": "rca-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "An agentic workflow that drafts an incident RCA in which every claim is cited to a real telemetry line.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=24"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.34.0",
+    "@types/node": "^24.3.0",
+    "eslint": "^9.34.0",
+    "prettier": "^3.6.2",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.41.0",
+    "vitest": "^3.2.4"
+  },
+  "dependencies": {
+    "zod": "^4.1.5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  }
+}

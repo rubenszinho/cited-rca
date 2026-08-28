@@ -1,0 +1,32 @@
+{
+  "case_id": "02-config-flag-misflip",
+  "title": "Session loss after a feature flag rollout",
+  "root_cause": "config_change",
+  "root_cause_summary": "The flag strict_session_binding was rolled to 100% instead of the intended 5%, invalidating sessions issued before the rollout and logging users out mid-flow.",
+  "onset_ts": "2026-03-17T09:18:00.000Z",
+  "detected_ts": "2026-03-17T09:24:00.000Z",
+  "required_evidence": [
+    {
+      "source": "changes.jsonl",
+      "match": "strict_session_binding",
+      "why": "the flag flip one minute before onset, with the wrong percentage"
+    },
+    {
+      "source": "logs/app.jsonl",
+      "match": "session binding mismatch",
+      "why": "the warning naming the flag"
+    },
+    {
+      "source": "metrics/auth.csv",
+      "match": "active_sessions",
+      "why": "sessions draining rather than a traffic change"
+    }
+  ],
+  "red_herrings": [
+    {
+      "source": "changes.jsonl",
+      "match": "api replicas 6 -> 9",
+      "why_tempting": "a scaling event during the incident, but a consequence of load, not the cause"
+    }
+  ]
+}

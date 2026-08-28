@@ -1,0 +1,32 @@
+{
+  "case_id": "01-bad-deploy-null-deref",
+  "title": "Checkout 500s after the 09:22 release",
+  "root_cause": "bad_deploy_regression",
+  "root_cause_summary": "Release v2026.3.17-a1 dereferenced an optional discount field that is absent for guest carts, so every guest checkout raised a TypeError.",
+  "onset_ts": "2026-03-17T09:23:00.000Z",
+  "detected_ts": "2026-03-17T09:27:00.000Z",
+  "required_evidence": [
+    {
+      "source": "changes.jsonl",
+      "match": "v2026.3.17-a1",
+      "why": "the deploy that introduced the regression, one minute before onset"
+    },
+    {
+      "source": "logs/app.jsonl",
+      "match": "reading 'percentOff'",
+      "why": "the exception naming the field and handler"
+    },
+    {
+      "source": "metrics/http.csv",
+      "match": "error_rate",
+      "why": "the step change in error rate at onset"
+    }
+  ],
+  "red_herrings": [
+    {
+      "source": "changes.jsonl",
+      "match": "v2026.3.16-f3",
+      "why_tempting": "an earlier deploy on the same service, but 19 minutes before onset"
+    }
+  ]
+}

@@ -37,12 +37,30 @@ excludes   = ["/tests/"]
 engine     = "lizard"
 language   = "python"
 
-# [[scope]]
-# name       = "web"
-# path       = "src"
-# extensions = [".ts", ".tsx"]
-# excludes   = [".test.", ".spec.", "/__tests__/", "/components/ui/"]
-# languages  = ["typescript", "tsx"]
+[[scope]]
+name       = "src"
+path       = "src"
+extensions = [".ts"]
+excludes   = [".test.", ".spec."]
+engine     = "lizard"
+language   = "typescript"
+
+# The fixture generator is measured too. It produces the evidence every claim
+# in the report rests on, so it is not exempt from the gate.
+[[scope]]
+name       = "fixtures"
+path       = "fixtures"
+extensions = [".ts"]
+excludes   = ["/cases/"]
+engine     = "lizard"
+language   = "typescript"
+
+[[scope]]
+name       = "harness"
+path       = "harness"
+extensions = [".py"]
+engine     = "lizard"
+language   = "python"
 
 # [[scope]]
 # name       = "sql"

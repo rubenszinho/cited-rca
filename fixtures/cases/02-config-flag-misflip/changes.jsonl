@@ -1,0 +1,2 @@
+{"ts":"2026-03-17T09:17:00.000Z","kind":"flag","ref":"strict_session_binding","actor":"rmartins","summary":"rollout 5% -> 100% (intended 5%)"}
+{"ts":"2026-03-17T09:40:00.000Z","kind":"scale","ref":"api","actor":"autoscaler","summary":"api replicas 6 -> 9"}

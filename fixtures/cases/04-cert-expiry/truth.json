@@ -1,0 +1,32 @@
+{
+  "case_id": "04-cert-expiry",
+  "title": "Partner callbacks fail at the top of the hour",
+  "root_cause": "certificate_expiry",
+  "root_cause_summary": "The client certificate presented to the payments partner expired at 09:30Z; every outbound callback failed TLS handshake from that minute on.",
+  "onset_ts": "2026-03-17T09:30:00.000Z",
+  "detected_ts": "2026-03-17T09:34:00.000Z",
+  "required_evidence": [
+    {
+      "source": "logs/app.jsonl",
+      "match": "certificate has expired",
+      "why": "the TLS error naming the peer and expiry instant"
+    },
+    {
+      "source": "logs/app.jsonl",
+      "match": "2026-03-17T09:30:00Z",
+      "why": "the notAfter matching onset exactly"
+    },
+    {
+      "source": "metrics/callbacks.csv",
+      "match": "delivered_per_min",
+      "why": "delivery collapsing at the same minute"
+    }
+  ],
+  "red_herrings": [
+    {
+      "source": "changes.jsonl",
+      "match": "v2026.3.17-c2",
+      "why_tempting": "the only deploy in the window, and it touched retry logic"
+    }
+  ]
+}

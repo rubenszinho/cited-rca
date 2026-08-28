@@ -1,0 +1,32 @@
+{
+  "case_id": "03-schema-migration-index-drop",
+  "title": "Order history times out after a migration",
+  "root_cause": "schema_migration_regression",
+  "root_cause_summary": "Migration 0142 dropped the composite index on orders(customer_id, created_at) while intending to replace it, leaving the history query on a sequential scan.",
+  "onset_ts": "2026-03-17T09:26:00.000Z",
+  "detected_ts": "2026-03-17T09:33:00.000Z",
+  "required_evidence": [
+    {
+      "source": "changes.jsonl",
+      "match": "0142_orders_index",
+      "why": "the migration one minute before onset"
+    },
+    {
+      "source": "logs/app.jsonl",
+      "match": "Seq Scan on orders",
+      "why": "the plan change proving the index is gone"
+    },
+    {
+      "source": "metrics/db.csv",
+      "match": "seq_scans_per_min",
+      "why": "sequential scans jumping two orders of magnitude"
+    }
+  ],
+  "red_herrings": [
+    {
+      "source": "changes.jsonl",
+      "match": "v2026.3.17-b4",
+      "why_tempting": "a deploy in the same window, but 14 minutes earlier and on an unrelated page"
+    }
+  ]
+}

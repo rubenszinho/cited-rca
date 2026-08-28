@@ -61,6 +61,56 @@ def fmt(x: float) -> str:
     return f"{x:.4g}"
 
 
+def metric_cell(name: str, metric: str, agg: dict, base: dict, reference: str) -> str:
+    if metric not in agg:
+        return "—"
+    mean, sd, _ = agg[metric]
+    cell = f"{fmt(mean)} ± {fmt(sd)}"
+    if name != reference and metric in base and base[metric][0]:
+        delta = (mean - base[metric][0]) / abs(base[metric][0]) * 100
+        cell += f" ({delta:+.1f}%)"
+    return cell
+
+
+def render_table(order, aggs, by_variant, metrics, reference) -> list[str]:
+    lines = ["| variant | runs | " + " | ".join(metrics) + " |",
+             "|---|---|" + "---|" * len(metrics)]
+    base = aggs.get(reference, {})
+    for name in order:
+        agg_for = aggs[name]
+        ok = max((v[2] for v in agg_for.values()), default=0)
+        cells = [metric_cell(name, m, agg_for, base, reference) for m in metrics]
+        lines.append(f"| `{name}` | {ok}/{len(by_variant[name])} | " + " | ".join(cells) + " |")
+    return lines
+
+
+def render_provenance(order, by_variant) -> list[str]:
+    # A results table nobody can trace back to a commit is not evidence.
+    lines = ["\n## Provenance\n", "| variant | commit | container | command |", "|---|---|---|---|"]
+    for name in order:
+        rec = by_variant[name][0]
+        lines.append(
+            f"| `{name}` | `{rec.get('commit', '?')[:12]}` | "
+            f"`{rec.get('env', {}).get('container', '?')}` | `{rec.get('cmd', '?')}` |"
+        )
+    return lines
+
+
+def render_failures(by_variant) -> list[str]:
+    failed = [(n, r["seed"], r.get("error", "")[:80])
+              for n, recs in by_variant.items() for r in recs
+              if r.get("exit_code") not in (0, None)]
+    if not failed:
+        return []
+    return ["\n## Failed runs\n"] + [f"- `{n}` seed {s}: {e}" for n, s, e in failed]
+
+
+def header(reference: str) -> list[str]:
+    return ["# Results\n",
+            f"Reference variant: `{reference}`. Each cell is mean ± stdev "
+            "across seeds; delta is versus the reference.\n"]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--baseline", default="baseline", help="reference variant name")
@@ -73,61 +123,20 @@ def main() -> int:
         return 2
 
     aggs = {name: agg(recs) for name, recs in by_variant.items()}
-    base = aggs.get(args.baseline, {})
-
-    # Baseline first, then the rest alphabetically, so ablations read in order.
+    # Reference first, then the rest alphabetically, so ablations read in order.
     order = ([args.baseline] if args.baseline in aggs else []) + \
             sorted(n for n in aggs if n != args.baseline)
-
     metrics = sorted({m for a in aggs.values() for m in a})
-    lines: list[str] = []
-    lines.append("# Results\n")
-    lines.append(f"Reference variant: `{args.baseline}`. "
-                 "Each cell is mean ± stdev across seeds; delta is versus the reference.\n")
 
-    header = "| variant | runs | " + " | ".join(metrics) + " |"
-    sep = "|---|---|" + "---|" * len(metrics)
-    lines += [header, sep]
-
-    for name in order:
-        a = aggs[name]
-        total = len(by_variant[name])
-        ok = max((v[2] for v in a.values()), default=0)
-        cells = []
-        for m in metrics:
-            if m not in a:
-                cells.append("—")
-                continue
-            mean, sd, _ = a[m]
-            cell = f"{fmt(mean)} ± {fmt(sd)}"
-            if name != args.baseline and m in base and base[m][0]:
-                delta = (mean - base[m][0]) / abs(base[m][0]) * 100
-                cell += f" ({delta:+.1f}%)"
-            cells.append(cell)
-        lines.append(f"| `{name}` | {ok}/{total} | " + " | ".join(cells) + " |")
-
-    # Provenance: a results table nobody can trace back to a commit is not evidence.
-    lines.append("\n## Provenance\n")
-    lines.append("| variant | commit | container | command |")
-    lines.append("|---|---|---|---|")
-    for name in order:
-        rec = by_variant[name][0]
-        lines.append(
-            f"| `{name}` | `{rec.get('commit', '?')[:12]}` | "
-            f"`{rec.get('env', {}).get('container', '?')}` | `{rec.get('cmd', '?')}` |"
-        )
-
-    failed = [(n, r["seed"], r.get("error", "")[:80])
-              for n, recs in by_variant.items() for r in recs
-              if r.get("exit_code") not in (0, None)]
-    if failed:
-        lines.append("\n## Failed runs\n")
-        for name, seed, err in failed:
-            lines.append(f"- `{name}` seed {seed}: {err}")
+    lines = header(args.baseline)
+    lines += render_table(order, aggs, by_variant, metrics, args.baseline)
+    lines += render_provenance(order, by_variant)
+    lines += render_failures(by_variant)
 
     text = "\n".join(lines) + "\n"
     print(text)
     if args.out:
+        args.out.parent.mkdir(parents=True, exist_ok=True)
         args.out.write_text(text, encoding="utf-8")
         print(f"written to {args.out}", file=sys.stderr)
     return 0

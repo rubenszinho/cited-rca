@@ -1,0 +1,12 @@
+# Generated evidence. These files are byte-compared by
+# `task project:fixtures:verify`, so a formatter touching them would break the
+# determinism check and, worse, change the artefacts the report cites.
+fixtures/cases/
+results/
+trajectories/
+docs/RESULTS.md
+
+node_modules/
+dist/
+.mise/
+pnpm-lock.yaml

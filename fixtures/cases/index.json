@@ -1,0 +1,37 @@
+[
+  {
+    "case_id": "01-bad-deploy-null-deref",
+    "title": "Checkout 500s after the 09:22 release",
+    "log_lines": 2246,
+    "metric_series": [
+      "http"
+    ]
+  },
+  {
+    "case_id": "02-config-flag-misflip",
+    "title": "Session loss after a feature flag rollout",
+    "log_lines": 2611,
+    "metric_series": [
+      "http",
+      "auth"
+    ]
+  },
+  {
+    "case_id": "03-schema-migration-index-drop",
+    "title": "Order history times out after a migration",
+    "log_lines": 2112,
+    "metric_series": [
+      "http",
+      "db"
+    ]
+  },
+  {
+    "case_id": "04-cert-expiry",
+    "title": "Partner callbacks fail at the top of the hour",
+    "log_lines": 1909,
+    "metric_series": [
+      "http",
+      "callbacks"
+    ]
+  }
+]
