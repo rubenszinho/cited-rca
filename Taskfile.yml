@@ -1,0 +1,183 @@
+# SOURCE CODE SUMMARY:
+# The single command surface. Git hooks, CI and AI agents all call task
+# names from this file and never spell out a command of their own, so
+# "what linting means" has exactly one definition.
+#
+# Discover:  task -l
+# Gate:      task validate      (MANDATORY before finishing work)
+#
+# FORGE-OWNED: edit taskfiles/project.yml for your stack, not this file.
+#
+# RELATED FILES:
+# - taskfiles/project.yml: your stack's commands (the only per-project file)
+# - lefthook.yml: hooks, which call these tasks
+# - .github/workflows/ci.yml: CI, which calls the ci:* tasks
+
+version: '3'
+
+silent: true
+# `group` buffers each parallel task's output into one block instead of
+# interleaving lines from several tasks.
+output: group
+
+# .env is rendered by `task env:render`; .env.overrides holds real secrets
+# and is never generated. Later file wins. Both are optional.
+dotenv:
+  - .env
+  - .env.overrides
+
+includes:
+  project:
+    taskfile: ./taskfiles/project.yml
+
+vars:
+  PY: python3
+  QUALITY: python3 -m tools.quality.quality_check
+  HAS_OVERRIDES:
+    sh: '[ -f .env.overrides ] && echo "true" || echo "false"'
+
+# -- Passing arguments -------------------------------------------------
+# Everything after `--` arrives as .CLI_ARGS. Three idioms, pick per tool:
+#   {{.CLI_ARGS | default "."}}                    tool accepts a directory
+#   {{if .CLI_ARGS}}{{.CLI_ARGS}}{{else}}<glob>{{end}}   tool needs a glob
+#   {{.CLI_ARGS}}                                  tool defaults on its own
+
+tasks:
+  default:
+    desc: List available tasks
+    cmds:
+      - task -l
+
+  # === Setup ==========================================================
+
+  setup:
+    desc: Prepare a fresh clone (env file, git hooks, project deps)
+    cmds:
+      - task: env:render
+      - task: deps:hooks
+      - task: project:deps
+
+  deps:hooks:
+    desc: Install the git hooks
+    cmds:
+      - lefthook install
+
+  env:render:
+    desc: 'Render env.template to .env (usage: task env:render -- --force)'
+    cmds:
+      - "{{.PY}} -m tools.env.render_env {{.CLI_ARGS}}"
+
+  # === Validation gate ================================================
+
+  validate:
+    desc: Run every check and test (MANDATORY before finishing work)
+    deps:
+      - project:lint:check
+      - project:format:check
+      - project:typecheck
+      - project:test
+      - test:tools
+    cmds:
+      # Runs last: it measures the tree after formatters have settled it.
+      - task: quality:check
+
+  test:tools:
+    desc: Run the tests for forge's own tooling
+    cmds:
+      - "{{.PY}} -m unittest discover -s tools/tests -t . {{.CLI_ARGS}}"
+
+  # === Quality ratchet ================================================
+
+  quality:check:
+    desc: Check code metrics against the baseline, absorbing improvements
+    cmds:
+      # --write is what makes this the LOCAL mode: an improvement rewrites
+      # the baseline and passes. CI omits it and fails instead, forcing the
+      # regenerated baseline to be committed with the refactor.
+      - "{{.QUALITY}} check --write"
+
+  quality:baseline:
+    desc: 'Bootstrap the baseline (usage: task quality:baseline -- --force)'
+    cmds:
+      - "{{.QUALITY}} generate-baseline {{.CLI_ARGS}}"
+
+  quality:thresholds:
+    desc: Print the configured thresholds as metric=value
+    cmds:
+      - "{{.QUALITY}} print-thresholds"
+
+  commit-msg:check:
+    desc: Validate a commit message file. Path passed as -- ARG.
+    requires:
+      vars: [CLI_ARGS]
+    cmds:
+      - "{{.PY}} -m tools.commit.check_commit_msg {{.CLI_ARGS}}"
+
+  # === Formatting and linting =========================================
+  # Thin aliases so hooks, CI and humans share one vocabulary.
+
+  format:
+    desc: Format the code. Paths passed as -- ARG.
+    cmds:
+      - task: project:format
+        vars: {CLI_ARGS: '{{.CLI_ARGS}}'}
+
+  lint:
+    desc: Lint and autofix. Paths passed as -- ARG.
+    cmds:
+      - task: project:lint
+        vars: {CLI_ARGS: '{{.CLI_ARGS}}'}
+
+  # === Dev stack ======================================================
+
+  dev:
+    desc: Start the development stack
+    deps: [project:deps]
+    cmds:
+      - >
+        process-compose up -D -p ${PC_PORT}
+        {{if eq .HAS_OVERRIDES "true"}}-e .env.overrides{{end}}
+      - 'echo "Stack up. TUI: task dev:tui   Stop: task dev:stop"'
+
+  dev:tui:
+    desc: Attach to the running stack
+    cmds:
+      - process-compose attach -p ${PC_PORT}
+
+  dev:stop:
+    desc: Stop the development stack
+    cmds:
+      - process-compose down -p ${PC_PORT}
+
+  dev:stop-clean:
+    desc: Stop the stack and erase this session's containers and volumes
+    preconditions:
+      # An empty SESSION would turn every `docker rm -f ${SESSION}-db` below
+      # into a command targeting `-db` — a different container, possibly
+      # another worktree's. Refuse rather than guess.
+      - sh: '[ -n "$SESSION" ]'
+        msg: "SESSION is empty. Run `task env:render` first."
+    cmds:
+      - process-compose down -p ${PC_PORT} 2>/dev/null || true
+      # Named explicitly, never globbed: a glob would eat sibling worktrees.
+      - docker rm -f ${SESSION}-db 2>/dev/null || true
+      - docker volume rm ${SESSION}-data 2>/dev/null || true
+      - task: project:clean
+
+  # === CI =============================================================
+  # The workflow only ever knows `task ci:<job>`. Keep the mapping here so
+  # the YAML never grows a command of its own.
+
+  ci:validate:
+    desc: CI entry point for the full gate
+    deps:
+      - project:lint:check
+      - project:format:check
+      - project:typecheck
+      - project:test
+      - test:tools
+
+  ci:quality:
+    desc: CI entry point for the ratchet (fails on a stale baseline)
+    cmds:
+      - "{{.QUALITY}} check"

@@ -1,0 +1,97 @@
+# SOURCE CODE SUMMARY:
+# CI. Every job has the same five steps: checkout, restore the toolchain
+# cache, install the toolchain, then call ONE task. No command lives here —
+# `task ci:<job>` is the contract, so CI and a laptop run the same thing.
+#
+# There is no setup-python / setup-node / setup-go action anywhere: the
+# committed bin/mise bootstrap provisions the exact pinned toolchain from
+# mise.lock, which is also the cache key.
+#
+# RELATED FILES:
+# - Taskfile.yml: the ci:* tasks
+# - mise.toml / mise.lock: what gets installed
+
+name: CI
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  quality-ratchet:
+    name: Quality Ratchet
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache toolchain
+        uses: actions/cache@v4
+        with:
+          path: .mise
+          key: mise-${{ runner.os }}-${{ hashFiles('mise.lock') }}
+          restore-keys: mise-${{ runner.os }}-
+      - name: Install toolchain
+        run: ./bin/mise install
+      # No --write here. An improvement that was not committed as a
+      # regenerated baseline fails the build.
+      - name: Check the ratchet
+        run: ./bin/mise exec -- task ci:quality
+
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache toolchain
+        uses: actions/cache@v4
+        with:
+          path: .mise
+          key: mise-${{ runner.os }}-${{ hashFiles('mise.lock') }}
+          restore-keys: mise-${{ runner.os }}-
+      # Add a second cache for your project's dependencies, keyed on its
+      # lockfile, e.g.:
+      #   - uses: actions/cache@v4
+      #     with:
+      #       path: ~/.npm
+      #       key: npm-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+      - name: Install toolchain
+        run: ./bin/mise install
+      - name: Lint, typecheck and test
+        run: ./bin/mise exec -- task ci:validate
+
+  # Integration tests that need a real database follow the same shape, plus
+  # a service container. Uncomment and point it at your own ci:* task.
+  #
+  # integration-tests:
+  #   name: Integration Tests
+  #   runs-on: ubuntu-latest
+  #   timeout-minutes: 10
+  #   env:
+  #     DATABASE_URL: postgresql://postgres:postgres@localhost:5432/app_test
+  #   services:
+  #     postgres:
+  #       image: postgres:16
+  #       env:
+  #         POSTGRES_USER: postgres
+  #         POSTGRES_PASSWORD: postgres
+  #         POSTGRES_DB: app_test
+  #       ports: ["5432:5432"]
+  #       options: >-
+  #         --health-cmd "pg_isready -U postgres"
+  #         --health-interval 5s --health-timeout 5s --health-retries 5
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: actions/cache@v4
+  #       with:
+  #         path: .mise
+  #         key: mise-${{ runner.os }}-${{ hashFiles('mise.lock') }}
+  #     - run: ./bin/mise install
+  #     - run: ./bin/mise exec -- task ci:integration

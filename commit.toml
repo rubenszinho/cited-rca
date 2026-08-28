@@ -1,0 +1,14 @@
+# PROJECT-OWNED. Edit this file for your project.
+#
+# A deliberately short type list. style/refactor/perf/test/build/ci all land
+# in `chore`: the extra granularity costs more thought than it returns when
+# you are reading history months later.
+
+types = ["feat", "fix", "chore", "docs", "revert"]
+
+# Empty means any scope is accepted. List them to enforce an enum, e.g.
+# scopes = ["infra", "api", "web"].
+scopes = []
+scope_required = false
+
+subject_max_length = 72

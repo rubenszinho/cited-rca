@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# gocyclo.sh - example adapter wrapping a native per-language tool
+#
+# Copy to gocyclo.sh, chmod +x, then point a scope at it:
+#   [[scope]]
+#   name = "cmd"
+#   path = "cmd"
+#   extensions = [".go"]
+#   adapter = "tools/quality/adapters/gocyclo.sh"
+#
+# gocyclo reports complexity only. nloc and params are omitted, and an
+# omitted metric records as 0 — it can never trip a threshold. Reach for a
+# native tool when it measures something the default engine gets wrong;
+# otherwise the built-in lizard engine already covers Go.
+set -euo pipefail
+
+# gocyclo output: "<complexity> <package> <func> <file>:<line>:<col>"
+gocyclo "$@" | while read -r ccn _pkg func location; do
+  file="${location%%:*}"
+  printf '{"file": "%s", "function": "%s", "ccn": %s}\n' "$file" "$func" "$ccn"
+done

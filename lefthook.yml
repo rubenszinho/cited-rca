@@ -1,0 +1,73 @@
+# SOURCE CODE SUMMARY:
+# Git hook configuration. Hooks only ever call `task`, so there is exactly
+# one definition of what formatting, linting and validation mean.
+#
+# Install:  task deps:hooks   (or: lefthook install)
+# Inspect:  lefthook run pre-commit | pre-push | commit-msg
+# Bypass:   git commit --no-verify / git push --no-verify  (emergencies only)
+#
+# FORGE-OWNED: the commands here delegate to taskfiles/project.yml.
+#
+# RELATED FILES:
+# - Taskfile.yml: defines every task referenced below
+# - mise.toml: pins the tools those tasks invoke
+
+# Print nothing unless something fails, and keep the output plain so it
+# reads the same in a terminal, in CI and in an agent's transcript.
+output: ['failure']
+no_tty: true
+colors: false
+
+pre-commit:
+  parallel: true
+  commands:
+    # Priority orders the stages: everything at priority 1 runs together,
+    # then priority 2, then 3. Formatters must run before linters, and the
+    # ratchet must run last so it measures files after they settle.
+    format:
+      priority: 1
+      glob: "*"
+      # Through ./bin/mise so the pinned toolchain runs, not whatever the
+      # machine happens to have on PATH.
+      run: ./bin/mise exec -- task project:format -- {staged_files}
+      # Formatters rewrite files; re-stage what they changed.
+      stage_fixed: true
+
+    lint:
+      priority: 2
+      glob: "*"
+      run: ./bin/mise exec -- task project:lint -- {staged_files}
+      stage_fixed: true
+
+    quality:
+      priority: 3
+      # No stage_fixed: this may rewrite .quality-baseline.json, and that
+      # belongs in the commit as a deliberate act, not as a silent one.
+      #
+      # The pin matters here more than anywhere else: an unpinned metrics
+      # tool re-measures existing code with a different parser and corrupts
+      # the baseline on --write.
+      run: ./bin/mise exec -- task quality:check
+
+# In a monorepo, add `root:` so lefthook filters staged files by that
+# subtree AND strips its prefix, which makes the paths line up with the
+# task's own `dir:`. Note that `root:` also changes the command's working
+# directory, so the bootstrap path needs adjusting:
+#
+#    format-api:
+#      priority: 1
+#      root: "api"
+#      glob: "**/*.py"
+#      run: ../bin/mise exec -- task project:format -- {staged_files}
+#      stage_fixed: true
+
+pre-push:
+  commands:
+    validate:
+      run: ./bin/mise exec -- task validate
+
+commit-msg:
+  commands:
+    lint-commit-msg:
+      # {1} is the path git hands the hook: .git/COMMIT_EDITMSG, absolute.
+      run: ./bin/mise exec -- task commit-msg:check -- {1}

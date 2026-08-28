@@ -1,0 +1,81 @@
+# PROJECT-OWNED. Edit this file for your project.
+#
+# The local process graph. Every name is prefixed with ${SESSION} so two
+# worktrees of this repo can run at the same time without colliding.
+#
+# Start:  task dev        Attach: task dev:tui
+# Stop:   task dev:stop   Erase:  task dev:stop-clean
+#
+# ${VARS} come from .env (rendered by `task env:render`) and .env.overrides.
+
+version: "0.5"
+
+processes:
+  db:
+    # The leading `docker rm -f` is crash recovery: a killed session leaves
+    # the old container behind and the next `docker run` would fail on the
+    # name. Data survives in the named volume, not the container.
+    command: >
+      docker rm -f ${SESSION}-db 2>/dev/null || true;
+      docker run
+      --name ${SESSION}-db
+      -e POSTGRES_USER=${POSTGRES_USER}
+      -e POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      -e POSTGRES_DB=${POSTGRES_DB}
+      -p ${DB_PORT}:5432
+      -v ${SESSION}-data:/var/lib/postgresql/data
+      postgres:16
+    readiness_probe:
+      exec:
+        command: >
+          docker exec ${SESSION}-db pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
+      initial_delay_seconds: 3
+      period_seconds: 2
+      timeout_seconds: 2
+      success_threshold: 1
+      failure_threshold: 15
+    # Without an explicit shutdown, the supervisor kills `docker run` and
+    # leaves the container running.
+    shutdown:
+      command: "docker stop ${SESSION}-db && docker rm ${SESSION}-db"
+      timeout_seconds: 15
+    availability:
+      restart: "no"
+
+  # A one-shot step. `process_completed_successfully` gates whatever comes
+  # next on its exit code; `exit_on_end: false` stops its exit from tearing
+  # the stack down.
+  migrate:
+    command: ./bin/mise exec -- task project:migrate
+    depends_on:
+      db:
+        condition: process_healthy
+    availability:
+      restart: "no"
+      exit_on_end: false
+    disabled: true
+
+  app:
+    command: ./bin/mise exec -- task project:dev
+    depends_on:
+      db:
+        condition: process_healthy
+    environment:
+      # Some frameworks read PORT rather than taking a flag.
+      - "PORT=${APP_PORT}"
+    # An HTTP probe is the right shape once the app serves a health route:
+    #   readiness_probe:
+    #     http_get:
+    #       host: 127.0.0.1
+    #       port: ${APP_PORT}
+    #       path: /health
+    #     initial_delay_seconds: 3
+    #     period_seconds: 2
+    #     timeout_seconds: 2
+    #     success_threshold: 1
+    #     failure_threshold: 15
+    availability:
+      restart: "on_failure"
+    # Set for processes that emit ANSI progress output; without a pty they
+    # garble the log.
+    is_tty: true

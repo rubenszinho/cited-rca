@@ -1,0 +1,51 @@
+# PROJECT-OWNED. Edit this file for your project.
+#
+# The gate measures four metrics. Thresholds come from what a person (or an
+# agent) can hold in working memory at once — they are NOT calibrated to the
+# current state of the code. Existing violations belong in the baseline, not
+# in a raised threshold.
+#
+# Changing a number here is a deliberate act: it must be regenerated into
+# .quality-baseline.json and explained in the commit message.
+#
+# RELATED FILES:
+# - .quality-baseline.json: grandfathered violations (committed)
+# - AGENTS.md: the same numbers, in prose, for agents to read
+# - Taskfile.yml: `task quality:check`
+
+[thresholds]
+nloc       = 25   # non-comment lines in one function
+ccn        = 15   # cyclomatic complexity
+params     = 5    # parameter count
+file_lines = 500  # lines in one file
+
+# Each [[scope]] is one measured slice of the repo.
+#
+#   engine   = "lizard"  built-in default; covers ~20 languages
+#            = "none"    file_lines only, no function parsing
+#   adapter  = <path>    an external executable; overrides engine
+#   language / languages   passed to lizard as -l; omit to let it infer.
+#                          Two entries scan the scope twice — the idiom for
+#                          a parser needing a different mode per dialect.
+#   excludes are substring matches on the repo-relative path.
+
+[[scope]]
+name       = "tools"
+path       = "tools"
+extensions = [".py"]
+excludes   = ["/tests/"]
+engine     = "lizard"
+language   = "python"
+
+# [[scope]]
+# name       = "web"
+# path       = "src"
+# extensions = [".ts", ".tsx"]
+# excludes   = [".test.", ".spec.", "/__tests__/", "/components/ui/"]
+# languages  = ["typescript", "tsx"]
+
+# [[scope]]
+# name       = "sql"
+# path       = "db"
+# extensions = [".sql"]
+# engine     = "none"

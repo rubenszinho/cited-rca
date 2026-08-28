@@ -1,0 +1,49 @@
+# SOURCE CODE SUMMARY:
+# Toolchain pinning for the forge shell. Every tool the repo's own tasks,
+# hooks and CI need is declared here, resolved through `mise.lock`, and
+# installed into a gitignored `.mise/` by `bin/mise` — never system-wide.
+#
+# Install:  ./bin/mise install
+# Run:      ./bin/mise exec -- task validate
+#
+# RELATED FILES:
+# - mise.lock: exact versions + per-platform checksums (commit it)
+# - bin/mise: committed bootstrap, localizes mise state into .mise/
+# - Taskfile.yml: every command that uses these tools
+
+[tools]
+# --- forge's own tooling -----------------------------------------------
+# python runs tools/quality, tools/commit and tools/env. It is provisioned
+# into .mise/ even for a Go or Rust project — the project's own source
+# never depends on it.
+python          = "3.12"
+task            = "3"
+lefthook        = "1"
+process-compose = "1"
+
+# uv provisions the pipx backend so CI does not depend on the runner
+# having uv/pipx preinstalled.
+uv              = "latest"
+
+# EXACT pin, deliberately. The quality ratchet compares measurements
+# across machines and across time; a different parser version re-measures
+# existing code and silently rewrites .quality-baseline.json. Upstream
+# changed TSX function detection between lizard 1.22.1 and 1.22.2 — that
+# class of change must never arrive implicitly.
+"pipx:lizard"   = "1.22.2"
+
+# --- your project's runtime --------------------------------------------
+# Add whatever the project itself needs. Pin the major for tools, and
+# match production exactly for runtimes.
+# node = "24"
+# npm  = "11"      # pin so the lockfile stays stable across machines
+# go   = "1.24"
+# rust = "1.86"
+
+[env]
+# Keep virtualenvs/toolchain state inside the repo so `dev:stop-clean`
+# can erase it and worktrees never share it.
+# POETRY_VIRTUALENVS_IN_PROJECT = "true"
+
+[settings]
+lockfile = true

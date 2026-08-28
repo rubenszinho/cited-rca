@@ -1,0 +1,84 @@
+# PROJECT-OWNED. This is the file you edit for your stack.
+#
+# Every task here is a hook point that forge's Taskfile.yml calls. They are
+# no-ops out of the box, so a fresh copy of forge validates cleanly; replace
+# the ones your project needs and delete the rest of the comments.
+#
+# Conventions that matter:
+# - `dir:` sets the working directory, so hooks and CI never need to cd.
+# - `{{.CLI_ARGS}}` carries the file list from the pre-commit hook. A task
+#   that ignores it will reformat the whole repo on every commit.
+# - the :check variants must not modify files; the plain ones may autofix.
+
+version: '3'
+
+tasks:
+  deps:
+    desc: Install project dependencies
+    # sources/generates fingerprint the install so it is skipped when the
+    # lockfile has not moved. Keep a :force twin without `sources:` for the
+    # half-installed case.
+    # dir: .
+    # cmds: [npm install]
+    # sources: [package.json, package-lock.json]
+    # generates: ["node_modules/**/*"]
+    cmds:
+      - echo "project:deps not configured (taskfiles/project.yml)"
+
+  deps:force:
+    desc: Reinstall dependencies, ignoring the fingerprint
+    cmds:
+      - task: deps
+
+  format:
+    desc: Format code. Paths passed as -- ARG.
+    # cmds: ["ruff format {{.CLI_ARGS | default \".\"}}"]
+    # cmds: ["go fmt ./..."]
+    cmds:
+      - echo "project:format not configured"
+
+  format:check:
+    desc: Fail if the code is not formatted
+    # cmds: ["ruff format --check {{.CLI_ARGS | default \".\"}}"]
+    cmds:
+      - echo "project:format:check not configured"
+
+  lint:
+    desc: Lint and autofix. Paths passed as -- ARG.
+    # cmds: ["ruff check --fix {{.CLI_ARGS | default \".\"}}"]
+    # cmds: ["golangci-lint run --fix"]
+    cmds:
+      - echo "project:lint not configured"
+
+  lint:check:
+    desc: Lint without fixing
+    # cmds: ["ruff check {{.CLI_ARGS | default \".\"}}"]
+    cmds:
+      - echo "project:lint:check not configured"
+
+  typecheck:
+    desc: Type-check the project
+    # cmds: ["mypy ."]
+    # cmds: ["tsc --noEmit -p tsconfig.json"]   # tsc -p ignores file args
+    cmds:
+      - echo "project:typecheck not configured"
+
+  test:
+    desc: Run the project's tests. Paths passed as -- ARG.
+    # cmds: ["pytest {{.CLI_ARGS}}"]
+    # cmds: ["go test ./... {{.CLI_ARGS}}"]
+    cmds:
+      - echo "project:test not configured"
+
+  dev:
+    desc: Run the app in the foreground (process-compose calls this)
+    # cmds: ["npm run dev -- --port ${APP_PORT}"]
+    # cmds: ["go run ./cmd/server"]
+    cmds:
+      - echo "project:dev not configured"
+
+  clean:
+    desc: Remove build artefacts and installed dependencies
+    # cmds: ["rm -rf node_modules dist .venv"]
+    cmds:
+      - echo "project:clean not configured"

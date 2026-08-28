@@ -1,0 +1,15 @@
+# --- forge-managed state -----------------------------------------------
+.mise/
+.task/
+.env
+.env.overrides
+
+# --- quality gate ------------------------------------------------------
+# NOTE: .quality-baseline.json is COMMITTED on purpose. Loosening the gate
+# must be visible in a diff.
+
+# --- generic -----------------------------------------------------------
+*.log
+.DS_Store
+__pycache__/
+*.py[cod]
