@@ -1,84 +1,133 @@
-# PROJECT-OWNED. This is the file you edit for your stack.
+# PROJECT-OWNED. The stack-specific half of the command surface.
 #
-# Every task here is a hook point that forge's Taskfile.yml calls. They are
-# no-ops out of the box, so a fresh copy of forge validates cleanly; replace
-# the ones your project needs and delete the rest of the comments.
+# Two runtimes on purpose: the deliverable (agent workflow + baseline) is
+# TypeScript/Mastra, and the things that measure it (fixture generator,
+# evaluation harness, trajectory tooling) are Python. A judge never sees the
+# split - `task setup` provisions both and every entry point below is a task.
 #
-# Conventions that matter:
-# - `dir:` sets the working directory, so hooks and CI never need to cd.
-# - `{{.CLI_ARGS}}` carries the file list from the pre-commit hook. A task
-#   that ignores it will reformat the whole repo on every commit.
-# - the :check variants must not modify files; the plain ones may autofix.
+# Conventions inherited from forge:
+# - `{{.CLI_ARGS}}` carries the pre-commit file list; a task that ignores it
+#   will reformat the whole repo on every commit.
+# - the :check variants must not modify files.
 
 version: '3'
 
+vars:
+  PY: python3
+  # Every run is recorded under results/ by the harness, keyed on variant+seed.
+  SEEDS: '{{.SEEDS | default "3"}}'
+
 tasks:
+  # === forge hook points ==============================================
+
   deps:
     desc: Install project dependencies
-    # sources/generates fingerprint the install so it is skipped when the
-    # lockfile has not moved. Keep a :force twin without `sources:` for the
-    # half-installed case.
-    # dir: .
-    # cmds: [npm install]
-    # sources: [package.json, package-lock.json]
-    # generates: ["node_modules/**/*"]
     cmds:
-      - echo "project:deps not configured (taskfiles/project.yml)"
+      - pnpm install --frozen-lockfile
+    sources: [package.json, pnpm-lock.yaml]
+    generates: ["node_modules/**/*"]
 
   deps:force:
     desc: Reinstall dependencies, ignoring the fingerprint
     cmds:
-      - task: deps
+      - pnpm install
 
   format:
     desc: Format code. Paths passed as -- ARG.
-    # cmds: ["ruff format {{.CLI_ARGS | default \".\"}}"]
-    # cmds: ["go fmt ./..."]
     cmds:
-      - echo "project:format not configured"
+      - 'pnpm exec prettier --write {{.CLI_ARGS | default "src fixtures"}}'
 
   format:check:
     desc: Fail if the code is not formatted
-    # cmds: ["ruff format --check {{.CLI_ARGS | default \".\"}}"]
     cmds:
-      - echo "project:format:check not configured"
+      - 'pnpm exec prettier --check {{.CLI_ARGS | default "src fixtures"}}'
 
   lint:
     desc: Lint and autofix. Paths passed as -- ARG.
-    # cmds: ["ruff check --fix {{.CLI_ARGS | default \".\"}}"]
-    # cmds: ["golangci-lint run --fix"]
     cmds:
-      - echo "project:lint not configured"
+      - 'pnpm exec eslint --fix {{.CLI_ARGS | default "src fixtures"}}'
 
   lint:check:
     desc: Lint without fixing
-    # cmds: ["ruff check {{.CLI_ARGS | default \".\"}}"]
     cmds:
-      - echo "project:lint:check not configured"
+      - 'pnpm exec eslint {{.CLI_ARGS | default "src fixtures"}}'
 
   typecheck:
     desc: Type-check the project
-    # cmds: ["mypy ."]
-    # cmds: ["tsc --noEmit -p tsconfig.json"]   # tsc -p ignores file args
+    # tsc -p ignores file arguments, so CLI_ARGS is deliberately not forwarded.
     cmds:
-      - echo "project:typecheck not configured"
+      - pnpm exec tsc --noEmit -p tsconfig.json
 
   test:
     desc: Run the project's tests. Paths passed as -- ARG.
-    # cmds: ["pytest {{.CLI_ARGS}}"]
-    # cmds: ["go test ./... {{.CLI_ARGS}}"]
     cmds:
-      - echo "project:test not configured"
+      - 'pnpm exec vitest run {{.CLI_ARGS}}'
+      - '{{.PY}} -m unittest discover -s harness/tests -t . {{.CLI_ARGS}}'
 
   dev:
-    desc: Run the app in the foreground (process-compose calls this)
-    # cmds: ["npm run dev -- --port ${APP_PORT}"]
-    # cmds: ["go run ./cmd/server"]
+    desc: Run one incident through the agent interactively
     cmds:
-      - echo "project:dev not configured"
+      - pnpm exec tsx src/cli.ts {{.CLI_ARGS}}
 
   clean:
     desc: Remove build artefacts and installed dependencies
-    # cmds: ["rm -rf node_modules dist .venv"]
     cmds:
-      - echo "project:clean not configured"
+      - rm -rf node_modules dist results/*.json
+
+  # === Fixtures =======================================================
+
+  fixtures:
+    desc: Regenerate the synthetic incident bundles from their seeds
+    # Deterministic: the bundles are committed, and this proves they can be
+    # rebuilt byte-for-byte from the seed rather than being hand-edited.
+    cmds:
+      - pnpm exec tsx fixtures/generate.ts
+
+  fixtures:verify:
+    desc: Fail if the committed bundles differ from a fresh generation
+    cmds:
+      - pnpm exec tsx fixtures/generate.ts --check
+
+  # === Evaluation =====================================================
+
+  baseline:
+    desc: 'Run the simple-prompt baseline over every case (task project:baseline)'
+    cmds:
+      - '{{.PY}} harness/run.py --variant baseline --seeds {{.SEEDS}}
+         --cmd "pnpm exec tsx src/baseline/run.ts"'
+
+  agent:
+    desc: Run the agent workflow over every case
+    cmds:
+      - '{{.PY}} harness/run.py --variant agent --seeds {{.SEEDS}}
+         --cmd "pnpm exec tsx src/agent/run.ts"'
+
+  eval:
+    desc: Run both variants over the same cases
+    cmds:
+      - task: baseline
+      - task: agent
+      - task: report
+
+  report:
+    desc: Regenerate docs/RESULTS.md from the recorded runs
+    cmds:
+      - '{{.PY}} harness/compare.py --out docs/RESULTS.md'
+
+  # === Trajectories ===================================================
+
+  trajectories:
+    desc: Mirror the agent session logs into trajectories/raw
+    cmds:
+      - ./tools/trajectory/capture.sh
+
+  trajectories:redact:
+    desc: Redact credentials from the captured logs into trajectories/redacted
+    cmds:
+      - task: trajectories
+      - '{{.PY}} -m tools.trajectory.redact'
+
+  trajectories:verify:
+    desc: Fail if any credential survives redaction
+    cmds:
+      - '{{.PY}} -m tools.trajectory.redact --check'

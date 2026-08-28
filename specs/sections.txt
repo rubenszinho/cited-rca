@@ -1,0 +1,92 @@
+- 
+Do I need to pay any money to register for the Hackathon?
+No. You do not have to pay anything to anyone to register yourself for any Hackathon on HackerEarth.
+
+
+
+- 
+Do I need to have any specific qualifications to be a participant for the Hackathon?
+If you love to code, you are more than welcome to participate in the Hackathon.
+
+
+
+- 
+How do I submit what I have made for the Hackathon?
+You have to develop the application on your local system and submit it on HackerEarth in tar/zip file format along with instructions to run the application and source code.
+
+
+
+- 
+Do we need to have the entire idea fully working?
+The entire idea need not be fully implemented however, the submission should be functional so that it can be reviewed by the judges.
+
+
+
+- 
+How is the environment? Will your environment support any language? Will you provide any IDE and DB for us to work on ideas?
+You have to develop the entire software application on your local system and submit it on HackerEarth in tar/zip file format along with instructions to run the application and source code.
+
+
+
+- 
+Does one have to be online and available for the entire duration of the Hackathon?
+No, one does not need to be logged in on HackerEarth or be online for the entire duration. You can develop the application on your local system based on the given themes and then submit it on HackerEarth, on the specific challenge page.
+
+
+
+- 
+Since there is no specific technology mentioned, are there any restrictions on using number of pre-built libraries?
+There is no restriction to use any language, technology stack, or libraries. You can use any of them to create the web/mobile application.
+
+
+
+- 
+Do I need to give a demo for the product that I have built?
+If you want you can submit a small presentation or video that demos your submission, however it's not mandatory, and only good to have. In case you are one of the winners, you might be invited to demo your application at a physical event, details of which will be shared with sufficient advance notice.
+
+
+
+- 
+A fully developed application need to have a solid backend for data storage like SQL, SharePoint etc. since its online, is it accepted to show only the proto type of it?
+Yes it's absolutely fine to submit just the prototype. If you use any database like MySQL or PostgresSQL you can also submit a database dump along with your submission. However you are allowed to submit just the prototype.
+
+
+
+- 
+If it is a team submission, does that mean all team members will have access to work at the same time?
+Yes, all team members can login from their account and do application submission on HackerEarth.
+
+
+
+- 
+Who will own the IP(Intellectual Property) Rights to the product that I have built?
+The developer/developers of the web/mobile application will have all rights and own the IP of the product. However, all code needs to be in public domain (open source) so that it can be evaluated by the judges.
+
+---
+
+Build at the frontier of agentic AI. August 28–31, 2026. Online, individual, free.
+
+AI can produce convincing code in seconds. Real engineering begins when convincing is not enough: incomplete requirements, hidden dependencies, difficult edge cases, failure modes, and decisions that require technical judgment.
+
+The micro1 Frontier Engineering Challenge is a free, global, online competition for engineers ready to work at that frontier. Over a three-day sprint you will use coding agents to tackle a real-world software engineering problem and produce a solution that is correct, reproducible, testable and clearly explained.
+
+ 
+
+
+
+
+
+ 
+
+The full challenge statement is released at kickoff (Aug 28 at 15:00 UTC). Until then, expect to build at the frontier of agentic AI without details that would reveal the problem in advance.
+
+Participants will be able to registre after the Hackathon kicks off. The Hackathon ends on Aug 31 at 18:00 UTC.
+
+Participants are evaluated on the quality of the submitted work, not résumé prestige, job title, university, employer or geography.
+
+Coding-agent use is required. You must disclose the tools you used and submit the required trajectories for evaluation.
+
+ 
+
+ 
+23:[["$","div",null,{"className":"flex flex-col w-full pt-0 pb-20 xl:pb-4","children":["$","div",null,{"className":"flex flex-col gap-6 w-full mx-auto px-4 max-w-full md:max-w-6xl lg:max-w-7xl xl:max-w-[1400px] 2xl:max-w-screen-2xl","children":["$","div",null,{"className":"flex flex-col gap-0","children":[["$","div",null,{"className":"top-0 z-40","children":["$","$L44",null,{"slug":"micro1-frontier-engineering-challenge-2026","initialEventData":{"title":"Frontier Engineering Challenge 2026","slug":"micro1-frontier-engineering-challenge-2026","description_text":"$45","is_team":true,"maximum_registration_limit":-1,"min_team_size":1,"short_url":"https://www.hackerearth.com/challenges/hackathon/micro1-frontier-engineering-challenge-2026/","event_duration":null,"instructions":"","announcements":"","faq":"$46","cover_image":"https://media.hackerearth.com/media/hackathon/micro1-frontier-engineering-challenge-2026/images/265d8030a1-cover_2709535.png","fb_cover_image":"https://media.hackerearth.com/media/hackathon/micro1-frontier-engineering-challenge-2026/images/265d8030a1-cover_2709535.png","cover_solid_color":"#414751","is_listed":false,"max_team_size":1,"description_html":"$47","tags":["team"],"organizer":[{"id":36934,"title":"micro1","description":"","description_text":"","image":"https://uc.hackerearth.com/he-s3-ap-south-1/media/cache/9f/4e/9f4e6e2354cf3d30bb1e5bfdff48058c.png","thumbnail_url":"","type":"company"}],"show_job_opportunity":false,"show_team_size":true,"start_date":"2026-08-28T15:00:00.000000Z","end_date":"2026-08-31T18:00:00.000000Z","is_online":true,"location":{"city":"","coordinates":"","address":""},"members":{"total_registrations":6427},"event_poc":{"email":"yeison@micro1.ai","name":"Yeison Cruz"},"problem_authors":{},"links":[],"event_type":"sprints","event_category":null,"widgets":{"winner":false,"discussion":false,"public_voting":false,"help_and_support":true,"social_share":false,"product_recommendation":false,"invite_friends":false,"webcam":false,"prize":false},"is_unified":true,"discussion_identifier":"MTExOjI3MDk1MzU=","phases":[{"title":"Challenge","start":"2026-08-28T15:00:00","end":"2026-08-31T18:00:00"}]}}]}],"$L48"]}]}]}],"$L49"]

@@ -13,3 +13,15 @@
 .DS_Store
 __pycache__/
 *.py[cod]
+
+# --- this project ------------------------------------------------------
+# Raw agent trajectories are verbatim session transcripts and may contain
+# credentials. Only trajectories/redacted/ is committed. See docs/TOOLS.md.
+trajectories/raw/
+trajectories/capture.log
+
+# Saved copy of the challenge page: large, and not ours to redistribute.
+specs/page.html
+
+node_modules/
+dist/

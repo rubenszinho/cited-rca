@@ -32,13 +32,12 @@ uv              = "latest"
 # class of change must never arrive implicitly.
 "pipx:lizard"   = "1.22.2"
 
-# --- your project's runtime --------------------------------------------
-# Add whatever the project itself needs. Pin the major for tools, and
-# match production exactly for runtimes.
-# node = "24"
-# npm  = "11"      # pin so the lockfile stays stable across machines
-# go   = "1.24"
-# rust = "1.86"
+# --- this project's runtime ---------------------------------------------
+# The agent workflow and the baseline are TypeScript (Mastra); the fixture
+# generator, the evaluation harness and forge's own tooling are Python. A
+# judge installs neither by hand - `./bin/mise install` provisions both.
+node = "24"
+pnpm = "10"       # pin so the lockfile stays stable across machines
 
 [env]
 # Keep virtualenvs/toolchain state inside the repo so `dev:stop-clean`
