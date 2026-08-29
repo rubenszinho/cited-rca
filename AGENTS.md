@@ -3,8 +3,22 @@
 <!-- Rename this heading and fill in "What this project is" for your project.
      Everything else describes the forge shell and applies as written. -->
 
-**What this project is:** _one or two sentences. An agent that knows what the
-system is for makes better judgment calls than one that only sees files._
+**What this project is:** a workflow that reads incident telemetry and drafts a
+root-cause review in which every claim carries the file, line number and
+verbatim text it rests on — so a fabricated citation is provably wrong by string
+comparison, and the workflow can reject its own before anyone reads it.
+
+The twelve cases under `fixtures/cases/` are synthetic on purpose: the injected
+fault is known exactly, so grading is deterministic and needs no model. Model
+calls are recorded to `fixtures/cassettes/` and replayed by default, so the
+whole evaluation reproduces with no API key and no spend.
+
+**Two rules that are easy to break without noticing.** Prompt text is part of a
+cassette key: rewording one line of a prompt silently invalidates every
+recording, and the run then looks like a broken workflow rather than a stale
+cache. And nothing on the solution path may read `truth.json` — `loadBundle()`
+does not expose it, and there are tests asserting the verifier and the memory
+module cannot reach it.
 
 ## Commands
 
@@ -35,12 +49,12 @@ Four metrics are enforced on every commit. These numbers are not style
 preferences — they are the point at which code stops fitting in one person's
 (or one agent's) working memory:
 
-| Metric       | Limit | Meaning                          |
-|--------------|-------|----------------------------------|
-| `nloc`       | 25    | non-comment lines in a function  |
-| `ccn`        | 15    | cyclomatic complexity            |
-| `params`     | 5     | parameter count                  |
-| `file_lines` | 500   | lines in a file                  |
+| Metric       | Limit | Meaning                         |
+| ------------ | ----- | ------------------------------- |
+| `nloc`       | 25    | non-comment lines in a function |
+| `ccn`        | 15    | cyclomatic complexity           |
+| `params`     | 5     | parameter count                 |
+| `file_lines` | 500   | lines in a file                 |
 
 They live in `quality.toml`; `task quality:thresholds` prints what is actually
 enforced. If this table and that output ever disagree, the table is wrong.
@@ -81,7 +95,7 @@ was left out and why.
 - No duplicated logic. Extract the shared part instead of copying it.
 - Exception and error messages name the offending value and the expected
   shape. `invalid config` helps nobody; `scope 'app': engine='radon' is not
-  built in, expected one of ('lizard', 'none')` does.
+built in, expected one of ('lizard', 'none')` does.
 
 ## Comments
 
