@@ -15,6 +15,7 @@
  *                the specific failures until its citations hold up
  */
 import { DEFAULT_QUERIES, enabledFeatures } from './features.ts';
+import { IncidentMemory, renderRecall } from './memory.ts';
 import { searchLog } from './tools.ts';
 import { completeJson } from '../llm/structured.ts';
 import type { ChatMessage, LlmClient } from '../llm/types.ts';
@@ -93,6 +94,15 @@ async function triageStep(bundle: IncidentBundle, client: LlmClient, on: boolean
   return value;
 }
 
+/**
+ * Memory lives for the length of a run, not the length of a case.
+ *
+ * The runner walks the twelve incidents in order on one process, so a
+ * module-level store is what "the same engineer, later that week" looks like.
+ * Nothing is pre-seeded and nothing survives the process.
+ */
+const memory = new IncidentMemory();
+
 export async function solveWithAgent(
   bundle: IncidentBundle,
   client: LlmClient,
@@ -103,7 +113,8 @@ export async function solveWithAgent(
     ? runSearches(bundle, triage.log_queries)
     : '(log search disabled for this variant)';
 
-  const messages = draftMessages(bundle, triage, searches);
+  const recall = features.has('memory') ? renderRecall(memory.recall(bundle)) : '';
+  const messages = draftMessages(bundle, triage, searches, recall);
   const { value: draft } = await completeJson({
     client,
     step: `agent:draft:${bundle.caseId}`,
@@ -111,6 +122,12 @@ export async function solveWithAgent(
     messages,
   });
 
-  if (!features.has('verify')) return draft;
-  return repairLoop(client, bundle, messages, draft);
+  const report = features.has('verify')
+    ? await repairLoop(client, bundle, messages, draft)
+    : draft;
+
+  // Remember the conclusion, right or wrong. A memory that only kept the
+  // correct ones would be reading the answer key.
+  if (features.has('memory')) memory.remember(bundle, report.root_cause);
+  return report;
 }

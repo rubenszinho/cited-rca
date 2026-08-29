@@ -11,15 +11,16 @@
  *   AGENT_FEATURES=search,verify          ...                  # no triage
  *   AGENT_FEATURES=triage,verify          ...                  # no search
  *   AGENT_FEATURES=triage,search          ...                  # no verifier
+ *   AGENT_FEATURES=triage,search,verify   ...                  # no memory
  *
  * Ranked metric movement is not switchable: it is part of how a bundle is
  * presented at every step, so removing it would change the baseline comparison
  * rather than ablate a workflow feature.
  */
 
-export type Feature = 'triage' | 'search' | 'verify';
+export type Feature = 'triage' | 'search' | 'verify' | 'memory';
 
-const ALL: Feature[] = ['triage', 'search', 'verify'];
+const ALL: Feature[] = ['triage', 'search', 'verify', 'memory'];
 
 /**
  * Fixed searches used when triage is disabled.

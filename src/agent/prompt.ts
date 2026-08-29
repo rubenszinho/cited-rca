@@ -76,6 +76,7 @@ function draftBody(
   bundle: IncidentBundle,
   triage: Triage,
   searchResults: string,
+  recall: string,
 ): string {
   return [
     `Incident ${bundle.caseId}. Write the review.`,
@@ -87,6 +88,7 @@ function draftBody(
     `--- your triage ---\nonset: ${triage.onset_ts}\n${triage.reasoning}`,
     '',
     searchResults,
+    ...(recall ? ['', recall] : []),
     '',
     DRAFT_GUIDANCE,
     '',
@@ -98,10 +100,11 @@ export function draftMessages(
   bundle: IncidentBundle,
   triage: Triage,
   searchResults: string,
+  recall = '',
 ): ChatMessage[] {
   return [
     { role: 'system', content: SYSTEM },
-    { role: 'user', content: draftBody(bundle, triage, searchResults) },
+    { role: 'user', content: draftBody(bundle, triage, searchResults, recall) },
   ];
 }
 

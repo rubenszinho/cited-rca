@@ -1,0 +1,151 @@
+{
+  "cmd": "pnpm exec tsx src/agent/run.ts",
+  "commit": "6cd4eccd4eb31bb414b5572112543e0508ad0866-dirty",
+  "duration_s": 194.5069,
+  "env": {
+    "container": "host",
+    "machine": "x86_64",
+    "os": "Linux 6.18.33.2-microsoft-standard-WSL2",
+    "python": "3.12.14"
+  },
+  "exit_code": 0,
+  "metrics": {
+    "cases": 12,
+    "cases_detail": [
+      {
+        "case_id": "01-bad-deploy-null-deref",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [],
+        "passed": true,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "02-config-flag-misflip",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [],
+        "passed": true,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "03-schema-migration-index-drop",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [],
+        "passed": true,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "04-cert-expiry",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [],
+        "passed": true,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "05-connection-pool-exhaustion",
+        "cause_correct": false,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "cause: said bad_deploy_regression, actual resource_exhaustion_pool",
+          "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)",
+          "red herring used as evidence: \"timed out acquiring database connection\" (the error names the database, so it reads as a slow database - but database CPU and mean query time are both flat)"
+        ],
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "06-memory-leak-oom",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: metrics/worker.csv ~ \"2026-03-17T09:14:00.000Z\" (the rss_mb series at onset, memory climbing monotonically rather than spiking)",
+          "red herring used as evidence: \"worker replicas 4 -> 8\" (a change during the incident, but an operator mitigation rather than the cause)"
+        ],
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "07-disk-exhaustion-logs",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [
+          "red herring used as evidence: \"ApiWriteErrors\" (the alert is fleet-scoped and names no node, so it reads as a fleet-wide fault when only api-3 is affected)"
+        ],
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "08-cache-stampede",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [],
+        "passed": true,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "09-downstream-timeout",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [],
+        "passed": true,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "10-dns-failure",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [],
+        "passed": true,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "11-upstream-rate-limit",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [
+          "red herring used as evidence: \"CheckoutConversionDrop\" (reads as a checkout regression rather than an upstream rejecting our excess volume)"
+        ],
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "12-batch-job-contention",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [],
+        "passed": true,
+        "red_herring_blamed": false
+      }
+    ],
+    "cause_accuracy": 0.9167,
+    "citation_validity": 1,
+    "completion_tokens": 30101,
+    "cost_usd": 0.7472,
+    "evidence_recall": 0.9444,
+    "llm_calls": 14,
+    "pass_rate": 0.6667,
+    "prompt_tokens": 98575,
+    "provider_errors": 0,
+    "red_herring_rate": 0.3333,
+    "replayed_calls": 7,
+    "seconds_per_case": 16.162
+  },
+  "seed": 0,
+  "started_at": "2026-08-29T14:07:07.789721+00:00",
+  "variant": "agent-notriage"
+}
