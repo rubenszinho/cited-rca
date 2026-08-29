@@ -59,6 +59,18 @@ function summarise(grades: Grade[], client: LlmClient, elapsedMs: number) {
     completion_tokens: totals.completion_tokens,
     cost_usd: costUsd(totals.prompt_tokens, totals.completion_tokens),
     seconds_per_case: Number((elapsedMs / 1000 / grades.length).toFixed(3)),
+    // Per-case outcomes travel with the aggregate. "Report every result,
+    // including failures" is a rule, and an aggregate alone cannot say which
+    // incident a variant lost or why. compare.py ignores non-numeric fields.
+    cases_detail: grades.map((g) => ({
+      case_id: g.case_id,
+      passed: g.passed,
+      cause_correct: g.cause_correct,
+      citations_valid: g.citations_valid,
+      evidence_recall: g.evidence_recall,
+      red_herring_blamed: g.red_herring_blamed,
+      notes: g.notes,
+    })),
   };
 }
 

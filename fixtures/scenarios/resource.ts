@@ -62,7 +62,9 @@ export const RESOURCE_SCENARIOS: Scenario[] = [
             name: 'waiting',
             base: 0,
             noisePct: 0,
-            after: { shape: 'flat', factor: 1 },
+            // Requests queueing for a pool slot: the series that names the
+            // contended resource, and it climbs from nothing.
+            after: { shape: 'ramp', delta: 37 },
             precision: 0,
           },
         ],
@@ -176,7 +178,8 @@ export const RESOURCE_SCENARIOS: Scenario[] = [
             name: 'restarts_total',
             base: 0,
             noisePct: 0,
-            after: { shape: 'ramp', factor: 1 },
+            // Matches the four restarts the OOM log line reports.
+            after: { shape: 'ramp', delta: 4 },
             precision: 0,
           },
           {

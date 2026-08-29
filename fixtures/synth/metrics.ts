@@ -24,6 +24,22 @@ const RESPONSE: Record<Shape, (factor: number, progress: number) => number> = {
   drain: (factor, progress) => Math.max(1 / factor, 1 - (1 - 1 / factor) * progress),
 };
 
+/**
+ * The 0..1 shape profile, used by the additive path.
+ *
+ * Kept separate from RESPONSE rather than refactoring both onto one primitive:
+ * the multiplicative expressions must stay exactly as they are, because a
+ * last-bit change would rewrite every committed bundle and invalidate every
+ * recorded cassette for no behavioural gain.
+ */
+const PROFILE: Record<Shape, (progress: number) => number> = {
+  flat: () => 0,
+  step: () => 1,
+  ramp: (progress) => progress,
+  spike: (progress) => (progress < 0.2 ? 1 : 0.15),
+  drain: (progress) => progress,
+};
+
 function valueAt(
   spec: SeriesSpec,
   minute: number,
@@ -35,10 +51,12 @@ function valueAt(
   const progress = faulted
     ? Math.min(1, (minute - onset) / Math.max(1, end - onset))
     : 0;
-  const multiplier = faulted
-    ? RESPONSE[spec.after.shape](spec.after.factor, progress)
-    : 1;
-  const value = rand.jitter(spec.base * multiplier, spec.noisePct);
+  const response = spec.after;
+  const raw =
+    response.delta === undefined
+      ? spec.base * (faulted ? RESPONSE[response.shape](response.factor, progress) : 1)
+      : spec.base + response.delta * (faulted ? PROFILE[response.shape](progress) : 0);
+  const value = rand.jitter(raw, spec.noisePct);
   const precision = spec.precision ?? 2;
   return Number(value.toFixed(precision));
 }

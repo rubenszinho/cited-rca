@@ -22,12 +22,24 @@ export type Shape =
   | 'spike' // brief excursion, then back
   | 'drain'; // falls toward base/factor (headroom running out)
 
+/**
+ * How a series responds once the fault starts.
+ *
+ * `factor` scales the base, which is the right model for a rate or a latency.
+ * It cannot move a counter that starts at zero - zero times anything is zero -
+ * so a counter that is absent in steady state and appears during the incident
+ * declares `delta` instead, which is added rather than multiplied.
+ */
+export type Response =
+  | { shape: Shape; factor: number; delta?: undefined }
+  | { shape: Shape; delta: number; factor?: undefined };
+
 export type SeriesSpec = {
   name: string;
   base: number;
   /** Steady-state jitter as a fraction of base. */
   noisePct: number;
-  after: { shape: Shape; factor: number };
+  after: Response;
   /** Integers for counts, 2dp for rates. */
   precision?: number;
 };

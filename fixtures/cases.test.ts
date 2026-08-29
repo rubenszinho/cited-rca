@@ -69,6 +69,25 @@ describe.each(cases)('%s', (caseId) => {
     expect(sources.size, `${caseId} cites only ${[...sources]}`).toBeGreaterThan(1);
   });
 
+  it('has no metric series that never moves', () => {
+    // A multiplicative fault model cannot move a counter that starts at zero,
+    // and the failure is silent: the series is emitted, ranked as "did not
+    // move", and actively argues against the cause it was meant to evidence.
+    // Three series shipped that way before this test existed.
+    const bundle = loadBundle(caseId);
+    for (const file of bundle.files.filter((f) => f.source.startsWith('metrics/'))) {
+      const [header, ...rows] = file.lines;
+      const columns = (header ?? '').split(',');
+      for (let col = 1; col < columns.length; col++) {
+        const values = new Set(rows.map((row) => row.split(',')[col]));
+        expect(
+          values.size,
+          `${caseId} ${file.source} ${columns[col]} is constant`,
+        ).toBeGreaterThan(1);
+      }
+    }
+  });
+
   it('places onset before detection', () => {
     expect(Date.parse(truth.onset_ts)).toBeLessThan(Date.parse(truth.detected_ts));
   });

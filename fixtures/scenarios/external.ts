@@ -155,7 +155,9 @@ export const EXTERNAL_SCENARIOS: Scenario[] = [
             name: 'servfail_per_min',
             base: 0,
             noisePct: 0,
-            after: { shape: 'step', factor: 1 },
+            // Additive: this counter is absent in steady state, so scaling it
+            // would leave it at zero for the whole incident.
+            after: { shape: 'step', delta: 58 },
             precision: 0,
           },
           {
@@ -253,7 +255,7 @@ export const EXTERNAL_SCENARIOS: Scenario[] = [
             name: 'rejected_429_per_min',
             base: 0,
             noisePct: 0,
-            after: { shape: 'step', factor: 1 },
+            after: { shape: 'step', delta: 74 },
             precision: 0,
           },
           {
