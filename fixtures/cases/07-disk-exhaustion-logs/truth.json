@@ -1,0 +1,32 @@
+{
+  "case_id": "07-disk-exhaustion-logs",
+  "title": "Writes failing on one node at 60% traffic",
+  "root_cause": "disk_exhaustion",
+  "root_cause_summary": "Debug logging left enabled on api-3 filled the volume; once it hit 100% the node failed every write, while the other two nodes served normally.",
+  "onset_ts": "2026-03-17T09:34:00.000Z",
+  "detected_ts": "2026-03-17T09:37:00.000Z",
+  "required_evidence": [
+    {
+      "source": "logs/app.jsonl",
+      "match": "no space left on device",
+      "why": "the failure mode, scoped to one node"
+    },
+    {
+      "source": "metrics/disk.csv",
+      "match": "api3_used_pct",
+      "why": "one node climbing while its peers stay flat"
+    },
+    {
+      "source": "changes.jsonl",
+      "match": "debug_request_logging",
+      "why": "the flag that started the growth, 32 minutes before onset"
+    }
+  ],
+  "red_herrings": [
+    {
+      "source": "metrics/http.csv",
+      "match": "error_rate",
+      "why_tempting": "a fleet-wide error rate that looks like a fleet-wide fault, though only one node is affected"
+    }
+  ]
+}

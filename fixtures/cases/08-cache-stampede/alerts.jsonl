@@ -1,0 +1,2 @@
+{"ts":"2026-03-17T09:27:00.000Z","name":"DbConnectionsSaturated","severity":"page","state":"firing"}
+{"ts":"2026-03-17T09:28:00.000Z","name":"CacheHitRateLow","severity":"ticket","state":"firing"}

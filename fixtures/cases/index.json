@@ -33,5 +33,78 @@
       "http",
       "callbacks"
     ]
+  },
+  {
+    "case_id": "05-connection-pool-exhaustion",
+    "title": "API stalls while the database sits idle",
+    "log_lines": 2221,
+    "metric_series": [
+      "http",
+      "pool",
+      "db"
+    ]
+  },
+  {
+    "case_id": "06-memory-leak-oom",
+    "title": "Workers restarting every few minutes",
+    "log_lines": 1725,
+    "metric_series": [
+      "http",
+      "worker"
+    ]
+  },
+  {
+    "case_id": "07-disk-exhaustion-logs",
+    "title": "Writes failing on one node at 60% traffic",
+    "log_lines": 2084,
+    "metric_series": [
+      "http",
+      "disk"
+    ]
+  },
+  {
+    "case_id": "08-cache-stampede",
+    "title": "Database saturated seconds after a cache flush",
+    "log_lines": 2622,
+    "metric_series": [
+      "http",
+      "cache"
+    ]
+  },
+  {
+    "case_id": "09-downstream-timeout",
+    "title": "Inventory lookups hanging against the supplier API",
+    "log_lines": 2206,
+    "metric_series": [
+      "http",
+      "downstream"
+    ]
+  },
+  {
+    "case_id": "10-dns-failure",
+    "title": "Intermittent resolution failures across every service",
+    "log_lines": 2349,
+    "metric_series": [
+      "http",
+      "dns"
+    ]
+  },
+  {
+    "case_id": "11-upstream-rate-limit",
+    "title": "Payment authorisations rejected in bursts",
+    "log_lines": 2298,
+    "metric_series": [
+      "http",
+      "payments"
+    ]
+  },
+  {
+    "case_id": "12-batch-job-contention",
+    "title": "Checkout degrades minutes after a routine release",
+    "log_lines": 2282,
+    "metric_series": [
+      "http",
+      "db"
+    ]
   }
 ]

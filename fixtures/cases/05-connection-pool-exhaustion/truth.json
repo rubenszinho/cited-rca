@@ -1,0 +1,32 @@
+{
+  "case_id": "05-connection-pool-exhaustion",
+  "title": "API stalls while the database sits idle",
+  "root_cause": "resource_exhaustion_pool",
+  "root_cause_summary": "A reporting endpoint held pool connections open across an external call, so the 40-slot pool drained and unrelated requests queued waiting for a checkout.",
+  "onset_ts": "2026-03-17T09:21:00.000Z",
+  "detected_ts": "2026-03-17T09:29:00.000Z",
+  "required_evidence": [
+    {
+      "source": "logs/app.jsonl",
+      "match": "connection pool wait exceeded",
+      "why": "the pool, not the database, is the contended resource"
+    },
+    {
+      "source": "metrics/pool.csv",
+      "match": "idle",
+      "why": "idle connections draining to zero"
+    },
+    {
+      "source": "metrics/db.csv",
+      "match": "cpu_pct",
+      "why": "database CPU flat, ruling out a slow database"
+    }
+  ],
+  "red_herrings": [
+    {
+      "source": "metrics/http.csv",
+      "match": "p95_ms",
+      "why_tempting": "latency is the symptom every alert points at, but it is downstream of the pool"
+    }
+  ]
+}

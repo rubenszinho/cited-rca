@@ -1,0 +1,32 @@
+{
+  "case_id": "10-dns-failure",
+  "title": "Intermittent resolution failures across every service",
+  "root_cause": "dns_failure",
+  "root_cause_summary": "One of the two cluster DNS pods was serving SERVFAIL, so roughly half of all resolutions failed regardless of which service or peer was involved.",
+  "onset_ts": "2026-03-17T09:16:00.000Z",
+  "detected_ts": "2026-03-17T09:21:00.000Z",
+  "required_evidence": [
+    {
+      "source": "logs/app.jsonl",
+      "match": "SERVFAIL",
+      "why": "the resolution failure itself"
+    },
+    {
+      "source": "metrics/dns.csv",
+      "match": "resolve_p95_ms",
+      "why": "resolution latency stepping up at onset"
+    },
+    {
+      "source": "alerts.jsonl",
+      "match": "MultiServiceErrorSpike",
+      "why": "three unrelated services failing at once points below the application layer"
+    }
+  ],
+  "red_herrings": [
+    {
+      "source": "changes.jsonl",
+      "match": "coredns replicas 2 -> 4",
+      "why_tempting": "a DNS change in the window, but 28 minutes after onset and a mitigation"
+    }
+  ]
+}

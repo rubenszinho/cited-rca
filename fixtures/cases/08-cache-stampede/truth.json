@@ -1,0 +1,32 @@
+{
+  "case_id": "08-cache-stampede",
+  "title": "Database saturated seconds after a cache flush",
+  "root_cause": "cache_stampede",
+  "root_cause_summary": "A manual cache flush invalidated every key at once with no request coalescing, so concurrent misses hit the database with identical queries.",
+  "onset_ts": "2026-03-17T09:25:00.000Z",
+  "detected_ts": "2026-03-17T09:27:00.000Z",
+  "required_evidence": [
+    {
+      "source": "changes.jsonl",
+      "match": "FLUSHALL",
+      "why": "the flush one minute before onset"
+    },
+    {
+      "source": "metrics/cache.csv",
+      "match": "hit_rate",
+      "why": "hit rate collapsing rather than degrading"
+    },
+    {
+      "source": "logs/app.jsonl",
+      "match": "cache miss, recomputing",
+      "why": "concurrent recomputation of the same key, which is what makes it a stampede"
+    }
+  ],
+  "red_herrings": [
+    {
+      "source": "logs/app.jsonl",
+      "match": "too many connections",
+      "why_tempting": "the database is where the pain surfaces, but it is saturated by the stampede rather than causing it"
+    }
+  ]
+}

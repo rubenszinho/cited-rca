@@ -1,0 +1,32 @@
+{
+  "case_id": "06-memory-leak-oom",
+  "title": "Workers restarting every few minutes",
+  "root_cause": "memory_leak",
+  "root_cause_summary": "Each job appended to a module-level cache that was never evicted, so worker RSS climbed until the container hit its limit and was OOM-killed.",
+  "onset_ts": "2026-03-17T09:14:00.000Z",
+  "detected_ts": "2026-03-17T09:32:00.000Z",
+  "required_evidence": [
+    {
+      "source": "logs/app.jsonl",
+      "match": "OOMKilled",
+      "why": "the kill reason and exit code 137"
+    },
+    {
+      "source": "metrics/worker.csv",
+      "match": "rss_mb",
+      "why": "memory climbing monotonically rather than spiking"
+    },
+    {
+      "source": "changes.jsonl",
+      "match": "v2026.3.17-e7",
+      "why": "the memoisation deploy four minutes before the climb starts"
+    }
+  ],
+  "red_herrings": [
+    {
+      "source": "changes.jsonl",
+      "match": "worker replicas 4 -> 8",
+      "why_tempting": "a change during the incident, but an operator mitigation rather than the cause"
+    }
+  ]
+}

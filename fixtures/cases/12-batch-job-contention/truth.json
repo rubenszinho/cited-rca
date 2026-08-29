@@ -1,0 +1,32 @@
+{
+  "case_id": "12-batch-job-contention",
+  "title": "Checkout degrades minutes after a routine release",
+  "root_cause": "batch_job_contention",
+  "root_cause_summary": "The nightly reconciliation job was rescheduled into business hours and took a long-held lock on the orders table. The release two minutes before onset was unrelated and touched no database path.",
+  "onset_ts": "2026-03-17T09:31:00.000Z",
+  "detected_ts": "2026-03-17T09:35:00.000Z",
+  "required_evidence": [
+    {
+      "source": "changes.jsonl",
+      "match": "reconcile_orders_daily",
+      "why": "the rescheduled batch job, one minute before onset"
+    },
+    {
+      "source": "logs/app.jsonl",
+      "match": "blocking_query",
+      "why": "the blocking query named in the lock wait, which identifies the job directly"
+    },
+    {
+      "source": "metrics/db.csv",
+      "match": "lock_waits_per_min",
+      "why": "lock waits rather than resource saturation"
+    }
+  ],
+  "red_herrings": [
+    {
+      "source": "changes.jsonl",
+      "match": "v2026.3.17-j9",
+      "why_tempting": "a checkout deploy two minutes before onset, on the service that is failing - the single most tempting wrong answer in the set, and it touches no database path"
+    }
+  ]
+}

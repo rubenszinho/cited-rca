@@ -1,0 +1,32 @@
+{
+  "case_id": "11-upstream-rate-limit",
+  "title": "Payment authorisations rejected in bursts",
+  "root_cause": "upstream_rate_limit",
+  "root_cause_summary": "A retry storm from an earlier blip pushed call volume past the payment provider's 600/min quota, so the provider returned 429 for the excess.",
+  "onset_ts": "2026-03-17T09:28:00.000Z",
+  "detected_ts": "2026-03-17T09:31:00.000Z",
+  "required_evidence": [
+    {
+      "source": "logs/app.jsonl",
+      "match": "returned 429",
+      "why": "the provider rejecting on quota, with the quota named"
+    },
+    {
+      "source": "metrics/payments.csv",
+      "match": "calls_per_min",
+      "why": "our call volume doubling, which is what crossed the quota"
+    },
+    {
+      "source": "changes.jsonl",
+      "match": "retry attempts 2 -> 5",
+      "why": "the retry change that turned a blip into a storm"
+    }
+  ],
+  "red_herrings": [
+    {
+      "source": "metrics/payments.csv",
+      "match": "authorised_per_min",
+      "why_tempting": "authorisations falling looks like a provider outage rather than our own volume"
+    }
+  ]
+}

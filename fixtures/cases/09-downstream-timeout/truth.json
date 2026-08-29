@@ -1,0 +1,32 @@
+{
+  "case_id": "09-downstream-timeout",
+  "title": "Inventory lookups hanging against the supplier API",
+  "root_cause": "downstream_dependency_failure",
+  "root_cause_summary": "The supplier inventory API degraded to multi-second responses; calls had no timeout, so request threads accumulated waiting on it.",
+  "onset_ts": "2026-03-17T09:19:00.000Z",
+  "detected_ts": "2026-03-17T09:26:00.000Z",
+  "required_evidence": [
+    {
+      "source": "logs/app.jsonl",
+      "match": "supplier-inventory",
+      "why": "the failing peer, named in the log line"
+    },
+    {
+      "source": "metrics/downstream.csv",
+      "match": "supplier_p95_ms",
+      "why": "the step change is on the supplier side, not ours"
+    },
+    {
+      "source": "metrics/downstream.csv",
+      "match": "inflight_requests",
+      "why": "requests piling up because the calls have no timeout"
+    }
+  ],
+  "red_herrings": [
+    {
+      "source": "changes.jsonl",
+      "match": "v2026.3.17-g2",
+      "why_tempting": "the only deploy in the window, 16 minutes before onset and unrelated"
+    }
+  ]
+}
