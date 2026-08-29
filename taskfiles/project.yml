@@ -128,10 +128,14 @@ tasks:
     # attribution is claiming.
     vars:
       RUN: '{{.PY}} harness/run.py --seeds {{.SEEDS}} --cmd "pnpm exec tsx src/agent/run.ts"'
+    # Ablations of the SHIPPED configuration (search + verify), plus the two
+    # features the measurement rejected, so every claim in the changelog has a
+    # run behind it.
     cmds:
-      - AGENT_FEATURES=search,verify {{.RUN}} --variant agent-notriage
-      - AGENT_FEATURES=triage,verify {{.RUN}} --variant agent-nosearch
-      - AGENT_FEATURES=triage,search {{.RUN}} --variant agent-noverify
+      - AGENT_FEATURES=verify {{.RUN}} --variant agent-nosearch
+      - AGENT_FEATURES=search {{.RUN}} --variant agent-noverify
+      - AGENT_FEATURES=search,verify,memory {{.RUN}} --variant agent-memory
+      - AGENT_FEATURES=triage,search,verify {{.RUN}} --variant agent-withtriage
 
   ablate:noverify:
     desc: Re-run just the verifier ablation

@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "bbb8b61fa84e640934a10d457abfb56b3a5f3b91-dirty",
-  "duration_s": 0.4304,
+  "commit": "4a7eb8edf7fc881c3ac236ef8af22b024e104a8f-dirty",
+  "duration_s": 0.4037,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -52,22 +52,21 @@
         "case_id": "05-connection-pool-exhaustion",
         "cause_correct": false,
         "citations_valid": true,
-        "evidence_recall": 0.3333,
+        "evidence_recall": 0.6667,
         "notes": [
           "cause: said bad_deploy_regression, actual resource_exhaustion_pool",
-          "evidence not cited: logs/app.jsonl ~ \"connection pool wait exceeded\" (the pool, not the database, is the contended resource)",
-          "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)"
+          "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)",
+          "red herring used as evidence: \"timed out acquiring database connection\" (the error names the database, so it reads as a slow database - but database CPU and mean query time are both flat)"
         ],
         "passed": false,
-        "red_herring_blamed": false
+        "red_herring_blamed": true
       },
       {
         "case_id": "06-memory-leak-oom",
         "cause_correct": true,
         "citations_valid": true,
-        "evidence_recall": 0.6667,
+        "evidence_recall": 1,
         "notes": [
-          "evidence not cited: metrics/worker.csv ~ \"2026-03-17T09:14:00.000Z\" (the rss_mb series at onset, memory climbing monotonically rather than spiking)",
           "red herring used as evidence: \"worker replicas 4 -> 8\" (a change during the incident, but an operator mitigation rather than the cause)"
         ],
         "passed": false,
@@ -134,18 +133,18 @@
     ],
     "cause_accuracy": 0.9167,
     "citation_validity": 1,
-    "completion_tokens": 26851,
+    "completion_tokens": 34169,
     "cost_usd": 0,
-    "evidence_recall": 0.9167,
-    "llm_calls": 12,
+    "evidence_recall": 0.9722,
+    "llm_calls": 25,
     "pass_rate": 0.6667,
-    "prompt_tokens": 83970,
+    "prompt_tokens": 159818,
     "provider_errors": 0,
-    "red_herring_rate": 0.25,
-    "replayed_calls": 12,
-    "seconds_per_case": 0.003
+    "red_herring_rate": 0.3333,
+    "replayed_calls": 25,
+    "seconds_per_case": 0.005
   },
   "seed": 1,
-  "started_at": "2026-08-29T14:42:37.962633+00:00",
-  "variant": "agent-nomemory"
+  "started_at": "2026-08-29T15:01:26.608127+00:00",
+  "variant": "agent-withtriage"
 }

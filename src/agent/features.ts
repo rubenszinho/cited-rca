@@ -23,18 +23,28 @@ export type Feature = 'triage' | 'search' | 'verify' | 'memory';
 const ALL: Feature[] = ['triage', 'search', 'verify', 'memory'];
 
 /**
- * The shipped configuration. Note what is missing: triage.
+ * The shipped configuration. Two of the four features are deliberately absent.
  *
- * Removing the triage pass beat keeping it on pass rate (0.667 vs 0.611) and on
- * cause accuracy (0.917 vs 0.861), identically across all three repeats. It
- * commits to an onset and a framing before any log line has been read, and the
- * draft then reasons from that frame rather than from the evidence. Generic
- * queries retrieve less precisely but carry no such prior.
+ * `triage` lowered both pass rate (0.667 -> 0.611) and cause accuracy
+ * (0.917 -> 0.861), identically across three repeats. It commits to an onset
+ * and a framing before any log line has been read, and the draft then reasons
+ * from that frame rather than from the evidence. Generic queries retrieve less
+ * precisely but carry no such prior.
  *
- * It stays implementable and switchable so the result can be reproduced:
+ * `memory` took cause accuracy to a perfect 1.000 and cut red herrings, but
+ * lowered the primary metric (0.667 -> 0.639). Recalling "these signals mean
+ * DNS" made it reach for the DNS-shaped change event on case 10 - a mitigation
+ * applied 28 minutes after onset - and cite it as supporting evidence. It
+ * became more confident and less careful about what supports a claim.
+ *
+ * Pass rate was named the primary metric before any of this was run. Promoting
+ * a secondary metric after seeing the results is how an evaluation stops
+ * meaning anything, so both features are off despite each winning on something.
+ *
+ * Both stay implemented and switchable so the results can be reproduced:
  *   AGENT_FEATURES=triage,search,verify,memory
  */
-const DEFAULT: Feature[] = ['search', 'verify', 'memory'];
+const DEFAULT: Feature[] = ['search', 'verify'];
 
 /**
  * Fixed searches used when triage is disabled.
