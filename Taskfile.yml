@@ -22,9 +22,13 @@ output: group
 
 # .env is rendered by `task env:render`; .env.overrides holds real secrets
 # and is never generated. Later file wins. Both are optional.
+# Order matters and is the opposite of what reads naturally: go-task gives
+# precedence to the FIRST file listed, so the overrides must come first to
+# override anything. Listed the other way round, .env silently won and a run
+# configured for one provider was sent to another with the wrong key.
 dotenv:
-  - .env
   - .env.overrides
+  - .env
 
 includes:
   project:
@@ -65,7 +69,7 @@ tasks:
   env:render:
     desc: 'Render env.template to .env (usage: task env:render -- --force)'
     cmds:
-      - "{{.PY}} -m tools.env.render_env {{.CLI_ARGS}}"
+      - '{{.PY}} -m tools.env.render_env {{.CLI_ARGS}}'
 
   # === Validation gate ================================================
 
@@ -84,7 +88,7 @@ tasks:
   test:tools:
     desc: Run the tests for forge's own tooling
     cmds:
-      - "{{.PY}} -m unittest discover -s tools/tests -t . {{.CLI_ARGS}}"
+      - '{{.PY}} -m unittest discover -s tools/tests -t . {{.CLI_ARGS}}'
 
   # === Quality ratchet ================================================
 
@@ -94,24 +98,24 @@ tasks:
       # --write is what makes this the LOCAL mode: an improvement rewrites
       # the baseline and passes. CI omits it and fails instead, forcing the
       # regenerated baseline to be committed with the refactor.
-      - "{{.QUALITY}} check --write"
+      - '{{.QUALITY}} check --write'
 
   quality:baseline:
     desc: 'Bootstrap the baseline (usage: task quality:baseline -- --force)'
     cmds:
-      - "{{.QUALITY}} generate-baseline {{.CLI_ARGS}}"
+      - '{{.QUALITY}} generate-baseline {{.CLI_ARGS}}'
 
   quality:thresholds:
     desc: Print the configured thresholds as metric=value
     cmds:
-      - "{{.QUALITY}} print-thresholds"
+      - '{{.QUALITY}} print-thresholds'
 
   commit-msg:check:
     desc: Validate a commit message file. Path passed as -- ARG.
     requires:
       vars: [CLI_ARGS]
     cmds:
-      - "{{.PY}} -m tools.commit.check_commit_msg {{.CLI_ARGS}}"
+      - '{{.PY}} -m tools.commit.check_commit_msg {{.CLI_ARGS}}'
 
   # === Formatting and linting =========================================
   # Thin aliases so hooks, CI and humans share one vocabulary.
@@ -120,13 +124,13 @@ tasks:
     desc: Format the code. Paths passed as -- ARG.
     cmds:
       - task: project:format
-        vars: {CLI_ARGS: '{{.CLI_ARGS}}'}
+        vars: { CLI_ARGS: '{{.CLI_ARGS}}' }
 
   lint:
     desc: Lint and autofix. Paths passed as -- ARG.
     cmds:
       - task: project:lint
-        vars: {CLI_ARGS: '{{.CLI_ARGS}}'}
+        vars: { CLI_ARGS: '{{.CLI_ARGS}}' }
 
   # === Dev stack ======================================================
 
@@ -156,7 +160,7 @@ tasks:
       # into a command targeting `-db` — a different container, possibly
       # another worktree's. Refuse rather than guess.
       - sh: '[ -n "$SESSION" ]'
-        msg: "SESSION is empty. Run `task env:render` first."
+        msg: 'SESSION is empty. Run `task env:render` first.'
     cmds:
       - process-compose down -p ${PC_PORT} 2>/dev/null || true
       # Named explicitly, never globbed: a glob would eat sibling worktrees.
@@ -180,4 +184,4 @@ tasks:
   ci:quality:
     desc: CI entry point for the ratchet (fails on a stale baseline)
     cmds:
-      - "{{.QUALITY}} check"
+      - '{{.QUALITY}} check'

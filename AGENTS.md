@@ -124,8 +124,11 @@ The `squashing-commits` skill covers composing the message body.
 
 - `.env` is **generated** by `task env:render`. Never edit it by hand; it is
   regenerated per branch and gitignored.
-- `.env.overrides` holds real secrets. Gitignored, never generated, loaded
-  after `.env` so it always wins.
+- `.env.overrides` holds real secrets and local overrides. Gitignored, never
+  generated. It is listed **first** in `Taskfile.yml`'s `dotenv:` because
+  go-task gives precedence to the first file, not the last — the natural reading
+  is backwards, and getting it wrong means `.env` silently wins.
+  `task project:env:show` prints what is actually resolved.
 - `$SESSION` is the isolation key. Every container, volume and port derives
   from it, so two worktrees of this repo can run side by side. Anything
   destructive that interpolates `$SESSION` must first assert it is non-empty.

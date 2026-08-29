@@ -189,3 +189,11 @@ tasks:
     desc: Fail if any credential survives redaction
     cmds:
       - '{{.PY}} -m tools.trajectory.redact --check'
+
+  env:show:
+    desc: Print the model configuration task actually resolves (no secrets)
+    cmds:
+      - |
+        echo "LLM_BASE_URL=$LLM_BASE_URL"
+        echo "LLM_MODEL=$LLM_MODEL"
+        echo "LLM_API_KEY length=${#LLM_API_KEY}"
