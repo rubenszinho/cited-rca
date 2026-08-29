@@ -151,6 +151,29 @@ the gate is a legitimate first move — and the version pin on the metrics tool
 in `mise.toml` exists precisely because that class of change must never arrive
 implicitly.
 
+### A case both variants fail, where my ground truth is arguable
+
+Case 05 is connection-pool exhaustion. Every variant answers
+`bad_deploy_regression`; the truth file says `resource_exhaustion_pool`.
+
+On reflection the model has a case. The deploy in that window added the CSV
+export that holds pool connections across an external call, so the deploy did
+introduce the code that exhausts the pool. The real answer is layered - a
+change introduced a latent fault, and load later triggered it - and a
+single-value enum cannot express that. The enum is what makes grading
+deterministic, and this is what it costs.
+
+I rewrote the case to remove the ambiguity: the bad code has been in production
+for weeks, organic reporting traffic crosses the threshold, and no change
+explains it. The rewrite is not in the submission. Changing the bundle
+invalidated its recordings, and the account had no credit left to re-record
+them, so shipping it would have meant replacing measured numbers with
+unmeasurable ones.
+
+Reverted, and documented here instead. It caps both variants equally, so it
+does not bias the comparison - it lowers the ceiling for everyone by one case
+in twelve.
+
 ### Two features I could not measure, handled differently
 
 Ranked metric movement is not ablatable — it changes how a bundle is presented

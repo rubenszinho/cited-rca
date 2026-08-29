@@ -101,6 +101,26 @@ Any OpenAI-compatible endpoint works. `LLM_BASE_URL`, `LLM_MODEL`,
 `LLM_MAX_TOKENS` and `LLM_TEMPERATURE` are set in `env.template`; point them at
 your own account and nothing in the code changes.
 
+### Run it on your own incident
+
+```bash
+task project:dev -- --dir ./my-incident-folder
+```
+
+Any directory of logs, metric exports, or change records. Nothing assumes the
+fixture layout — a bundle is only a set of text files addressable by line, which
+is also the entire requirement for a citation. Your filenames become the source
+names in the review.
+
+`examples/checkout-latency-2026-03-19/` is a worked example in formats the
+workflow has never seen: an nginx access log, a logfmt application log,
+Prometheus CSV exports, and a plain-text deploy record. `REVIEW.md` beside it is
+the unedited output. See [`examples/README.md`](examples/README.md).
+
+There is no ground truth for a real incident, so correctness cannot be scored.
+What is still checked, and printed after the review, is whether every citation
+resolves against the files.
+
 ### Look at one incident
 
 ```bash

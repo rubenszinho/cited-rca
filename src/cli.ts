@@ -9,6 +9,8 @@
  *   task project:dev -- --list
  */
 import { listCases, loadBundle, loadTruth } from './bundle.ts';
+import { loadDirectory } from './ingest.ts';
+import { verify } from './agent/verify.ts';
 import { grade } from './grade.ts';
 import { renderMarkdown } from './render.ts';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -62,11 +64,44 @@ function summarise(
   console.log(`tokens       ${JSON.stringify(client.totals())}`);
 }
 
+/**
+ * Run against a real directory, where there is no ground truth to grade.
+ *
+ * Correctness cannot be scored here - nobody knows the answer. What can still
+ * be reported is whether the citations hold up, which is the check that runs in
+ * production and the one a reader needs before trusting the document.
+ */
+async function runDirectory(dir: string, variant: string): Promise<number> {
+  const bundle = loadDirectory(dir);
+  console.log(`incident ${bundle.caseId}`);
+  console.log(`sources  ${bundle.files.map((f) => f.source).join(', ')}\n`);
+
+  const client = createClient();
+  const report = await solverFor(variant)(bundle, client);
+  const markdown = renderMarkdown(bundle, report);
+  console.log(markdown);
+  console.log(`review written to ${writeReview(bundle.caseId, markdown)}\n`);
+
+  const problems = verify(bundle, report);
+  console.log(
+    problems.length === 0
+      ? 'every citation resolves against the source files'
+      : `${problems.length} citation(s) did not resolve:`,
+  );
+  for (const problem of problems)
+    console.log(`  - ${problem.where}: ${problem.detail}`);
+  console.log(`tokens       ${JSON.stringify(client.totals())}`);
+  return problems.length === 0 ? 0 : 1;
+}
+
 async function main(): Promise<number> {
   if (process.argv.includes('--list')) {
     for (const id of listCases()) console.log(`${id}  ${loadTruth(id).title}`);
     return 0;
   }
+
+  const dir = argValue('--dir', '');
+  if (dir) return runDirectory(dir, argValue('--variant', 'agent'));
 
   const caseId = argValue('--case', listCases()[0] ?? '');
   const variant = argValue('--variant', 'agent');

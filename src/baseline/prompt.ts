@@ -11,7 +11,7 @@
  * bundle and answers from it. That is the difference the experiment measures.
  */
 import type { IncidentBundle } from '../bundle.ts';
-import { deduped, findFileOrThrow, sample, smallSources } from '../context.ts';
+import { bulkFiles, deduped, sample, smallSources } from '../context.ts';
 import type { ChatMessage } from '../llm/types.ts';
 import { ROOT_CAUSES } from '../../fixtures/model.ts';
 
@@ -32,7 +32,8 @@ export const SYSTEM = [
 ].join('\n');
 
 function logView(bundle: IncidentBundle): string {
-  const logs = findFileOrThrow(bundle, 'logs/app.jsonl');
+  const logs = bulkFiles(bundle)[0];
+  if (!logs) return '';
   const problems = deduped(logs, ['error', 'warn'], KEEP_PER_SHAPE);
   const context = sample(logs, CONTEXT_SAMPLE);
   return [

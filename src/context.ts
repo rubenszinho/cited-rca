@@ -96,9 +96,29 @@ export function findFileOrThrow(bundle: IncidentBundle, source: string): BundleF
   return file;
 }
 
+/**
+ * Files small enough to hand over whole, versus the bulk log to search.
+ *
+ * Originally this was the hardcoded name `logs/app.jsonl`, which worked for the
+ * twelve fixtures and made the workflow unusable on a real directory - the very
+ * thing ingestion was added for. The split is now by size, because that is the
+ * actual property that matters: a change record is worth reading in full, and a
+ * two-thousand-line log is not.
+ */
+const BULK_LINES = 400;
+
+export function bulkFiles(bundle: IncidentBundle): BundleFile[] {
+  const bulk = bundle.files.filter((file) => file.lines.length > BULK_LINES);
+  // If nothing is large, the largest file is still the one worth searching.
+  if (bulk.length > 0) return bulk;
+  const largest = [...bundle.files].sort((a, b) => b.lines.length - a.lines.length)[0];
+  return largest ? [largest] : [];
+}
+
 /** Everything that is small enough to always include in full. */
 export function smallSources(bundle: IncidentBundle): string[] {
+  const bulk = new Set(bulkFiles(bundle).map((file) => file.source));
   return bundle.files
-    .filter((file) => file.source !== 'logs/app.jsonl')
+    .filter((file) => !bulk.has(file.source))
     .map((file) => `--- ${file.source} ---\n${renderFile(file)}`);
 }

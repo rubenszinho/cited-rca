@@ -7,8 +7,8 @@
  * baseline gets one fixed slice of the log, while the workflow can ask for the
  * lines it actually wants.
  */
-import { addressed, findFileOrThrow } from '../context.ts';
-import type { IncidentBundle } from '../bundle.ts';
+import { addressed, bulkFiles } from '../context.ts';
+import type { BundleFile, IncidentBundle } from '../bundle.ts';
 
 export type SeriesMove = {
   series: string;
@@ -73,17 +73,18 @@ export type SearchHit = { line: string };
  * than taken from the front: a fault emits its signature hundreds of times, and
  * the first `limit` of them all come from the same minute.
  */
-export function searchLog(
-  bundle: IncidentBundle,
+function searchOne(
+  file: BundleFile,
   query: string,
   limit: number,
+  label: boolean,
 ): string[] {
-  const file = findFileOrThrow(bundle, 'logs/app.jsonl');
   const needle = query.toLowerCase();
   const hits: number[] = [];
   file.lines.forEach((line, index) => {
     if (line.toLowerCase().includes(needle)) hits.push(index);
   });
+  if (hits.length === 0) return [];
   if (hits.length <= limit) return hits.map((index) => addressed(file, index));
 
   const step = hits.length / limit;
@@ -91,8 +92,22 @@ export function searchLog(
     { length: limit },
     (_, n) => hits[Math.floor(n * step)] ?? 0,
   );
-  return [
-    ...spread.map((index) => addressed(file, index)),
-    `# ${hits.length} lines match "${query}"; ${limit} shown, spread across the window`,
-  ];
+  // The single-file wording is preserved verbatim. Prompt text is part of a
+  // cassette's key, so rewording this line silently invalidates every recorded
+  // run - which is what happened when this function was first generalised.
+  const note = label
+    ? `# ${hits.length} lines in ${file.source} match "${query}"; ${limit} shown, spread across the window`
+    : `# ${hits.length} lines match "${query}"; ${limit} shown, spread across the window`;
+  return [...spread.map((index) => addressed(file, index)), note];
+}
+
+export function searchLog(
+  bundle: IncidentBundle,
+  query: string,
+  limit: number,
+): string[] {
+  const files = bulkFiles(bundle);
+  const many = files.length > 1;
+  const perFile = many ? Math.max(2, Math.floor(limit / files.length)) : limit;
+  return files.flatMap((file) => searchOne(file, query, perFile, many));
 }
