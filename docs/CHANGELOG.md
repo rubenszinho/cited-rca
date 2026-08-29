@@ -10,52 +10,105 @@ Numbers are in [`RESULTS.md`](RESULTS.md); the ablations are reproducible with
 
 ## The measurement
 
-**Pass rate.** A case counts only when the named cause is right, every citation
-resolves, every required piece of evidence was cited, and no red herring was
-used to support the argument. Partial credit is reported alongside it —
-`cause_accuracy`, `citation_validity`, `evidence_recall` — because those are
-what tell you _which_ of the four conditions a variant is failing.
+**Pass rate** is the headline: a case counts only when the named cause is right,
+every citation resolves, every required piece of evidence was cited, and no red
+herring was leaned on. It is the only number corresponding to something a person
+cares about — a review they can act on without going back to the telemetry
+themselves.
 
-Pass rate is the headline because it is the only one that corresponds to
-something a person cares about: a review they can act on without going back to
-the telemetry themselves.
+It is also all-or-nothing, so four more measures sit alongside it, each added
+because the grader was hiding something:
 
-<!-- Every number below comes from results/, three repeats per variant, zero
-     infrastructure errors. Reproduce with `task project:eval` and
-     `task project:ablate` - both replay from committed cassettes at no cost. -->
+- **completion rate** — did a parseable report come back at all? Added after the
+  outcome tiers showed the workflow failing schema validation where the baseline
+  never does. Without it, "cannot write JSON" and "cannot read telemetry" land in
+  the same number.
+- **cause accuracy** — right diagnosis, _conditioned on a report existing_. A
+  formatting failure is not evidence about diagnosis, and averaging it in as a
+  zero moved a reasoning metric when only the JSON changed.
+- **citation precision** — citations that resolve over citations made. The
+  boolean it replaced failed a whole case for one bad citation in twenty-eight,
+  which made the baseline look far worse than it is: 0.278 by the boolean, 0.882
+  by precision.
+- **evidence recall** — how much of the required evidence was actually cited.
+  This is the one that separates knowing from showing.
 
-| Stage                                      | What I tried and why                                                                                                                                                            | Evidence (pass rate)                                                    | Decision / learning                                                                                                                                            |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Baseline**                               | One direct prompt per incident, given every distinct error shape, both event timelines and every metric series. The brief's own first suggested baseline.                       | **0.361 ± 0.048**<br>citations 0.611                                    | Starting point. Four reports in ten carry a citation that does not resolve — the failure the rest of the work is aimed at.                                     |
-| **Iteration 1** — ranked metric movement   | The baseline reads sixty CSV rows per series and has to notice which moved. Compute the movement in code and hand over the ranking, so the flat control series is visibly flat. | not isolated                                                            | Kept. It is part of how a bundle is presented at every step, so it cannot be ablated without changing the baseline comparison too. Stated rather than claimed. |
-| **Iteration 2** — log search               | The baseline gets one fixed slice of a 2,100-line log. Let the workflow retrieve addressed lines instead.                                                                       | removing it:<br>**0.000**<br>recall 0.593                               | Kept, and it is load-bearing: without it the pass rate is zero. See "what search actually buys" below — the result was not what I expected.                    |
-| **Iteration 3** — triage pass              | Decide what to read before writing anything, rather than reading and writing in one step.                                                                                       | with it: **0.611 ± 0.048**<br>cause 0.861                               | **Removed.** Worse than not having it, on both pass rate and cause accuracy, identically across three repeats.                                                 |
-| **Iteration 4** — verifier and repair loop | Check every citation against the bundle deterministically and send the draft back with the specific failures.                                                                   | removing it:<br>**0.639 ± 0.048**<br>citations 0.972                    | Kept. Small on pass rate, decisive on citations: 0.972 → 1.000. It is what makes "no fabricated citations" a property rather than a hope.                      |
-| **Iteration 5** — cross-incident memory    | Carry forward the signals seen and the verdict reached, and surface the closest priors on a new incident.                                                                       | with it: **0.639 ± 0.048**<br>cause **1.000**                           | **Removed.** Perfect cause accuracy and the lowest red-herring rate measured — and a lower primary metric. See below.                                          |
-| **Iteration 6** — iterative investigation  | Search, read what came back, choose the next search, repeat. Turn retrieval into an investigation.                                                                              | **not measured**                                                        | **Not shipped.** The grading run exhausted the account's credits; 22 of 36 case-runs returned 402. Built, tested, switchable, ungraded — so it stays off.      |
-| **Final**                                  | search + verify                                                                                                                                                                 | **0.667 ± 0.000**<br>cause 0.917<br>citations **1.000**<br>recall 0.926 | +85% on pass rate over the baseline. Two of four measured features were removed by their own evidence.                                                         |
+Every one of those exists because an earlier version of this table was
+misleading in a way I could not see from the table.
+
+<!-- Every number is gpt-4.1-mini, three repeats per variant, one model across
+     the whole grid. Reproduce with `task project:eval` and `task project:ablate`;
+     both replay from committed cassettes at no cost. -->
+
+| Stage                                      | What I tried and why                                                                                                                                      | Evidence                                                                              | Decision / learning                                                                                                                                                |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Baseline**                               | One direct prompt per incident, given every distinct error shape, both event timelines and every metric series. The brief's own first suggested baseline. | **pass 0.083 ± 0.083**<br>citation precision 0.882<br>completion 1.000                | Starting point. It always returns a report and it is the least accurate report in the set: 30 of 36 runs name the right cause with an argument that does not hold. |
+| **Iteration 1** — ranked metric movement   | The baseline reads sixty CSV rows per series and has to notice which moved. Compute the movement in code and hand over the ranking.                       | not isolated                                                                          | Kept, and reported as unmeasured. It changes how a bundle is presented at every step, so ablating it would move the baseline too.                                  |
+| **Iteration 2** — log search               | The baseline gets one fixed slice of a 2,100-line log. Let the workflow retrieve addressed lines instead.                                                 | removing it:<br>**pass 0.000**<br>recall 0.476<br>**cause 0.914**                     | Kept, and it is load-bearing — but not for the reason I assumed. See below.                                                                                        |
+| **Iteration 3** — triage pass              | Decide what to read before writing anything.                                                                                                              | with it: **0.250 ± 0.083**<br>cause 0.909                                             | **Removed.** Still worse than not having it, now on a second model.                                                                                                |
+| **Iteration 4** — verifier and repair loop | Check every citation against the bundle and send the draft back with the specific failures.                                                               | removing it:<br>**0.194 ± 0.048**<br>citation precision 0.883                         | Kept. The largest single contribution: +0.112 pass rate, and citation precision 0.883 → 0.984.                                                                     |
+| **Iteration 5** — cross-incident memory    | Carry forward the signals seen and the verdict reached.                                                                                                   | with it: **0.278 ± 0.127**<br>cause 0.823                                             | **Removed.** Lower on the primary metric and, on this model, lower on cause accuracy too.                                                                          |
+| **Iteration 6** — iterative investigation  | Search, read, choose the next search, repeat.                                                                                                             | with it: **0.250 ± 0.083**<br>herrings 0.384                                          | **Removed.** More turns to reason in also means more turns to fail in.                                                                                             |
+| **Final**                                  | search + verify                                                                                                                                           | **pass 0.306 ± 0.127**<br>cause 0.942<br>citation precision **0.984**<br>recall 0.823 | 3.7× the baseline pass rate. Three of five measured features removed by their own evidence.                                                                        |
+
+### What the tiers show that a pass rate cannot
+
+A case ends in one of four outcomes, and the shape of a variant's failure says
+more than its score:
+
+| variant             | sound  | unsupported | wrong cause | invalid |
+| ------------------- | ------ | ----------- | ----------- | ------- |
+| `baseline`          | 3      | **30**      | 3           | 0       |
+| `agent`             | **11** | 19          | 2           | 4       |
+| `agent-investigate` | 7      | 14          | 4           | **11**  |
+
+The baseline almost never gets the cause wrong. It almost never supports it
+either — 30 of 36 runs are a correct diagnosis with an argument that does not
+hold up. That is the failure this project exists to remove, and it is invisible
+in any metric that only asks whether the answer was right.
+
+The workflow trades some of that for a new failure the baseline does not have:
+it returns no parseable report at all in 4 runs, against the baseline's 0.
+More turns to reason in is also more turns to fail in, and the investigating
+variant shows where that ends — 11 invalid runs out of 36.
 
 ## Experiments that were removed
 
 The brief asks for these, and they were the more useful half of the work.
 
-### What search actually buys — not what I assumed
+### What search actually buys — and the review that nearly killed the finding
 
 Removing log search drops the pass rate to **zero**. I read that as "it cannot
 work out the cause without the log" and was wrong.
 
-Cause accuracy without search is **0.917** — the same as the shipped workflow.
-It identifies the cause perfectly well from the metrics and the change
-timeline. What collapses is evidence recall, 0.926 to 0.593, and with it every
-case, because a case only passes if the argument is supported.
+Cause accuracy without search is **0.914**, against 0.942 for the shipped
+workflow. It identifies the cause about as well from the metrics and the change
+timeline alone. What collapses is evidence recall — 0.823 down to **0.476** —
+and with it every case, because a case only passes if the argument is supported.
 
-So the retrieval tool does not buy insight. It buys the ability to _show_ the
-insight. Being right and being able to demonstrate you are right are separate
-capabilities, and only the second one makes a postmortem worth reading. That is
-the clearest single piece of evidence for grading citations rather than
-answers, and I did not predict it.
+Retrieval does not buy insight. It buys the ability to _show_ the insight.
+
+**An outside reviewer nearly demolished this.** Every prompt used to open with
+`Incident 05-connection-pool-exhaustion`, and the case directories are named
+after the fault they contain — eleven of twelve ids share tokens with their own
+root cause, and `batch_job_contention` is verbatim. So the obvious reading was
+that `agent-nosearch` scored 0.917 cause accuracy because the prompt told it.
+
+That was a fair hit and it was my most serious defect: `cause_accuracy` was
+partly measuring string overlap with a directory name. Graded cases now get an
+opaque handle, every recording was thrown away, and the grid was re-run from
+scratch on a different model.
+
+The finding survived. 0.914 cause accuracy with no log and no name — on prompts
+that contain nothing about the answer. Knowing and showing really are separate
+capabilities, and now the number says so.
 
 ### Memory: better at the answer, worse at the argument
+
+_(Measured first on claude-sonnet-4.5, where memory produced perfect cause
+accuracy; re-measured on gpt-4.1-mini, where it produced the worst cause
+accuracy of any variant that kept search, 0.823 against 0.942. The verdict is
+the same on both and the mechanism below is what I observed on the first.)_
 
 Memory produced the only perfect cause accuracy in the whole set — 1.000, every
 case, every repeat — and the lowest red-herring rate, 0.250. It also lowered

@@ -45,21 +45,54 @@ checkable. The reviewer's job becomes verifying an argument instead of
 rebuilding one, and a wrong draft is _visibly_ wrong rather than plausibly
 wrong.
 
-## The idea that makes it work
+## The architecture, and the measurement that chose it
 
-Every citation carries three things: a file, a line number, and **the verbatim
-text the citation claims is on that line**.
+**The hard part of this task is not working out what broke. It is proving it.**
 
-A line number alone can be confidently wrong and still look fine. A quote that
+That is not an opinion; it is the clearest result in the evaluation. Take the
+log away from the workflow and it still names the root cause about as often as
+the full system — **0.914 against 0.942** — from the metrics and the change
+timeline alone. Its pass rate is **zero**. It knows the answer and cannot show
+its work: evidence recall collapses from 0.823 to **0.476**.
+
+Being right and being able to demonstrate you are right are separate
+capabilities, and only the second makes a postmortem worth reading.
+
+So the workflow is built around proof rather than reasoning. Every citation
+carries a file, a line number, and **the verbatim text it claims is on that
+line**. A line number alone can be confidently wrong and look fine. A quote that
 is not on the line it names is provably wrong — by string comparison, with no
-model and no ground truth involved. That single property is what lets the
-workflow check its own draft before emitting it, and it is why the evaluation
-can be graded deterministically.
+model and no ground truth involved.
 
-[`src/citation.ts`](src/citation.ts) is shared by the grader and by the
-workflow's verifier, so the two cannot drift apart. The verifier has a test
-asserting it cannot reach the ground truth: it answers _"are these citations
-real"_, never _"is this the right answer"_.
+That property does three things: the workflow **checks its own draft** before
+emitting it and repairs what fails; the evaluation is **deterministic**, because
+grading is string comparison; and a reader can **audit the review** without
+redoing the investigation.
+
+[`src/citation.ts`](src/citation.ts) is shared by the grader and the verifier so
+the two cannot drift apart. The verifier has a test asserting it cannot reach the
+ground truth: it answers _"are these citations real"_, never _"is this the right
+answer"_.
+
+### Why the shipped agent is small
+
+Five capabilities were built and measured. **Three were removed because the
+evidence did not support them.**
+
+|                              | pass rate         | verdict                                            |
+| ---------------------------- | ----------------- | -------------------------------------------------- |
+| planning pass                | 0.250 ± 0.083     | worse than nothing, on both models tried           |
+| cross-incident memory        | 0.278 ± 0.127     | worst cause accuracy of any variant keeping search |
+| iterative investigation      | 0.250 ± 0.083     | 11 of 36 runs returned no parseable report at all  |
+| **shipped: search + verify** | **0.306 ± 0.127** | best on the primary metric                         |
+
+A deliberate outcome, not an unfinished one: each rejection is reproducible with
+a flag, and [`docs/CHANGELOG.md`](docs/CHANGELOG.md) records what each taught.
+
+The pattern underneath them is the same. Planning, memory and open-ended
+investigation all made the workflow _more confident_ and _less careful about
+what supports a claim_ — and each added turns in which to fail. For a tool whose
+entire value is that its output can be trusted, that is a poor trade.
 
 ## Reproduce
 
@@ -72,7 +105,7 @@ git clone <repo-url> cited-rca && cd cited-rca
 ./bin/mise install                  # pinned toolchain into ./.mise (~3 min)
 ./bin/mise exec -- task setup       # render .env, install hooks, install deps
 
-./bin/mise exec -- task validate    # lint, types, 93 tests, quality ratchet
+./bin/mise exec -- task validate    # lint, types, 163 tests, quality ratchet
 ./bin/mise exec -- task project:eval        # both variants over all 12 cases
 ./bin/mise exec -- task project:report      # regenerate docs/RESULTS.md
 ```
@@ -98,7 +131,7 @@ let a "reproduction" quietly diverge from what was measured.
 ### Running it live
 
 ```bash
-echo 'LLM_API_KEY=sk-or-v1-...' >> .env.overrides   # gitignored, loaded last
+echo 'LLM_API_KEY=sk-...' >> .env.overrides   # gitignored, takes precedence
 LLM_MODE=record task project:eval                    # re-record the cassettes
 ```
 
@@ -155,7 +188,7 @@ pinning that.
 |                |                                                                           |
 | -------------- | ------------------------------------------------------------------------- |
 | Toolchain      | pinned in `mise.toml` + `mise.lock` (node 24, python 3.12, lizard 1.22.2) |
-| Model recorded | `anthropic/claude-sonnet-4.5` via OpenRouter, temperature 0               |
+| Model recorded | `gpt-4.1-mini` via the OpenAI API, temperature 0                          |
 | Replay run     | a few seconds, $0                                                         |
 | Live re-record | see `docs/RESULTS.md` for measured tokens and cost                        |
 
