@@ -20,20 +20,58 @@ Pass rate is the headline because it is the only one that corresponds to
 something a person cares about: a review they can act on without going back to
 the telemetry themselves.
 
-<!-- STAGES: evidence cells filled from RESULTS.md once the run lands. -->
+<!-- Every number below comes from results/, three repeats per variant, zero
+     infrastructure errors. Reproduce with `task project:eval` and
+     `task project:ablate` - both replay from committed cassettes at no cost. -->
 
-| Stage                                      | What I tried and why                                                                                                                                                                       | Evidence  | Decision / learning |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- | ------------------- |
-| **Baseline**                               | One direct prompt per incident, given every distinct error shape, both event timelines and every metric series.                                                                            | _pending_ | _pending_           |
-| **Iteration 1** — ranked metric movement   | The baseline has to read sixty CSV rows per series and notice which one moved. Compute the movement in code and hand over the ranking instead, so the flat control series is visibly flat. | _pending_ | _pending_           |
-| **Iteration 2** — directed log search      | The baseline gets one fixed slice of a 2,100-line log. Let the workflow ask for what it wants and return addressed lines spread across the window.                                         | _pending_ | _pending_           |
-| **Iteration 3** — triage pass              | Deciding what to read before writing anything, rather than reading and writing in one step.                                                                                                | _pending_ | _pending_           |
-| **Iteration 4** — verifier and repair loop | Check every citation against the bundle deterministically and send the draft back with the specific failures.                                                                              | _pending_ | _pending_           |
-| **Final**                                  | All four together.                                                                                                                                                                         | _pending_ | _pending_           |
+| Stage                                      | What I tried and why                                                                                                                                                            | Evidence (pass rate)                                                    | Decision / learning                                                                                                                                            |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Baseline**                               | One direct prompt per incident, given every distinct error shape, both event timelines and every metric series. The brief's own first suggested baseline.                       | **0.361 ± 0.048**<br>citations 0.611                                    | Starting point. Four reports in ten carry a citation that does not resolve — the failure the rest of the work is aimed at.                                     |
+| **Iteration 1** — ranked metric movement   | The baseline reads sixty CSV rows per series and has to notice which moved. Compute the movement in code and hand over the ranking, so the flat control series is visibly flat. | not isolated                                                            | Kept. It is part of how a bundle is presented at every step, so it cannot be ablated without changing the baseline comparison too. Stated rather than claimed. |
+| **Iteration 2** — log search               | The baseline gets one fixed slice of a 2,100-line log. Let the workflow retrieve addressed lines instead.                                                                       | removing it:<br>**0.000**<br>recall 0.593                               | Kept, and it is load-bearing: without it the pass rate is zero. See "what search actually buys" below — the result was not what I expected.                    |
+| **Iteration 3** — triage pass              | Decide what to read before writing anything, rather than reading and writing in one step.                                                                                       | with it: **0.611 ± 0.048**<br>cause 0.861                               | **Removed.** Worse than not having it, on both pass rate and cause accuracy, identically across three repeats.                                                 |
+| **Iteration 4** — verifier and repair loop | Check every citation against the bundle deterministically and send the draft back with the specific failures.                                                                   | removing it:<br>**0.639 ± 0.048**<br>citations 0.972                    | Kept. Small on pass rate, decisive on citations: 0.972 → 1.000. It is what makes "no fabricated citations" a property rather than a hope.                      |
+| **Iteration 5** — cross-incident memory    | Carry forward the signals seen and the verdict reached, and surface the closest priors on a new incident.                                                                       | with it: **0.639 ± 0.048**<br>cause **1.000**                           | **Removed.** Perfect cause accuracy and the lowest red-herring rate measured — and a lower primary metric. See below.                                          |
+| **Iteration 6** — iterative investigation  | Search, read what came back, choose the next search, repeat. Turn retrieval into an investigation.                                                                              | **not measured**                                                        | **Not shipped.** The grading run exhausted the account's credits; 22 of 36 case-runs returned 402. Built, tested, switchable, ungraded — so it stays off.      |
+| **Final**                                  | search + verify                                                                                                                                                                 | **0.667 ± 0.000**<br>cause 0.917<br>citations **1.000**<br>recall 0.926 | +85% on pass rate over the baseline. Two of four measured features were removed by their own evidence.                                                         |
 
 ## Experiments that were removed
 
 The brief asks for these, and they were the more useful half of the work.
+
+### What search actually buys — not what I assumed
+
+Removing log search drops the pass rate to **zero**. I read that as "it cannot
+work out the cause without the log" and was wrong.
+
+Cause accuracy without search is **0.917** — the same as the shipped workflow.
+It identifies the cause perfectly well from the metrics and the change
+timeline. What collapses is evidence recall, 0.926 to 0.593, and with it every
+case, because a case only passes if the argument is supported.
+
+So the retrieval tool does not buy insight. It buys the ability to _show_ the
+insight. Being right and being able to demonstrate you are right are separate
+capabilities, and only the second one makes a postmortem worth reading. That is
+the clearest single piece of evidence for grading citations rather than
+answers, and I did not predict it.
+
+### Memory: better at the answer, worse at the argument
+
+Memory produced the only perfect cause accuracy in the whole set — 1.000, every
+case, every repeat — and the lowest red-herring rate, 0.250. It also lowered
+the primary metric, 0.667 to 0.639.
+
+The mechanism is specific. It helped case 11 and broke case 10, three passes
+out of three down to one. On case 10 it recalled that these signals meant DNS,
+then reached for the DNS-shaped entry in the change timeline — a coredns
+scale-up applied 28 minutes _after_ onset, as a mitigation — and cited it as
+supporting evidence. Recall made it more confident about the cause and less
+careful about what supports it.
+
+I could have shipped it by pointing at 1.000 cause accuracy. Pass rate was named
+the primary metric before any of this ran, and promoting a secondary metric
+after seeing results is how an evaluation stops meaning anything. So it is off,
+and this paragraph exists instead.
 
 ### The baseline was a strawman, and fixing it mattered more than any iteration
 
@@ -112,6 +150,21 @@ not perfectly trustworthy. When a gate reports something surprising, checking
 the gate is a legitimate first move — and the version pin on the metrics tool
 in `mise.toml` exists precisely because that class of change must never arrive
 implicitly.
+
+### Two features I could not measure, handled differently
+
+Ranked metric movement is not ablatable — it changes how a bundle is presented
+at every step, so switching it off would move the baseline too. It is reported
+as "not isolated" rather than credited with a number it does not have.
+
+The investigation loop _is_ ablatable, and the run that would have graded it
+ran the account out of credits. It had already been made the default before the
+result came back. In a project arguing that claims need evidence, shipping a
+feature whose only evidence is that it exists would have been self-refuting. It
+is off.
+
+Both are honest answers to "I do not know", and they are different answers,
+because the reasons are different.
 
 ## Hot take
 
