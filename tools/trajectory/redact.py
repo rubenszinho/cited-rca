@@ -37,6 +37,10 @@ RULES: list[tuple[str, re.Pattern[str], str]] = [
     ("google_key", re.compile(r"\bAIza[0-9A-Za-z_\-]{35}\b"), "[REDACTED:google_key]"),
     ("slack_token", re.compile(r"\bxox[abprs]-[A-Za-z0-9\-]{10,}"), "[REDACTED:slack_token]"),
     ("openrouter_key", re.compile(r"\bsk-or-v1-[a-f0-9]{40,}"), "[REDACTED:openrouter_key]"),
+    # Any remnant of a key prefix, including truncated ones from terminal
+    # output. A partial prefix is not a usable credential, but "no credential
+    # material at all" is a claim worth being able to make without a caveat.
+    ("key_prefix", re.compile(r"\bsk-(?:or-v1|ant|proj)-[A-Za-z0-9._-]{0,39}"), "[REDACTED:key_prefix]"),
     ("private_key", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----", re.S), "[REDACTED:private_key]"),
     ("jwt", re.compile(r"\beyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}"), "[REDACTED:jwt]"),
     # The value must look like a token. Matching any following word made this
