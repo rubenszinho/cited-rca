@@ -175,6 +175,37 @@ right cause for the wrong reasons. Condition 4 permits citing a red herring
 under `ruled_out` — considering and rejecting an alternative is correct
 practice, not a mistake.
 
+## Safety, data and access
+
+The ground rules ask for specific things. Stating our position on each rather
+than leaving a judge to infer it:
+
+**Consequential actions.** There are none. The workflow reads files and writes
+a document. It does not touch production, execute remediation, or call any
+system other than a language model. There is nothing here that needs a sandbox
+because nothing here acts.
+
+**A human in the loop.** The output is explicitly a draft. It is titled as a
+review, it lists what it ruled out, and every claim carries the line it rests
+on, so the engineer publishing it can check the argument rather than accept it.
+The design assumes a qualified reviewer signs it — that is the point of making
+every claim checkable rather than merely readable.
+
+**Data.** Everything in this repository is synthetic. The twelve cases are
+generated from declared fault models; the worked example under `examples/` was
+written for the purpose. No customer data, no production telemetry, nothing
+that needed permission to publish. Running it on your own incident keeps your
+data on your machine apart from what you send to your own model provider.
+
+**Credentials.** `.env.overrides` holds the API key, is gitignored, and is
+never generated. No key material of any length appears in the repository, its
+history, the cassettes, or the trajectories — `task project:trajectories:verify`
+is the gate, and it fails the build rather than warning.
+
+**Access for judges.** The evaluation replays from committed recordings with no
+API key, no network, and no spend. See [Reproduce](#reproduce). The cloud model
+is a dependency of _producing_ the result, not of _checking_ it.
+
 ## Layout
 
 | Path              | What it is                                                       |

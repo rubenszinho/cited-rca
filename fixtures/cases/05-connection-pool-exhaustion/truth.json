@@ -2,7 +2,7 @@
   "case_id": "05-connection-pool-exhaustion",
   "title": "API stalls while the database sits idle",
   "root_cause": "resource_exhaustion_pool",
-  "root_cause_summary": "A reporting endpoint held pool connections open across an external call, so the 40-slot pool drained and unrelated requests queued waiting for a checkout.",
+  "root_cause_summary": "A reporting endpoint has held pool connections open across an external call for weeks. Reporting traffic grew past the point where the 40-slot pool could absorb it, and unrelated requests began queueing for a connection. No change triggered this: the system crossed a threshold it had been approaching.",
   "onset_ts": "2026-03-17T09:21:00.000Z",
   "detected_ts": "2026-03-17T09:29:00.000Z",
   "required_evidence": [
@@ -27,6 +27,11 @@
       "source": "logs/app.jsonl",
       "match": "timed out acquiring database connection",
       "why_tempting": "the error names the database, so it reads as a slow database - but database CPU and mean query time are both flat"
+    },
+    {
+      "source": "changes.jsonl",
+      "match": "v2026.3.17-d1",
+      "why_tempting": "the only change in the window, and every other incident in this set has a change behind it - but this one touches a 404 page and no request path"
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "ff9282024f4ead572f79345ecab46f4542f7cafc-dirty",
-  "duration_s": 0.382,
+  "commit": "4c0d1a80d2985db6b60b5453302bc19cb00a930c-dirty",
+  "duration_s": 41.7948,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -56,7 +56,8 @@
         "notes": [
           "cause: said bad_deploy_regression, actual resource_exhaustion_pool",
           "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)",
-          "red herring used as evidence: \"timed out acquiring database connection\" (the error names the database, so it reads as a slow database - but database CPU and mean query time are both flat)"
+          "red herring used as evidence: \"timed out acquiring database connection\" (the error names the database, so it reads as a slow database - but database CPU and mean query time are both flat)",
+          "red herring used as evidence: \"v2026.3.17-d1\" (the only change in the window, and every other incident in this set has a change behind it - but this one touches a 404 page and no request path)"
         ],
         "passed": false,
         "red_herring_blamed": true
@@ -133,18 +134,18 @@
     ],
     "cause_accuracy": 0.9167,
     "citation_validity": 1,
-    "completion_tokens": 34169,
-    "cost_usd": 0.992,
+    "completion_tokens": 34523,
+    "cost_usd": 0.9986,
     "evidence_recall": 0.9722,
     "llm_calls": 25,
     "pass_rate": 0.6667,
-    "prompt_tokens": 159818,
+    "prompt_tokens": 160248,
     "provider_errors": 0,
     "red_herring_rate": 0.3333,
-    "replayed_calls": 25,
-    "seconds_per_case": 0.004
+    "replayed_calls": 23,
+    "seconds_per_case": 3.454
   },
   "seed": 1,
-  "started_at": "2026-08-29T18:19:06.309016+00:00",
+  "started_at": "2026-08-29T18:34:02.175839+00:00",
   "variant": "agent-withtriage"
 }

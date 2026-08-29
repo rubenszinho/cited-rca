@@ -14,8 +14,10 @@ export const RESOURCE_SCENARIOS: Scenario[] = [
     title: 'API stalls while the database sits idle',
     rootCause: 'resource_exhaustion_pool',
     summary:
-      'A reporting endpoint held pool connections open across an external call, so ' +
-      'the 40-slot pool drained and unrelated requests queued waiting for a checkout.',
+      'A reporting endpoint has held pool connections open across an external call ' +
+      'for weeks. Reporting traffic grew past the point where the 40-slot pool could ' +
+      'absorb it, and unrelated requests began queueing for a connection. No change ' +
+      'triggered this: the system crossed a threshold it had been approaching.',
     windowMinutes: 60,
     onsetMinute: 21,
     detectMinute: 29,
@@ -91,13 +93,17 @@ export const RESOURCE_SCENARIOS: Scenario[] = [
         ],
       },
     ],
+    // Nothing here caused it. That is the point of the case: an incident with
+    // no triggering change, in a set where most incidents have one. The earlier
+    // version had this deploy add the connection-holding code, which made
+    // "bad deploy" a defensible answer the enum could not express.
     changes: [
       {
         minute: 6,
         kind: 'deploy',
         ref: 'v2026.3.17-d1',
         actor: 'ci-bot',
-        summary: 'api: add CSV export to the reporting page',
+        summary: 'api: update the 404 page copy and favicon',
       },
     ],
     alerts: [
@@ -128,6 +134,13 @@ export const RESOURCE_SCENARIOS: Scenario[] = [
         why_tempting:
           'the error names the database, so it reads as a slow database - but database ' +
           'CPU and mean query time are both flat',
+      },
+      {
+        source: 'changes.jsonl',
+        match: 'v2026.3.17-d1',
+        why_tempting:
+          'the only change in the window, and every other incident in this set has a ' +
+          'change behind it - but this one touches a 404 page and no request path',
       },
     ],
   },

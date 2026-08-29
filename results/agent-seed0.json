@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "ff9282024f4ead572f79345ecab46f4542f7cafc-dirty",
-  "duration_s": 0.3755,
+  "commit": "4c0d1a80d2985db6b60b5453302bc19cb00a930c-dirty",
+  "duration_s": 28.8638,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -50,13 +50,13 @@
       },
       {
         "case_id": "05-connection-pool-exhaustion",
-        "cause_correct": false,
+        "cause_correct": true,
         "citations_valid": true,
         "evidence_recall": 0.6667,
         "notes": [
-          "cause: said bad_deploy_regression, actual resource_exhaustion_pool",
           "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)",
-          "red herring used as evidence: \"timed out acquiring database connection\" (the error names the database, so it reads as a slow database - but database CPU and mean query time are both flat)"
+          "red herring used as evidence: \"timed out acquiring database connection\" (the error names the database, so it reads as a slow database - but database CPU and mean query time are both flat)",
+          "red herring used as evidence: \"v2026.3.17-d1\" (the only change in the window, and every other incident in this set has a change behind it - but this one touches a 404 page and no request path)"
         ],
         "passed": false,
         "red_herring_blamed": true
@@ -132,20 +132,20 @@
         "red_herring_blamed": false
       }
     ],
-    "cause_accuracy": 0.9167,
+    "cause_accuracy": 1,
     "citation_validity": 1,
-    "completion_tokens": 30101,
-    "cost_usd": 0.7472,
+    "completion_tokens": 30265,
+    "cost_usd": 0.7497,
     "evidence_recall": 0.9444,
     "llm_calls": 14,
     "pass_rate": 0.6667,
-    "prompt_tokens": 98575,
+    "prompt_tokens": 98577,
     "provider_errors": 0,
     "red_herring_rate": 0.3333,
-    "replayed_calls": 14,
-    "seconds_per_case": 0.003
+    "replayed_calls": 13,
+    "seconds_per_case": 2.373
   },
   "seed": 0,
-  "started_at": "2026-08-29T18:19:01.142268+00:00",
+  "started_at": "2026-08-29T18:29:28.894374+00:00",
   "variant": "agent"
 }

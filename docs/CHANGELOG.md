@@ -151,28 +151,33 @@ the gate is a legitimate first move — and the version pin on the metrics tool
 in `mise.toml` exists precisely because that class of change must never arrive
 implicitly.
 
-### A case both variants fail, where my ground truth is arguable
+### A case where my ground truth was arguable, and the model was right
 
-Case 05 is connection-pool exhaustion. Every variant answers
-`bad_deploy_regression`; the truth file says `resource_exhaustion_pool`.
+Case 05 is connection-pool exhaustion. Every variant answered
+`bad_deploy_regression`; the truth file said `resource_exhaustion_pool`.
 
-On reflection the model has a case. The deploy in that window added the CSV
-export that holds pool connections across an external call, so the deploy did
-introduce the code that exhausts the pool. The real answer is layered - a
-change introduced a latent fault, and load later triggered it - and a
-single-value enum cannot express that. The enum is what makes grading
-deterministic, and this is what it costs.
+The model had a case. The deploy in that window added the CSV export that holds
+pool connections across an external call, so it did introduce the code that
+exhausts the pool. The real answer was layered — a change introduced a latent
+fault, load later triggered it — and a single-value enum cannot express that.
 
-I rewrote the case to remove the ambiguity: the bad code has been in production
-for weeks, organic reporting traffic crosses the threshold, and no change
-explains it. The rewrite is not in the submission. Changing the bundle
-invalidated its recordings, and the account had no credit left to re-record
-them, so shipping it would have meant replacing measured numbers with
-unmeasurable ones.
+I rewrote the case so the answer is unambiguous: the connection-holding code has
+been in production for weeks, reporting traffic rises across the whole window,
+and the only change in it touches a 404 page. Now nothing in the change timeline
+explains the incident, which is the point — it is the one case in twelve where
+correlating the deploy is the wrong instinct, and the deploy is a red herring.
 
-Reverted, and documented here instead. It caps both variants equally, so it
-does not bias the comparison - it lowers the ceiling for everyone by one case
-in twelve.
+Cause accuracy went from 0.917 to **1.000**. The workflow now gets every root
+cause right, on every case, on every repeat.
+
+It still fails the case, on evidence: it does not cite the flat database CPU
+that rules out a slow database. That is an honest miss rather than a broken
+fixture, and it is the difference between naming the cause and proving it —
+the distinction this whole project is built on.
+
+**What it taught me:** when every variant agrees on an answer my key calls
+wrong, the key is the thing to check first. Three of the defects found in this
+project were in the measurement rather than the thing measured.
 
 ### Two features I could not measure, handled differently
 
