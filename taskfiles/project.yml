@@ -123,10 +123,11 @@ tasks:
 
   ablate:
     desc: Measure each workflow feature on its own by disabling it
-    # One repeat each: these exist to attribute the gain in the changelog, not
-    # to establish the headline number, and each is a full pass over 12 cases.
+    # Same repeat count as the headline runs. A single-seed ablation cannot show
+    # that a delta is larger than run-to-run noise, which is the only thing the
+    # attribution is claiming.
     vars:
-      RUN: '{{.PY}} harness/run.py --seeds 1 --cmd "pnpm exec tsx src/agent/run.ts"'
+      RUN: '{{.PY}} harness/run.py --seeds {{.SEEDS}} --cmd "pnpm exec tsx src/agent/run.ts"'
     cmds:
       - AGENT_FEATURES=search,verify {{.RUN}} --variant agent-notriage
       - AGENT_FEATURES=triage,verify {{.RUN}} --variant agent-nosearch
@@ -149,6 +150,11 @@ tasks:
     desc: Regenerate docs/RESULTS.md from the recorded runs
     cmds:
       - '{{.PY}} harness/compare.py --out docs/RESULTS.md'
+
+  repro:
+    desc: Clone HEAD to a scratch dir and reproduce the committed results
+    cmds:
+      - ./tools/repro/verify.sh
 
   # === Trajectories ===================================================
 
