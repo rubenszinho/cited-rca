@@ -1,7 +1,6 @@
-# Project guidelines
+# cited-rca
 
-<!-- Rename this heading and fill in "What this project is" for your project.
-     Everything else describes the forge shell and applies as written. -->
+<!-- The forge shell's conventions below apply as written. -->
 
 **What this project is:** a workflow that reads incident telemetry and drafts a
 root-cause review in which every claim carries the file, line number and
