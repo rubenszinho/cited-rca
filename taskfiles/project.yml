@@ -121,6 +121,17 @@ tasks:
       - '{{.PY}} harness/run.py --variant agent --seeds {{.SEEDS}}
         --cmd "pnpm exec tsx src/agent/run.ts"'
 
+  ablate:
+    desc: Measure each workflow feature on its own by disabling it
+    # One repeat each: these exist to attribute the gain in the changelog, not
+    # to establish the headline number, and each is a full pass over 12 cases.
+    vars:
+      RUN: '{{.PY}} harness/run.py --seeds 1 --cmd "pnpm exec tsx src/agent/run.ts"'
+    cmds:
+      - AGENT_FEATURES=search,verify {{.RUN}} --variant agent-notriage
+      - AGENT_FEATURES=triage,verify {{.RUN}} --variant agent-nosearch
+      - AGENT_FEATURES=triage,search {{.RUN}} --variant agent-noverify
+
   eval:
     desc: Run both variants over the same cases
     cmds:

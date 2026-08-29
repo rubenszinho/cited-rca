@@ -22,6 +22,15 @@ export type ClientConfig = {
   maxTokens: number;
   temperature: number;
   mode: CassetteMode;
+  /**
+   * Repeat index for this run, from the harness.
+   *
+   * Passed to the provider (ignored by those that do not support it) and folded
+   * into the cassette key, so repeats are genuinely separate runs. Even at
+   * temperature 0 providers are not bit-deterministic, so the spread across
+   * repeats is a real number worth reporting rather than an assumed zero.
+   */
+  seed: number;
 };
 
 function envMode(): CassetteMode {
@@ -39,6 +48,7 @@ export function configFromEnv(): ClientConfig {
     maxTokens: Number(process.env.LLM_MAX_TOKENS ?? 8000),
     temperature: Number(process.env.LLM_TEMPERATURE ?? 0),
     mode: envMode(),
+    seed: Number(process.env.SEED ?? 0),
   };
 }
 
@@ -63,6 +73,7 @@ async function callProvider(
       messages: options.messages,
       max_tokens: options.maxTokens ?? config.maxTokens,
       temperature: options.temperature ?? config.temperature,
+      seed: config.seed,
     }),
   });
 
@@ -95,7 +106,7 @@ export function createClient(config: ClientConfig = configFromEnv()): LlmClient 
   };
 
   async function fetchCompletion(options: CompleteOptions): Promise<Completion> {
-    const key = cassetteKey(config.model, options);
+    const key = cassetteKey(config.model, config.seed, options);
     if (config.mode !== 'live') {
       const cached = readCassette(key);
       if (cached) return cached;

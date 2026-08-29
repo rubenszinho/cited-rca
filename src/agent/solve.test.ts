@@ -7,7 +7,7 @@
  * behaviour is the improvement the changelog claims, so it needs a test that
  * fails if the loop is ever removed.
  */
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it } from 'vitest';
 
 import { loadBundle } from '../bundle.ts';
 import { stubClient } from '../llm/stub.ts';
@@ -135,5 +135,63 @@ describe('solveWithAgent', () => {
     // and the grader records the failure honestly either way.
     expect(report.timeline[0]!.citations[0]!.line).toBe(99999);
     expect(client.steps.filter((s) => s.includes('repair'))).toHaveLength(2);
+  });
+});
+
+describe('ablations', () => {
+  const original = process.env.AGENT_FEATURES;
+  afterEach(() => {
+    if (original === undefined) delete process.env.AGENT_FEATURES;
+    else process.env.AGENT_FEATURES = original;
+  });
+
+  it('skips the triage call and uses fixed queries when triage is off', async () => {
+    process.env.AGENT_FEATURES = 'search,verify';
+    let draftPrompt = '';
+    const client = stubClient((options) => {
+      draftPrompt = options.messages.map((m) => m.content).join('\n');
+      return JSON.stringify(goodReport());
+    });
+
+    await solveWithAgent(bundle, client);
+
+    expect(client.steps.some((s) => s.includes('triage'))).toBe(false);
+    expect(draftPrompt).toContain('search "error"');
+    expect(draftPrompt).toContain('triage disabled');
+  });
+
+  it('omits search results when search is off', async () => {
+    process.env.AGENT_FEATURES = 'triage,verify';
+    let draftPrompt = '';
+    const client = stubClient((options, index) => {
+      if (index === 0) return TRIAGE;
+      draftPrompt = options.messages.map((m) => m.content).join('\n');
+      return JSON.stringify(goodReport());
+    });
+
+    await solveWithAgent(bundle, client);
+
+    expect(draftPrompt).toContain('log search disabled');
+    expect(draftPrompt).not.toContain('search "percentOff"');
+  });
+
+  it('emits a broken draft unrepaired when the verifier is off', async () => {
+    process.env.AGENT_FEATURES = 'triage,search';
+    const broken = goodReport();
+    broken.evidence[0]!.citations[0]!.quote = 'never appeared anywhere';
+    const client = stubClient((_options, index) =>
+      index === 0 ? TRIAGE : JSON.stringify(broken),
+    );
+
+    const report = await solveWithAgent(bundle, client);
+
+    expect(client.steps.some((s) => s.includes('repair'))).toBe(false);
+    expect(report.evidence[0]!.citations[0]!.quote).toBe('never appeared anywhere');
+  });
+
+  it('rejects an unknown feature name rather than silently ignoring it', async () => {
+    process.env.AGENT_FEATURES = 'triage,nonsense';
+    const client = stubClient(() => JSON.stringify(goodReport()));
+    await expect(solveWithAgent(bundle, client)).rejects.toThrow(/nonsense/);
   });
 });

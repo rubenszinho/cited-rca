@@ -23,13 +23,22 @@ export const CASSETTE_DIR = join(HERE, '..', '..', 'fixtures', 'cassettes');
 export type CassetteMode = 'replay' | 'record' | 'live';
 
 /**
- * Identity of a request. Model and sampling parameters are part of the key, so
- * changing either invalidates the recording instead of replaying a response the
- * new configuration would never have produced.
+ * Identity of a request. Model, seed and sampling parameters are all part of
+ * the key, so changing any of them invalidates the recording instead of
+ * replaying a response the new configuration would never have produced.
+ *
+ * The seed is in the key because the evaluation runs each variant several
+ * times: without it every repeat would hit the same recording and the reported
+ * spread would be zero by construction rather than by measurement.
  */
-export function cassetteKey(model: string, options: CompleteOptions): string {
+export function cassetteKey(
+  model: string,
+  seed: number,
+  options: CompleteOptions,
+): string {
   const canonical = JSON.stringify({
     model,
+    seed,
     temperature: options.temperature ?? 0,
     maxTokens: options.maxTokens ?? 0,
     messages: options.messages,

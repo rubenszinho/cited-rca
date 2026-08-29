@@ -1,150 +1,195 @@
-# forge
+# Cited RCA
 
-A framework-agnostic development shell: one command surface, a pinned
-toolchain, tiered git hooks, per-worktree isolation, and a code-quality
-ratchet that new code cannot quietly slip past.
+An agentic workflow that drafts an incident root-cause analysis in which every
+claim is tied to a real telemetry line — and that can prove its citations are
+real without ever being shown the answer.
 
-It assumes nothing about your language. Python, Go, Rust, TypeScript, a shell
-project, a mixed monorepo — the shell is the same, and the parts that must know
-about your stack live in five clearly-marked files.
+- **Improvement Changelog** → [`docs/CHANGELOG.md`](docs/CHANGELOG.md)
+- **Results** → [`docs/RESULTS.md`](docs/RESULTS.md)
+- **Agent tool disclosure** → [`docs/TOOLS.md`](docs/TOOLS.md)
+- **What existed before this hackathon** → [below](#what-existed-before-this-hackathon)
 
-## Why this exists
+## Who has this problem
 
-Most quality gates fail one of two ways. Coverage thresholds get gamed. Lint
-configs get loosened the first time they block someone. Both fail quietly.
+The engineer who was on call when it broke, writing the review afterwards.
 
-The ratchet here fails loudly instead. Every existing violation is recorded in
-a committed baseline and grandfathered at its current value. New code is held
-to the strict limits — including new functions added to legacy files. The gate
-can get tighter on its own, but it can only be loosened by editing a tracked
-file, which shows up in review as exactly what it is.
+## What the bottleneck is
 
-That property matters most when an agent is writing the code. An agent will
-cheerfully produce a 300-line function, and it will just as cheerfully raise a
-threshold to make its own check pass. Here it can do neither without leaving a
-diff someone has to approve.
+The evidence for what happened is spread across systems that do not share a
+timeline: application logs, metric series, the deploy and change record, and
+whatever the alerting fired. Reconstructing the sequence means holding all four
+in your head at once, and the answer is usually one line in one of them.
 
-## Quick start
+Two things make it expensive:
+
+**It takes hours, and they are the wrong hours.** The review is written by the
+person who just spent the night on the incident, from the worst context they
+will ever have on it.
+
+**The quality depends on who writes it.** Under time pressure the most
+available explanation wins, and the change that landed closest to onset is
+always the most available explanation. Sometimes it is right. When it is not,
+the review sends everyone after the wrong thing.
+
+Handing this to a language model does not obviously help, because the specific
+way it fails is bad here. A model will produce a fluent, confident review
+citing log lines that do not exist. An RCA nobody can check is worse than no
+RCA: it is wrong with a citation next to it.
+
+## Why solving it is valuable
+
+A first draft that arrives with the timeline assembled and every statement
+pointing at a line an engineer can open turns hours of correlation into
+minutes of review. The value is not the prose — it is that the prose is
+checkable. The reviewer's job becomes verifying an argument instead of
+rebuilding one, and a wrong draft is _visibly_ wrong rather than plausibly
+wrong.
+
+## The idea that makes it work
+
+Every citation carries three things: a file, a line number, and **the verbatim
+text the citation claims is on that line**.
+
+A line number alone can be confidently wrong and still look fine. A quote that
+is not on the line it names is provably wrong — by string comparison, with no
+model and no ground truth involved. That single property is what lets the
+workflow check its own draft before emitting it, and it is why the evaluation
+can be graded deterministically.
+
+[`src/citation.ts`](src/citation.ts) is shared by the grader and by the
+workflow's verifier, so the two cannot drift apart. The verifier has a test
+asserting it cannot reach the ground truth: it answers _"are these citations
+real"_, never _"is this the right answer"_.
+
+## Reproduce
+
+Docker is not needed. The only prerequisite is `git` and a shell — the
+toolchain is pinned and provisioned into the repo.
 
 ```bash
-git clone https://github.com/rubenszinho/forge my-project
-cd my-project
-rm -rf .git && git init -b main
+git clone <repo-url> cited-rca && cd cited-rca
 
-./bin/mise install     # provision the pinned toolchain into ./.mise
-./bin/mise exec -- task setup   # render .env, install hooks, install deps
-./bin/mise exec -- task validate
+./bin/mise install                  # pinned toolchain into ./.mise (~2 min)
+./bin/mise exec -- task setup       # render .env, install hooks, install deps
+
+./bin/mise exec -- task validate    # lint, types, 93 tests, quality ratchet
+./bin/mise exec -- task project:eval        # both variants over all 12 cases
+./bin/mise exec -- task project:report      # regenerate docs/RESULTS.md
 ```
 
-Then fill in the five project-owned files (see below). Once `mise` is
-activated in your shell, drop the `./bin/mise exec --` prefix.
+Once `mise` is activated in your shell you can drop the `./bin/mise exec --`
+prefix. `task -l` lists everything.
 
-## What you edit, and what you leave alone
+### This costs nothing to reproduce
 
-| Project-owned — shape these        | What it holds                                  |
-|------------------------------------|------------------------------------------------|
-| `taskfiles/project.yml`            | your stack's commands (lint, test, dev, …)      |
-| `quality.toml`                     | thresholds and which paths get measured         |
-| `commit.toml`                      | allowed commit types and scopes                 |
-| `env.template`                     | the env vars and ports your stack needs         |
-| `process-compose.yml`              | your local process graph                        |
+`task project:eval` defaults to **replay mode**: every model call made during
+the recorded evaluation is committed under `fixtures/cassettes/`, keyed by the
+exact request that produced it. A clean clone replays them and arrives at the
+numbers in `docs/RESULTS.md` with **no API key and no spend**.
 
-| Forge-owned — change deliberately  | What it holds                                   |
-|------------------------------------|-------------------------------------------------|
-| `Taskfile.yml`                     | the command surface everything else calls        |
-| `lefthook.yml`                     | which tasks run at which git stage               |
-| `tools/`                           | the ratchet, commit linter, env renderer          |
-| `.github/workflows/ci.yml`         | CI, which only ever calls `task ci:<job>`         |
-| `AGENTS.md`                        | the contract agents read                          |
+A cassette miss is a hard error, never a silent live call — a fallback would
+let a "reproduction" quietly diverge from what was measured.
 
-## The five layers
+### Running it live
 
-**1. Toolchain — `mise.toml` + `bin/mise`.** Every tool is pinned and locked in
-`mise.lock`, installed into a gitignored `.mise/`, never system-wide. `bin/mise`
-is a committed bootstrap, so CI needs no `setup-python`/`setup-node` action and
-a fresh clone needs nothing preinstalled.
-
-The metrics tool is pinned to an **exact** version, unlike everything else. A
-parser that changes between patch releases re-measures existing code and
-silently rewrites the baseline; that class of change has to arrive explicitly.
-
-**2. Command surface — `Taskfile.yml`.** Hooks, CI and agents call task names
-and never spell out commands. `task -l` lists everything; arguments after `--`
-are forwarded. `taskfiles/project.yml` holds the stack-specific half as no-op
-hook points you fill in.
-
-**3. Quality ratchet — `tools/quality/`.** Four metrics: function lines (25),
-cyclomatic complexity (15), parameters (5), file lines (500). The default
-engine is `lizard`, which covers around twenty languages; a scope can instead
-name an adapter — any executable that takes file paths and emits one JSON
-object per line:
-
-```json
-{"file": "src/a.go", "function": "Run", "nloc": 12, "ccn": 3, "params": 2}
+```bash
+echo 'LLM_API_KEY=sk-or-v1-...' >> .env.overrides   # gitignored, loaded last
+LLM_MODE=record task project:eval                    # re-record the cassettes
 ```
 
-File length is counted by the core itself, so a scope works even when nothing
-can parse the language (`engine = "none"`).
+Any OpenAI-compatible endpoint works. `LLM_BASE_URL`, `LLM_MODEL`,
+`LLM_MAX_TOKENS` and `LLM_TEMPERATURE` are set in `env.template`; point them at
+your own account and nothing in the code changes.
 
-Local runs pass `--write`: an improvement rewrites the baseline and passes. CI
-runs without it, so the same improvement **fails** as a stale baseline. That
-asymmetry is deliberate — it forces a refactor to commit the regenerated
-baseline instead of leaving the recorded numbers drifting behind reality.
+### Look at one incident
 
-**4. Hooks — `lefthook.yml`.** `pre-commit` runs format (priority 1), lint
-(priority 2), then the ratchet (priority 3), because formatters must settle the
-files before anything measures them. Format and lint re-stage what they fix;
-the ratchet deliberately does not, since a baseline change belongs in the
-commit as a conscious act. `pre-push` runs the full `task validate`.
-`commit-msg` validates against `commit.toml` — in Python, so a Go project does
-not need npm to lint a commit subject.
+```bash
+task project:dev -- --list
+task project:dev -- --case 12-batch-job-contention --variant agent
+task project:dev -- --case 12-batch-job-contention --variant baseline
+```
 
-**5. Isolation — `tools/env/render_env.py`.** `task env:render` derives
-`SESSION` from repo and branch, then assigns each named port by hashing
-`(session, key)` and re-rolling deterministically past anything already bound.
-Two worktrees of the same repo get different ports and container names and run
-side by side, with no registry file to keep in sync.
+Case 12 is the one to look at: a checkout deploy lands two minutes before onset
+on the very service that is failing, and it is innocent.
 
-Renaming a branch changes the session, which would orphan the containers and
-volumes named after the old one. The renderer detects that and refuses until
-you clean up or pass `--force`.
+### What the data is
 
-## Agent layer
+Twelve synthetic incidents under `fixtures/cases/`, one per root cause,
+around 2,100 log lines each. No real telemetry, no customer data, nothing that
+needs approval to publish.
 
-`AGENTS.md` is the single contract, with `CLAUDE.md` and `GEMINI.md` symlinked
-to it. The thresholds appear there in prose and in `quality.toml` as numbers;
-`task quality:thresholds` is what settles a disagreement.
+They are generated, not hand-written: `task project:fixtures` rebuilds them
+from their seeds and `task project:fixtures:verify` fails if a byte moved.
+Each case ships a `truth.json` recording the fault that was injected, which is
+what makes grading exact rather than a later opinion. Nothing on the solution
+path can read it — `loadBundle()` does not expose it, and there is a test
+pinning that.
 
-`.claude/settings.json` registers a `Stop` hook that runs `task validate` when
-an agent tries to finish with uncommitted source changes, and blocks with the
-failure output if it does not pass. "Always validate before finishing" stops
-being a rule the agent can forget.
+### Versions, runtime and cost
 
-Skills live in the tool-neutral `.agents/skills/`, with `.claude/skills`
-symlinked to it.
+|                |                                                                           |
+| -------------- | ------------------------------------------------------------------------- |
+| Toolchain      | pinned in `mise.toml` + `mise.lock` (node 24, python 3.12, lizard 1.22.2) |
+| Model recorded | `anthropic/claude-sonnet-4.5` via OpenRouter, temperature 0               |
+| Replay run     | a few seconds, $0                                                         |
+| Live re-record | see `docs/RESULTS.md` for measured tokens and cost                        |
 
-## Using codeherd instead of the built-in renderer
+## How it is measured
 
-If you use [codeherd](https://github.com/xico42/codeherd) for worktrees and
-tmux sessions, it renders `*.herd` templates itself:
+The baseline is the brief's own first example — _one direct prompt with basic
+instructions_ — and it is built to be a fair representative rather than a
+strawman. It receives the full change and alert timelines, every metric series,
+every distinct error shape with its first occurrences and a count, and an even
+sample of the rest. It shares the JSON repair turn with the workflow, so the
+comparison measures reasoning rather than plumbing.
 
-1. `mv env.template .env.herd`
-2. Change `{{ session }}` to `{{ .SessionName }}`, keeping `{{ port "name" }}`.
-3. Add `files = [".env.overrides"]` to the project in your codeherd profile so
-   secrets follow you into new worktrees.
-4. Delete `tools/env/` and the `env:render` task.
+**Primary metric: pass rate.** A case counts only when all four hold:
+
+1. the named root cause matches the fault that was injected
+2. every citation resolves — file exists, line exists, quote is on it
+3. every required piece of evidence appears on a line the report cited
+4. no red herring was used to support the argument
+
+Condition 3 is the one that earns its keep: it fails a report that names the
+right cause for the wrong reasons. Condition 4 permits citing a red herring
+under `ruled_out` — considering and rejecting an alternative is correct
+practice, not a mistake.
 
 ## Layout
 
-```
-mise.toml  mise.lock  bin/mise        toolchain
-Taskfile.yml  taskfiles/project.yml   commands
-lefthook.yml                          git hooks
-quality.toml  .quality-baseline.json  the ratchet
-commit.toml                           commit rules
-env.template  process-compose.yml     local stack
-tools/quality  tools/commit  tools/env  tools/agent  tools/tests
-AGENTS.md  CLAUDE.md  GEMINI.md  .agents/skills  .claude
-docs/specs  docs/plans              spec-then-plan record
-.github/workflows/ci.yml
-```
+| Path              | What it is                                                       |
+| ----------------- | ---------------------------------------------------------------- |
+| `src/agent/`      | the workflow: triage, search, draft, verify, repair              |
+| `src/baseline/`   | the single-prompt baseline                                       |
+| `src/grade.ts`    | deterministic grading                                            |
+| `src/citation.ts` | citation resolution, shared by grader and verifier               |
+| `src/llm/`        | provider-agnostic client and the cassette layer                  |
+| `fixtures/`       | the incident generator and the twelve committed cases            |
+| `harness/`        | runs a variant across repeats, aggregates into a results table   |
+| `tools/`          | the forge shell's tooling, plus trajectory capture and redaction |
+| `docs/`           | changelog, results, tool disclosure, chassis documentation       |
+
+## What existed before this hackathon
+
+Ground rule 02 asks for this line to be clear, so it is a commit boundary
+rather than a claim.
+
+**Pre-existing:** [`forge`](https://github.com/rubenszinho/forge), a
+framework-agnostic development shell of mine — pinned toolchain, task command
+surface, tiered git hooks, per-worktree isolation, and a code-quality ratchet.
+It is imported verbatim in the first commit of this repository
+(`chore: import the forge development shell as the project chassis`) and
+documented in [`docs/forge.md`](docs/forge.md). It is infrastructure here, not
+the subject of the project. Every commit after that one is this project.
+
+**Built for this hackathon:** everything else — the incident generator and all
+twelve cases, the citation contract, the grader, the model boundary and
+cassette layer, the baseline, the agent workflow, the evaluation harness, and
+the trajectory capture and redaction tooling.
+
+`forge` itself was pushed public during the hackathon window, on 2026-08-28 at
+17:46 UTC, after the 15:00 UTC kickoff.
+
+## License
+
+MIT — see [`LICENSE`](LICENSE).

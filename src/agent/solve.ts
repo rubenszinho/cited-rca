@@ -14,6 +14,7 @@
  *   verification  the draft is checked against the bundle and sent back with
  *                the specific failures until its citations hold up
  */
+import { DEFAULT_QUERIES, enabledFeatures } from './features.ts';
 import { searchLog } from './tools.ts';
 import { completeJson } from '../llm/structured.ts';
 import type { ChatMessage, LlmClient } from '../llm/types.ts';
@@ -74,22 +75,35 @@ async function repairLoop(
   return report;
 }
 
-export async function solveWithAgent(
-  bundle: IncidentBundle,
-  client: LlmClient,
-): Promise<RcaReport> {
-  const { value: triage } = await completeJson({
+/** Triage, or a fixed stand-in when the triage step is ablated. */
+async function triageStep(bundle: IncidentBundle, client: LlmClient, on: boolean) {
+  if (!on) {
+    return {
+      onset_ts: 'unknown',
+      reasoning: '(triage disabled for this variant)',
+      log_queries: DEFAULT_QUERIES,
+    };
+  }
+  const { value } = await completeJson({
     client,
     step: `agent:triage:${bundle.caseId}`,
     schema: TriageSchema,
     messages: triageMessages(bundle),
   });
+  return value;
+}
 
-  const messages = draftMessages(
-    bundle,
-    triage,
-    runSearches(bundle, triage.log_queries),
-  );
+export async function solveWithAgent(
+  bundle: IncidentBundle,
+  client: LlmClient,
+): Promise<RcaReport> {
+  const features = enabledFeatures();
+  const triage = await triageStep(bundle, client, features.has('triage'));
+  const searches = features.has('search')
+    ? runSearches(bundle, triage.log_queries)
+    : '(log search disabled for this variant)';
+
+  const messages = draftMessages(bundle, triage, searches);
   const { value: draft } = await completeJson({
     client,
     step: `agent:draft:${bundle.caseId}`,
@@ -97,5 +111,6 @@ export async function solveWithAgent(
     messages,
   });
 
+  if (!features.has('verify')) return draft;
   return repairLoop(client, bundle, messages, draft);
 }
