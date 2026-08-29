@@ -41,10 +41,17 @@ const ALL: Feature[] = ['triage', 'search', 'investigate', 'verify', 'memory'];
  * a secondary metric after seeing the results is how an evaluation stops
  * meaning anything, so both features are off despite each winning on something.
  *
- * Both stay implemented and switchable so the results can be reproduced:
- *   AGENT_FEATURES=triage,search,verify,memory
+ * `investigate` - an iterative search loop - is implemented but NOT measured.
+ * The run that would have graded it exhausted the account's credits partway
+ * through, so 22 of 36 case-runs returned 402 and the numbers mean nothing. It
+ * is therefore off. Shipping a feature whose only evidence is that it exists
+ * would undo the point of everything else here.
+ *
+ * All three stay implemented and switchable so the results can be reproduced,
+ * and so the investigation loop can be graded by anyone with credits:
+ *   AGENT_FEATURES=triage,search,investigate,verify,memory
  */
-const DEFAULT: Feature[] = ['search', 'investigate', 'verify'];
+const DEFAULT: Feature[] = ['search', 'verify'];
 
 /**
  * Fixed searches used when triage is disabled.

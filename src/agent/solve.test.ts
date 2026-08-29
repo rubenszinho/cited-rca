@@ -7,7 +7,7 @@
  * behaviour is the improvement the changelog claims, so it needs a test that
  * fails if the loop is ever removed.
  */
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { loadBundle } from '../bundle.ts';
 import { stubClient } from '../llm/stub.ts';
@@ -116,7 +116,7 @@ describe('solveWithAgent (shipped configuration)', () => {
     await solveWithAgent(bundle, client);
 
     expect(client.steps.some((s) => s.includes('triage'))).toBe(false);
-    expect(client.steps[0]).toContain('investigate');
+    expect(client.steps[0]).toContain('draft');
     expect(draftPrompt).toContain('search "error"');
   });
 
@@ -253,7 +253,12 @@ describe('ablations', () => {
 });
 
 describe('investigation loop', () => {
+  // Implemented but not shipped: the run that would have graded it exhausted
+  // the account's credits, so it is off by default and tested behind the flag.
   const original = process.env.AGENT_FEATURES;
+  beforeEach(() => {
+    process.env.AGENT_FEATURES = 'search,investigate,verify';
+  });
   afterEach(() => {
     if (original === undefined) delete process.env.AGENT_FEATURES;
     else process.env.AGENT_FEATURES = original;

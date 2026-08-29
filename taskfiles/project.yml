@@ -137,11 +137,14 @@ tasks:
       - AGENT_FEATURES=search,verify,memory {{.RUN}} --variant agent-memory
       - AGENT_FEATURES=triage,search,verify {{.RUN}} --variant agent-withtriage
 
-  ablate:noverify:
-    desc: Re-run just the verifier ablation
+  variant:
+    desc: 'Run one labelled configuration (VARIANT=x FEATURES=a,b task project:variant)'
+    # Everything goes through task so .env and .env.overrides are loaded.
+    # Invoking harness/run.py directly skips dotenv, and the run then fails
+    # twelve times over with "LLM_API_KEY is unset" - which has happened twice.
     cmds:
-      - AGENT_FEATURES=triage,search {{.PY}} harness/run.py --variant agent-noverify
-        --seeds 1 --cmd "pnpm exec tsx src/agent/run.ts"
+      - AGENT_FEATURES={{.FEATURES}} {{.PY}} harness/run.py --variant {{.VARIANT}}
+        --seeds {{.SEEDS}} --cmd "pnpm exec tsx src/agent/run.ts"
 
   eval:
     desc: Run both variants over the same cases

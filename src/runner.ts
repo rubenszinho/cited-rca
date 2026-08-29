@@ -30,18 +30,30 @@ function failedGrade(caseId: string, error: unknown): Grade {
 }
 
 /**
- * Did this case fail because of the provider rather than the workflow?
+ * Did this case fail because of the setup rather than the workflow?
  *
  * The distinction has to survive into the metrics. An exhausted account and a
  * workflow that cannot reason both show up as a zero pass rate, and the
  * aggregate alone cannot tell them apart - a run that ran out of credits
  * halfway produced a clean-looking 0.000 that read as a finding.
+ *
+ * The list covers everything that is not the workflow's fault: the provider
+ * refusing, and the run being misconfigured. A missing key was originally not
+ * on it, so a run launched without the environment loaded reported eleven
+ * honest-looking failures and one infrastructure error.
  */
-function isProviderError(grade: Grade): boolean {
+const INFRASTRUCTURE = [
+  /\b(401|402|403|429|5\d\d)\b/,
+  /credits|rate.?limit|quota/i,
+  /API_KEY is unset/i,
+  /cassette miss/i,
+  /fetch failed|ECONNRESET|ETIMEDOUT|ENOTFOUND/i,
+];
+
+export function isProviderError(grade: Grade): boolean {
   return grade.notes.some(
     (note) =>
-      note.includes('solver threw') &&
-      /\b(401|402|403|429|5\d\d)\b|credits|rate.?limit|quota/i.test(note),
+      note.includes('solver threw') && INFRASTRUCTURE.some((rx) => rx.test(note)),
   );
 }
 
