@@ -27,3 +27,6 @@ node_modules/
 dist/
 out/
 examples/public-*/*.log
+
+# Scratch space for reading the challenge brief. Not part of the deliverable.
+specs/
