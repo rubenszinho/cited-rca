@@ -40,8 +40,15 @@ say "task validate"
 say "fixtures rebuild byte-for-byte from their seeds"
 ./bin/mise exec -- task project:fixtures:verify
 
-say "replaying the evaluation with no API key"
+# Every committed result must be re-executed, not just compared to itself.
+# `task project:eval` only re-runs baseline and agent; leaving the other four
+# variants as cloned files made the comparison trivially pass on them.
+say "clearing the cloned results so nothing is compared against itself"
+rm -f results/*.json
+
+say "replaying every variant with no API key"
 ./bin/mise exec -- task project:eval
+./bin/mise exec -- task project:ablate
 
 # Compares the graded outcome of every case, not the rendered table: wall-clock
 # timings differ between machines and are not part of the claim.

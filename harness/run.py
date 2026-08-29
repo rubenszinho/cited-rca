@@ -132,7 +132,12 @@ def main() -> int:
 
         dest = RESULTS / f"{args.variant}-seed{seed}.json"
         dest.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-        summary = ", ".join(f"{k}={v}" for k, v in record["metrics"].items())
+        # Scalars only. cases_detail is a list of twelve objects and printing
+        # it buries the line a human is trying to read.
+        summary = ", ".join(
+            f"{k}={v}" for k, v in record["metrics"].items()
+            if isinstance(v, (int, float, str))
+        )
         print(f"seed {seed}: {record['duration_s']:7.3f}s  "
               f"{summary or '(no metrics)'}  -> {dest.name}")
 

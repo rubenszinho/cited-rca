@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "c7868fe5e81b16821909ba47ec60340a483dbc86-dirty",
-  "duration_s": 0.3742,
+  "commit": "3f484e9b044adf6d4794a54513ec8119d18f4d8e-dirty",
+  "duration_s": 0.4091,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -143,9 +143,9 @@
     "provider_errors": 0,
     "red_herring_rate": 0.25,
     "replayed_calls": 12,
-    "seconds_per_case": 0.003
+    "seconds_per_case": 0.004
   },
   "seed": 1,
-  "started_at": "2026-08-29T15:20:06.045528+00:00",
+  "started_at": "2026-08-29T18:02:18.643159+00:00",
   "variant": "agent-noverify"
 }
