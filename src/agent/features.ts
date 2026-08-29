@@ -23,6 +23,20 @@ export type Feature = 'triage' | 'search' | 'verify' | 'memory';
 const ALL: Feature[] = ['triage', 'search', 'verify', 'memory'];
 
 /**
+ * The shipped configuration. Note what is missing: triage.
+ *
+ * Removing the triage pass beat keeping it on pass rate (0.667 vs 0.611) and on
+ * cause accuracy (0.917 vs 0.861), identically across all three repeats. It
+ * commits to an onset and a framing before any log line has been read, and the
+ * draft then reasons from that frame rather than from the evidence. Generic
+ * queries retrieve less precisely but carry no such prior.
+ *
+ * It stays implementable and switchable so the result can be reproduced:
+ *   AGENT_FEATURES=triage,search,verify,memory
+ */
+const DEFAULT: Feature[] = ['search', 'verify', 'memory'];
+
+/**
  * Fixed searches used when triage is disabled.
  *
  * Deliberately generic: this is what someone would grep for without having
@@ -32,7 +46,7 @@ export const DEFAULT_QUERIES = ['error', 'warn', 'timeout', 'failed'];
 
 export function enabledFeatures(): Set<Feature> {
   const raw = process.env.AGENT_FEATURES;
-  if (!raw) return new Set(ALL);
+  if (!raw) return new Set(DEFAULT);
   const names = raw
     .split(',')
     .map((name) => name.trim())

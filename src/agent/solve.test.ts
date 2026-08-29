@@ -74,31 +74,46 @@ function goodReport(): RcaReport {
   };
 }
 
-describe('solveWithAgent', () => {
-  it('triages before drafting and passes its queries to the log search', async () => {
+describe('solveWithAgent (shipped configuration)', () => {
+  it('drafts without a triage call and searches with the default queries', async () => {
+    // Triage is deliberately not in the default: the ablation showed it lowers
+    // both pass rate and cause accuracy. See src/agent/features.ts.
     let draftPrompt = '';
-    const client = stubClient((options, index) => {
-      if (index === 0) return TRIAGE;
+    const client = stubClient((options) => {
       draftPrompt = options.messages.map((m) => m.content).join('\n');
       return JSON.stringify(goodReport());
     });
 
     await solveWithAgent(bundle, client);
 
-    expect(client.steps[0]).toContain('triage');
-    expect(client.steps[1]).toContain('draft');
-    // The searches triage asked for are what the draft step gets to read.
-    expect(draftPrompt).toContain('search "percentOff"');
-    expect(draftPrompt).toContain('search "checkout"');
+    expect(client.steps.some((s) => s.includes('triage'))).toBe(false);
+    expect(client.steps[0]).toContain('draft');
+    expect(draftPrompt).toContain('search "error"');
   });
 
   it('emits a clean draft without spending a repair turn', async () => {
-    const client = stubClient((_options, index) =>
-      index === 0 ? TRIAGE : JSON.stringify(goodReport()),
-    );
+    const client = stubClient(() => JSON.stringify(goodReport()));
     const report = await solveWithAgent(bundle, client);
     expect(report.root_cause).toBe('bad_deploy_regression');
     expect(client.steps.filter((s) => s.includes('repair'))).toHaveLength(0);
+  });
+
+  it('still runs triage when it is switched back on', async () => {
+    process.env.AGENT_FEATURES = 'triage,search,verify';
+    try {
+      let draftPrompt = '';
+      const client = stubClient((options, index) => {
+        if (index === 0) return TRIAGE;
+        draftPrompt = options.messages.map((m) => m.content).join('\n');
+        return JSON.stringify(goodReport());
+      });
+      await solveWithAgent(bundle, client);
+      expect(client.steps[0]).toContain('triage');
+      // The searches triage asked for are what the draft step gets to read.
+      expect(draftPrompt).toContain('search "percentOff"');
+    } finally {
+      delete process.env.AGENT_FEATURES;
+    }
   });
 
   it('sends a fabricated citation back with the specific failure', async () => {
@@ -107,8 +122,7 @@ describe('solveWithAgent', () => {
 
     let repairPrompt = '';
     const client = stubClient((options, index) => {
-      if (index === 0) return TRIAGE;
-      if (index === 1) return JSON.stringify(fabricated);
+      if (index === 0) return JSON.stringify(fabricated);
       repairPrompt = options.messages.at(-1)?.content ?? '';
       return JSON.stringify(goodReport());
     });
@@ -125,9 +139,7 @@ describe('solveWithAgent', () => {
   it('gives up after the repair budget and returns the last draft', async () => {
     const broken = goodReport();
     broken.timeline[0]!.citations[0]!.line = 99999;
-    const client = stubClient((_options, index) =>
-      index === 0 ? TRIAGE : JSON.stringify(broken),
-    );
+    const client = stubClient(() => JSON.stringify(broken));
 
     const report = await solveWithAgent(bundle, client);
 

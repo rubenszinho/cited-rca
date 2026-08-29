@@ -1,0 +1,172 @@
+{
+  "cmd": "pnpm exec tsx src/agent/run.ts",
+  "commit": "de6676886563b890a9fe4b87d08a6877008d0a90-dirty",
+  "duration_s": 354.3185,
+  "env": {
+    "container": "host",
+    "machine": "x86_64",
+    "os": "Linux 6.18.33.2-microsoft-standard-WSL2",
+    "python": "3.12.14"
+  },
+  "exit_code": 0,
+  "metrics": {
+    "cases": 12,
+    "cases_detail": [
+      {
+        "case_id": "01-bad-deploy-null-deref",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: logs/app.jsonl ~ \"reading 'percentOff'\" (the exception naming the field and handler)"
+        ],
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "02-config-flag-misflip",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: logs/app.jsonl ~ \"session binding mismatch\" (the warning naming the flag)"
+        ],
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "03-schema-migration-index-drop",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: logs/app.jsonl ~ \"Seq Scan on orders\" (the plan change proving the index is gone)"
+        ],
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "04-cert-expiry",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.3333,
+        "notes": [
+          "evidence not cited: logs/app.jsonl ~ \"certificate has expired\" (the TLS error naming the peer and expiry instant)",
+          "evidence not cited: logs/app.jsonl ~ \"2026-03-17T09:30:00Z\" (the notAfter matching onset exactly)"
+        ],
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "05-connection-pool-exhaustion",
+        "cause_correct": false,
+        "citations_valid": true,
+        "evidence_recall": 0.3333,
+        "notes": [
+          "cause: said bad_deploy_regression, actual resource_exhaustion_pool",
+          "evidence not cited: logs/app.jsonl ~ \"connection pool wait exceeded\" (the pool, not the database, is the contended resource)",
+          "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)"
+        ],
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "06-memory-leak-oom",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: logs/app.jsonl ~ \"OOMKilled\" (the kill reason and exit code 137)",
+          "red herring used as evidence: \"worker replicas 4 -> 8\" (a change during the incident, but an operator mitigation rather than the cause)"
+        ],
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "07-disk-exhaustion-logs",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: logs/app.jsonl ~ \"no space left on device\" (the failure mode, scoped to one node)",
+          "red herring used as evidence: \"ApiWriteErrors\" (the alert is fleet-scoped and names no node, so it reads as a fleet-wide fault when only api-3 is affected)"
+        ],
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "08-cache-stampede",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: logs/app.jsonl ~ \"cache miss, recomputing\" (concurrent recomputation of the same key, which is what makes it a stampede)"
+        ],
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "09-downstream-timeout",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: logs/app.jsonl ~ \"supplier-inventory\" (the failing peer, named in the log line)"
+        ],
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "10-dns-failure",
+        "cause_correct": false,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "cause: said resource_exhaustion_pool, actual dns_failure",
+          "evidence not cited: logs/app.jsonl ~ \"SERVFAIL\" (the resolution failure itself)",
+          "red herring used as evidence: \"coredns replicas 2 -> 4\" (a DNS change in the window, but 28 minutes after onset and a mitigation)"
+        ],
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "11-upstream-rate-limit",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: logs/app.jsonl ~ \"returned 429\" (the provider rejecting on quota, with the quota named)",
+          "red herring used as evidence: \"CheckoutConversionDrop\" (reads as a checkout regression rather than an upstream rejecting our excess volume)"
+        ],
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "12-batch-job-contention",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)"
+        ],
+        "passed": false,
+        "red_herring_blamed": false
+      }
+    ],
+    "cause_accuracy": 0.8333,
+    "citation_validity": 1,
+    "completion_tokens": 34014,
+    "cost_usd": 0.9176,
+    "evidence_recall": 0.6111,
+    "llm_calls": 25,
+    "pass_rate": 0,
+    "prompt_tokens": 135791,
+    "provider_errors": 0,
+    "red_herring_rate": 0.3333,
+    "replayed_calls": 12,
+    "seconds_per_case": 29.491
+  },
+  "seed": 2,
+  "started_at": "2026-08-29T14:34:55.223799+00:00",
+  "variant": "agent-nosearch"
+}
