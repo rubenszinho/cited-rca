@@ -27,6 +27,33 @@ sixteen-connection pool exhausting three minutes later, and ruled out the
 autoscaler event that fired during the incident. Every citation resolves
 against the source files.
 
+## On real production logs
+
+`public-hadoop/` goes further: it is a genuine, unsanitised production log
+sample from [loghub](https://github.com/logpai/loghub), published for
+log-analytics research. Nobody wrote it for this project and nothing about it
+was cleaned up.
+
+```bash
+tools/demo/fetch-public-logs.sh Hadoop
+```
+
+The dataset is fetched, never committed — this repository redistributes none of
+it. `REVIEW.md` is the generated output.
+
+From 1,999 lines of raw Hadoop output it found the failure: `NoRouteToHost`
+exceptions reaching `msra-sa-41:9000`, the RMCommunicator failing to contact the
+Resource Manager, and address-change warnings showing the hostname resolving
+inconsistently. Every citation resolves against the file.
+
+**What this does and does not show.** It shows the workflow handles real,
+messy, unfamiliar log formats and that its citations hold up against them. It
+does not show the diagnosis is correct — nobody published the ground truth for
+this sample, and the root-cause enum was designed for the synthetic set, so on
+arbitrary real data it is a rough fit at best. Correctness is measured on the
+twelve cases, where the answer is known. This is evidence of generality, not of
+accuracy, and the two should not be confused.
+
 ## Why this works on any directory
 
 An incident bundle is only "a set of text files, each addressable by line",
