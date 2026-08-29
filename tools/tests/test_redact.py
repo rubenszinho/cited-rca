@@ -112,3 +112,80 @@ class TestWalk(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TestVerificationScan(unittest.TestCase):
+    """The pre-package gate must be able to report a clean result."""
+
+    def test_placeholders_are_not_counted_as_leaks(self):
+        # The bearer rule keeps the header name and replaces only the value, so
+        # its own output matches its own pattern. A scan that counts that can
+        # never go clean, and the gate becomes noise.
+        from tools.trajectory.redact import PLACEHOLDER
+
+        counts: Counter = Counter()
+        once = redact_text("Authorization: Bearer abc123def456", counts)
+        counts.clear()
+        redact_text(PLACEHOLDER.sub("", once), counts)
+        self.assertEqual(dict(counts), {})
+
+    def test_a_real_leftover_still_counts(self):
+        from tools.trajectory.redact import PLACEHOLDER
+
+        counts: Counter = Counter()
+        redact_text(PLACEHOLDER.sub("", "ghp_" + "q" * 36), counts)
+        self.assertIn("github_pat", counts)
+
+
+class TestBareHandles(unittest.TestCase):
+    """Redacting the address is not enough; the username survives alone."""
+
+    def test_collects_the_local_part_of_a_real_address(self):
+        import tempfile
+        from pathlib import Path as P
+
+        from tools.trajectory.redact import collect_handles
+
+        with tempfile.TemporaryDirectory() as tmp:
+            f = P(tmp) / "a.jsonl"
+            f.write_text('{"a":"reach me at longusername@example.com"}', encoding="utf-8")
+            self.assertEqual(collect_handles([f]), {"longusername"})
+
+    def test_ignores_short_local_parts(self):
+        import tempfile
+        from pathlib import Path as P
+
+        from tools.trajectory.redact import collect_handles
+
+        # "info", "admin", "test" are ordinary words; redacting them would
+        # shred the transcript for no privacy gain.
+        with tempfile.TemporaryDirectory() as tmp:
+            f = P(tmp) / "a.jsonl"
+            f.write_text('{"a":"info@example.com"}', encoding="utf-8")
+            self.assertEqual(collect_handles([f]), set())
+
+    def test_ignores_allowlisted_addresses(self):
+        import tempfile
+        from pathlib import Path as P
+
+        from tools.trajectory.redact import collect_handles
+
+        with tempfile.TemporaryDirectory() as tmp:
+            f = P(tmp) / "a.jsonl"
+            f.write_text('{"a":"yeison@micro1.ai"}', encoding="utf-8")
+            self.assertEqual(collect_handles([f]), set())
+
+    def test_redacts_a_bare_handle_on_a_word_boundary(self):
+        from tools.trajectory.redact import redact_handles
+
+        counts: Counter = Counter()
+        out = redact_handles("grep -c longusername logs/", {"longusername"}, counts)
+        self.assertNotIn("longusername", out)
+        self.assertEqual(counts["bare_handle"], 1)
+
+    def test_leaves_a_longer_word_containing_the_handle_alone(self):
+        from tools.trajectory.redact import redact_handles
+
+        counts: Counter = Counter()
+        out = redact_handles("longusernamed", {"longusername"}, counts)
+        self.assertEqual(out, "longusernamed")

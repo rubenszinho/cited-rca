@@ -39,7 +39,15 @@ RULES: list[tuple[str, re.Pattern[str], str]] = [
     ("openrouter_key", re.compile(r"\bsk-or-v1-[a-f0-9]{40,}"), "[REDACTED:openrouter_key]"),
     ("private_key", re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----.*?-----END [A-Z ]*PRIVATE KEY-----", re.S), "[REDACTED:private_key]"),
     ("jwt", re.compile(r"\beyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]{10,}"), "[REDACTED:jwt]"),
-    ("bearer_header", re.compile(r"(?i)(authorization\s*:\s*bearer\s+)\S+"), r"\1[REDACTED:bearer]"),
+    # The value must look like a token. Matching any following word made this
+    # rule fire on the next header name, on `Bearer ${config.apiKey}` in source,
+    # and on its own placeholder - all false positives that made the
+    # verification gate impossible to clear.
+    (
+        "bearer_header",
+        re.compile(r"(?i)(authorization\s*:\s*bearer\s+)([A-Za-z0-9._~+/=-]{12,})"),
+        r"\1[REDACTED:bearer]",
+    ),
     # KEY=value / KEY: value where the name reads like a credential. Catches the
     # common case of a .env being cat'd or an export being echoed.
     (
@@ -75,6 +83,42 @@ def redact_text(text: str, counts: Counter) -> str:
     return text
 
 
+EMAIL = re.compile(r"\b([\w.+-]+)@[\w-]+\.[\w.-]+\b")
+
+# Short local parts are ordinary words ("admin", "info", "test") and redacting
+# them would shred the transcript for no privacy gain.
+MIN_HANDLE = 8
+
+
+def collect_handles(files: list[Path]) -> set[str]:
+    """Local parts of every non-allowlisted address seen anywhere in the corpus.
+
+    Redacting the address is not enough. A username survives on its own the
+    moment anyone greps for it, types it into a command, or names a file after
+    it - and a bare handle is still identifying. Collecting them corpus-wide
+    first means an address seen in one session is scrubbed from every other.
+    """
+    handles: set[str] = set()
+    for path in files:
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for match in EMAIL.finditer(text):
+            if ALLOWLIST.match(match.group(0)):
+                continue
+            local = match.group(1)
+            if len(local) >= MIN_HANDLE:
+                handles.add(local)
+    return handles
+
+
+def redact_handles(text: str, handles: set[str], counts: Counter) -> str:
+    for handle in handles:
+        pattern = re.compile(rf"\b{re.escape(handle)}\b")
+        text, n = pattern.subn("[REDACTED:handle]", text)
+        if n:
+            counts["bare_handle"] += n
+    return text
+
+
 def walk(node, counts: Counter):
     if isinstance(node, str):
         return redact_text(node, counts)
@@ -85,7 +129,9 @@ def walk(node, counts: Counter):
     return node
 
 
-def process_file(src: Path, dst: Path, counts: Counter, write: bool) -> int:
+def process_file(
+    src: Path, dst: Path, counts: Counter, write: bool, handles: set[str] = frozenset()
+) -> int:
     lines_out: list[str] = []
     bad = 0
     with src.open(encoding="utf-8", errors="replace") as fh:
@@ -101,7 +147,8 @@ def process_file(src: Path, dst: Path, counts: Counter, write: bool) -> int:
                 print(f"warn: {src.name}:{lineno} unparseable, dropping", file=sys.stderr)
                 bad += 1
                 continue
-            lines_out.append(json.dumps(walk(rec, counts), ensure_ascii=False))
+            line_out = json.dumps(walk(rec, counts), ensure_ascii=False)
+            lines_out.append(redact_handles(line_out, handles, counts))
     if write:
         dst.parent.mkdir(parents=True, exist_ok=True)
         dst.write_text("\n".join(lines_out) + "\n", encoding="utf-8")
@@ -119,35 +166,63 @@ def report(counts: Counter, file_count: int, dropped: int, check: bool) -> None:
         print(f"  unparseable records dropped: {dropped}", file=sys.stderr)
 
 
+# Rules that keep surrounding context, such as the bearer-header rule, leave a
+# placeholder that their own pattern matches again. Stripping placeholders
+# before a verification scan is what stops the check reporting its own output as
+# a leak, which it can never clear.
+PLACEHOLDER = re.compile(r"\[REDACTED:[a-z_]+\]")
+
+
+def scan(files: list[Path]) -> Counter:
+    """Count credentials that survived redaction. Writes nothing."""
+    counts: Counter = Counter()
+    for path in files:
+        text = path.read_text(encoding="utf-8", errors="replace")
+        redact_text(PLACEHOLDER.sub("", text), counts)
+    return counts
+
+
 def redact_all(files: list[Path], write: bool) -> tuple[Counter, int]:
     counts: Counter = Counter()
     dropped = 0
+    handles = collect_handles(files)
     for src in files:
         dst = REDACTED / src.relative_to(RAW)
-        dropped += process_file(src, dst, counts, write=write)
+        dropped += process_file(src, dst, counts, write=write, handles=handles)
     return counts, dropped
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", action="store_true",
-                    help="scan without writing; exit 1 if any secret was found")
+                    help="scan the REDACTED output and exit 1 if a credential survived")
     args = ap.parse_args()
 
-    if not RAW.exists():
-        print(f"error: {RAW} missing; run `task trajectories:capture` first", file=sys.stderr)
+    # --check inspects what would actually be shipped. Scanning the raw logs
+    # would only report what the redactor is about to remove, which always
+    # looks alarming and proves nothing about the output.
+    source = REDACTED if args.check else RAW
+    if not source.exists():
+        hint = "run `task project:trajectories:redact` first" if args.check \
+            else "run `task project:trajectories` first"
+        print(f"error: {source} missing; {hint}", file=sys.stderr)
         return 2
-    files = sorted(RAW.rglob("*.jsonl"))
+    files = sorted(source.rglob("*.jsonl"))
     if not files:
-        print(f"error: no .jsonl under {RAW}", file=sys.stderr)
+        print(f"error: no .jsonl under {source}", file=sys.stderr)
         return 2
-
-    counts, dropped = redact_all(files, write=not args.check)
-    report(counts, len(files), dropped, args.check)
 
     if args.check:
-        # Credential rules only; an email match is expected and not a failure.
-        return 1 if sum(n for k, n in counts.items() if k != "email") else 0
+        counts = scan(files)
+        report(counts, len(files), 0, True)
+        # Credential rules only; a redacted-email placeholder is not a leak.
+        leaks = sum(n for k, n in counts.items() if k != "email")
+        print("LEAK: credentials survived redaction" if leaks
+              else "clean: no credential survived redaction")
+        return 1 if leaks else 0
+
+    counts, dropped = redact_all(files, write=True)
+    report(counts, len(files), dropped, False)
     return 0
 
 

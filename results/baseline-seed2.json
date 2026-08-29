@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/baseline/run.ts",
-  "commit": "47747e3ad203a8953e3d4256e235a4582df5786c-dirty",
-  "duration_s": 0.3737,
+  "commit": "08d548fe7b2ed8418fb77f71a5d72f9fadf95db9-dirty",
+  "duration_s": 138.5396,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -54,9 +54,10 @@
         "case_id": "05-connection-pool-exhaustion",
         "cause_correct": false,
         "citations_valid": true,
-        "evidence_recall": 0.6667,
+        "evidence_recall": 0.3333,
         "notes": [
           "cause: said bad_deploy_regression, actual resource_exhaustion_pool",
+          "evidence not cited: logs/app.jsonl ~ \"connection pool wait exceeded\" (the pool, not the database, is the contended resource)",
           "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)",
           "red herring used as evidence: \"timed out acquiring database connection\" (the error names the database, so it reads as a slow database - but database CPU and mean query time are both flat)"
         ],
@@ -67,8 +68,9 @@
         "case_id": "06-memory-leak-oom",
         "cause_correct": true,
         "citations_valid": true,
-        "evidence_recall": 1,
+        "evidence_recall": 0.6667,
         "notes": [
+          "evidence not cited: metrics/worker.csv ~ \"2026-03-17T09:14:00.000Z\" (the rss_mb series at onset, memory climbing monotonically rather than spiking)",
           "red herring used as evidence: \"worker replicas 4 -> 8\" (a change during the incident, but an operator mitigation rather than the cause)"
         ],
         "passed": false,
@@ -116,15 +118,12 @@
         "case_id": "10-dns-failure",
         "cause_correct": false,
         "citations_valid": false,
-        "evidence_recall": 0.6667,
+        "evidence_recall": 1,
         "notes": [
           "cause: said resource_exhaustion_pool, actual dns_failure",
-          "citation does not resolve: alerts.jsonl:1 ~ \"2026-03-17T09:21:00.000Z,\"name\":\"MultiServiceErrorSpike\",\"severity\":\"page\",\"state\":\"firing\"\"",
-          "citation does not resolve: alerts.jsonl:2 ~ \"2026-03-17T09:23:00.000Z,\"name\":\"DnsResolveLatency\",\"severity\":\"page\",\"state\":\"firing\"\"",
           "citation does not resolve: logs/app.jsonl:458 ~ \"# 264 lines total matching \"dial tcp: lookup payments.internal: SERVFAIL\"\"",
           "citation does not resolve: logs/app.jsonl:461 ~ \"# 220 lines total matching \"dial tcp: lookup queue.internal: SERVFAIL\"\"",
-          "citation does not resolve: logs/app.jsonl:476 ~ \"# 176 lines total matching \"dial tcp: lookup db-proxy.internal: SERVFAIL\"\"",
-          "evidence not cited: alerts.jsonl ~ \"MultiServiceErrorSpike\" (three unrelated services failing at once points below the application layer)"
+          "citation does not resolve: logs/app.jsonl:476 ~ \"# 176 lines total matching \"dial tcp: lookup db-proxy.internal: SERVFAIL\"\""
         ],
         "passed": false,
         "red_herring_blamed": false
@@ -132,11 +131,9 @@
       {
         "case_id": "11-upstream-rate-limit",
         "cause_correct": true,
-        "citations_valid": false,
+        "citations_valid": true,
         "evidence_recall": 1,
         "notes": [
-          "citation does not resolve: logs/app.jsonl:769 ~ \"# 288 lines total matching \"payment provider returned 429\"\"",
-          "citation does not resolve: logs/app.jsonl:762 ~ \"# 384 lines total matching \"retrying authorisation\"\"",
           "red herring used as evidence: \"CheckoutConversionDrop\" (reads as a checkout regression rather than an upstream rejecting our excess volume)"
         ],
         "passed": false,
@@ -153,18 +150,18 @@
       }
     ],
     "cause_accuracy": 0.8333,
-    "citation_validity": 0.5,
-    "completion_tokens": 27904,
-    "cost_usd": 0.8518,
-    "evidence_recall": 0.9444,
+    "citation_validity": 0.5833,
+    "completion_tokens": 27883,
+    "cost_usd": 0.8515,
+    "evidence_recall": 0.9167,
     "llm_calls": 12,
     "pass_rate": 0.3333,
     "prompt_tokens": 144427,
     "red_herring_rate": 0.4167,
-    "replayed_calls": 12,
-    "seconds_per_case": 0.004
+    "replayed_calls": 8,
+    "seconds_per_case": 11.516
   },
   "seed": 2,
-  "started_at": "2026-08-29T13:03:53.255151+00:00",
+  "started_at": "2026-08-29T13:14:06.182205+00:00",
   "variant": "baseline"
 }

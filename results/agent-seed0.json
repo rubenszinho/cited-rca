@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "47747e3ad203a8953e3d4256e235a4582df5786c-dirty",
-  "duration_s": 0.4052,
+  "commit": "08d548fe7b2ed8418fb77f71a5d72f9fadf95db9-dirty",
+  "duration_s": 175.3422,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -55,17 +55,19 @@
         "evidence_recall": 0.6667,
         "notes": [
           "cause: said bad_deploy_regression, actual resource_exhaustion_pool",
-          "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)"
+          "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)",
+          "red herring used as evidence: \"timed out acquiring database connection\" (the error names the database, so it reads as a slow database - but database CPU and mean query time are both flat)"
         ],
         "passed": false,
-        "red_herring_blamed": false
+        "red_herring_blamed": true
       },
       {
         "case_id": "06-memory-leak-oom",
         "cause_correct": true,
         "citations_valid": true,
-        "evidence_recall": 1,
+        "evidence_recall": 0.6667,
         "notes": [
+          "evidence not cited: metrics/worker.csv ~ \"2026-03-17T09:14:00.000Z\" (the rss_mb series at onset, memory climbing monotonically rather than spiking)",
           "red herring used as evidence: \"worker replicas 4 -> 8\" (a change during the incident, but an operator mitigation rather than the cause)"
         ],
         "passed": false,
@@ -104,10 +106,9 @@
         "case_id": "10-dns-failure",
         "cause_correct": false,
         "citations_valid": true,
-        "evidence_recall": 0.6667,
+        "evidence_recall": 1,
         "notes": [
-          "cause: said resource_exhaustion_pool, actual dns_failure",
-          "evidence not cited: logs/app.jsonl ~ \"SERVFAIL\" (the resolution failure itself)"
+          "cause: said resource_exhaustion_pool, actual dns_failure"
         ],
         "passed": false,
         "red_herring_blamed": false
@@ -135,17 +136,17 @@
     ],
     "cause_accuracy": 0.8333,
     "citation_validity": 1,
-    "completion_tokens": 38085,
-    "cost_usd": 1.0711,
+    "completion_tokens": 37861,
+    "cost_usd": 1.0719,
     "evidence_recall": 0.9444,
     "llm_calls": 26,
     "pass_rate": 0.5833,
-    "prompt_tokens": 166611,
-    "red_herring_rate": 0.25,
-    "replayed_calls": 26,
-    "seconds_per_case": 0.004
+    "prompt_tokens": 167983,
+    "red_herring_rate": 0.3333,
+    "replayed_calls": 17,
+    "seconds_per_case": 14.584
   },
   "seed": 0,
-  "started_at": "2026-08-29T13:03:53.664452+00:00",
+  "started_at": "2026-08-29T13:16:24.756492+00:00",
   "variant": "agent"
 }

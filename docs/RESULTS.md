@@ -4,12 +4,12 @@ Reference variant: `baseline`. Each cell is mean ± stdev across seeds; delta is
 
 | variant | runs | cases | cause_accuracy | citation_validity | completion_tokens | cost_usd | duration_s | evidence_recall | llm_calls | pass_rate | prompt_tokens | red_herring_rate | replayed_calls | seconds_per_case |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| `baseline` | 3/3 | 12 ± 0 | 0.8333 ± 0 | 0.5833 ± 0.08335 | 2.75e+04 ± 314.9 | 0.8465 ± 0.004709 | 0.4228 ± 0.04316 | 0.9444 ± 0 | 12 ± 0 | 0.3611 ± 0.04815 | 1.44e+05 ± 0 | 0.3889 ± 0.04815 | 12 ± 0 | 0.004 ± 0 |
-| `agent` | 3/3 | 12 ± 0 (+0.0%) | 0.8333 ± 0 (+0.0%) | 1 ± 0 (+71.4%) | 3.41e+04 ± 3.63e+03 (+23.8%) | 0.9755 ± 0.08409 (+15.2%) | 0.3893 ± 0.014 (-7.9%) | 0.9537 ± 0.01605 (+1.0%) | 24.67 ± 1.155 (+105.6%) | 0.6389 ± 0.09624 (+76.9%) | 1.55e+05 ± 1.04e+04 (+7.1%) | 0.25 ± 0.0833 (-35.7%) | 24.67 ± 1.155 (+105.6%) | 0.004 ± 0 (+0.0%) |
+| `baseline` | 3/3 | 12 ± 0 | 0.8333 ± 0 | 0.6111 ± 0.04815 | 2.79e+04 ± 598.8 | 0.8512 ± 0.008954 | 136.7 ± 6.621 | 0.9259 ± 0.01599 | 12 ± 0 | 0.3611 ± 0.04815 | 1.44e+05 ± 0 | 0.3889 ± 0.04815 | 8 ± 0 | 11.36 ± 0.5516 |
+| `agent` | 3/3 | 12 ± 0 (+0.0%) | 0.8611 ± 0.04815 (+3.3%) | 1 ± 0 (+63.6%) | 3.53e+04 ± 2.21e+03 (+26.7%) | 1.008 ± 0.05718 (+18.5%) | 168.8 ± 11.76 (+23.5%) | 0.9629 ± 0.01605 (+4.0%) | 25 ± 1 (+108.3%) | 0.6111 ± 0.04815 (+69.2%) | 1.6e+05 ± 8.59e+03 (+10.5%) | 0.3333 ± 0 (-14.3%) | 16.33 ± 0.5774 (+104.2%) | 14.03 ± 0.9776 (+23.5%) |
 
 ## Provenance
 
 | variant | commit | container | command |
 |---|---|---|---|
-| `baseline` | `47747e3ad203` | `host` | `pnpm exec tsx src/baseline/run.ts` |
-| `agent` | `47747e3ad203` | `host` | `pnpm exec tsx src/agent/run.ts` |
+| `baseline` | `08d548fe7b2e` | `host` | `pnpm exec tsx src/baseline/run.ts` |
+| `agent` | `08d548fe7b2e` | `host` | `pnpm exec tsx src/agent/run.ts` |
