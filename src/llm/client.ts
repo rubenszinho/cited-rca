@@ -52,6 +52,43 @@ export function configFromEnv(): ClientConfig {
   };
 }
 
+/**
+ * Models that reject the older request shape.
+ *
+ * OpenAI's reasoning models refuse `max_tokens` (they want
+ * `max_completion_tokens`) and refuse any temperature other than 1. Sending the
+ * old field to one of them fails the whole run with a 400, which reads as a
+ * broken workflow rather than a parameter name.
+ *
+ * Matched on the bare model id so it works whether the provider prefixes it
+ * (`openai/gpt-5-mini` through a gateway) or not (`gpt-5-mini` direct).
+ */
+const REASONING_MODEL = /^(?:gpt-5|o[1-9])(?:[-.]|$)/;
+
+export function needsCompletionTokens(model: string): boolean {
+  return REASONING_MODEL.test(model.split('/').pop() ?? model);
+}
+
+/** Request payload, adapted to what the target model will accept. */
+export function requestBody(config: ClientConfig, options: CompleteOptions): object {
+  const base = {
+    model: config.model,
+    messages: options.messages,
+    seed: config.seed,
+  };
+  const limit = options.maxTokens ?? config.maxTokens;
+  if (needsCompletionTokens(config.model)) {
+    // Temperature is deliberately omitted rather than set: these models accept
+    // only the default, and sending it explicitly is a 400.
+    return { ...base, max_completion_tokens: limit };
+  }
+  return {
+    ...base,
+    max_tokens: limit,
+    temperature: options.temperature ?? config.temperature,
+  };
+}
+
 type ApiResponse = {
   choices?: { message?: { content?: string } }[];
   usage?: { prompt_tokens?: number; completion_tokens?: number };
@@ -68,13 +105,7 @@ async function callProvider(
       'Content-Type': 'application/json',
       Authorization: `Bearer ${config.apiKey}`,
     },
-    body: JSON.stringify({
-      model: config.model,
-      messages: options.messages,
-      max_tokens: options.maxTokens ?? config.maxTokens,
-      temperature: options.temperature ?? config.temperature,
-      seed: config.seed,
-    }),
+    body: JSON.stringify(requestBody(config, options)),
   });
 
   const body = (await response.json()) as ApiResponse;

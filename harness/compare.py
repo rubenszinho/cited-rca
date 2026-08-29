@@ -84,14 +84,43 @@ def render_table(order, aggs, by_variant, metrics, reference) -> list[str]:
     return lines
 
 
+def render_model_warning(by_variant) -> list[str]:
+    """Refuse to present rows from different models as one comparison.
+
+    Mixing models across variants compares an ablation of one system against a
+    baseline of another. The table could not previously show that it had
+    happened, which is the only reason it would ever go unnoticed.
+    """
+    models = {
+        (rec.get("metrics") or {}).get("model", "unknown")
+        for recs in by_variant.values() for rec in recs
+    }
+    if len(models) <= 1:
+        return []
+    return ["\n## Mixed models — not a valid comparison\n",
+            "These runs were produced by more than one model: "
+            + ", ".join(f"`{m}`" for m in sorted(models))
+            + ". Rows from different models are not comparable and the deltas "
+              "above are meaningless. Re-record the whole grid on one model.\n"]
+
+
+def render_caveats(by_variant) -> list[str]:
+    """Everything that would make the table above misleading if left unsaid."""
+    return (render_model_warning(by_variant)
+            + render_contamination(by_variant)
+            + render_failures(by_variant))
+
+
 def render_provenance(order, by_variant) -> list[str]:
     # A results table nobody can trace back to a commit is not evidence.
-    lines = ["\n## Provenance\n", "| variant | commit | container | command |", "|---|---|---|---|"]
+    lines = ["\n## Provenance\n",
+             "| variant | model | commit | container |", "|---|---|---|---|"]
     for name in order:
         rec = by_variant[name][0]
+        model = (rec.get("metrics") or {}).get("model", "unknown")
         lines.append(
-            f"| `{name}` | `{rec.get('commit', '?')[:12]}` | "
-            f"`{rec.get('env', {}).get('container', '?')}` | `{rec.get('cmd', '?')}` |"
+            f"| `{name}` | `{model}` | `{rec.get('commit', '?')[:12]}` | "
+            f"`{rec.get('env', {}).get('container', '?')}` |"
         )
     return lines
 
@@ -159,8 +188,7 @@ def main() -> int:
     lines = header(args.baseline)
     lines += render_table(order, aggs, by_variant, metrics, args.baseline)
     lines += render_provenance(order, by_variant)
-    lines += render_contamination(by_variant)
-    lines += render_failures(by_variant)
+    lines += render_caveats(by_variant)
 
     text = "\n".join(lines) + "\n"
     print(text)

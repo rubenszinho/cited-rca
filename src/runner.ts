@@ -10,7 +10,7 @@
  */
 import { listCases, loadBundle, loadTruth, type IncidentBundle } from './bundle.ts';
 import { grade, type Grade } from './grade.ts';
-import { createClient } from './llm/client.ts';
+import { configFromEnv, createClient } from './llm/client.ts';
 import type { LlmClient } from './llm/types.ts';
 import type { RcaReport } from './schema.ts';
 
@@ -88,6 +88,7 @@ function summarise(grades: Grade[], client: LlmClient, elapsedMs: number) {
     evidence_recall: mean(grades.map((g) => g.evidence_recall)),
     red_herring_rate: mean(grades.map((g) => (g.red_herring_blamed ? 1 : 0))),
     cases: grades.length,
+    model: configFromEnv().model,
     llm_calls: totals.calls,
     replayed_calls: totals.replayed,
     prompt_tokens: totals.prompt_tokens,
