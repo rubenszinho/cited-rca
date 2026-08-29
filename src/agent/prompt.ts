@@ -58,7 +58,7 @@ function renderMoves(moves: SeriesMove[]): string {
 
 export function triageMessages(bundle: IncidentBundle): ChatMessage[] {
   const user = [
-    `Incident ${bundle.caseId}. First pass: work out when it started and what to read.`,
+    `Incident ${bundle.handle}. First pass: work out when it started and what to read.`,
     '',
     ...smallSources(bundle),
     '',
@@ -94,7 +94,7 @@ function draftBody(
   recall: string,
 ): string {
   return [
-    `Incident ${bundle.caseId}. Write the review.`,
+    `Incident ${bundle.handle}. Write the review.`,
     '',
     ...smallSources(bundle),
     '',
@@ -150,7 +150,7 @@ function investigateBody(
   roundsLeft: number,
 ): string {
   return [
-    `Incident ${bundle.caseId}. You are working out what happened.`,
+    `Incident ${bundle.handle}. You are working out what happened.`,
     '',
     ...smallSources(bundle),
     '',

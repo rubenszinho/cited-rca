@@ -136,6 +136,7 @@ tasks:
       - AGENT_FEATURES=search {{.RUN}} --variant agent-noverify
       - AGENT_FEATURES=search,verify,memory {{.RUN}} --variant agent-memory
       - AGENT_FEATURES=triage,search,verify {{.RUN}} --variant agent-withtriage
+      - AGENT_FEATURES=search,investigate,verify {{.RUN}} --variant agent-investigate
 
   variant:
     desc: 'Run one labelled configuration (VARIANT=x FEATURES=a,b task project:variant)'
@@ -162,6 +163,14 @@ tasks:
     desc: Clone HEAD to a scratch dir and reproduce the committed results
     cmds:
       - ./tools/repro/verify.sh
+
+  verify:citations:
+    desc: Check that every committed review cites a line that is in the repository
+    # Parses the rendered markdown rather than calling the project's own code,
+    # so it cannot inherit the same bug. A gitignore rule once left a worked
+    # example citing telemetry that never reached a clean clone.
+    cmds:
+      - '{{.PY}} tools/repro/verify_citations.py examples/checkout-latency-2026-03-19/REVIEW.md'
 
   # === Trajectories ===================================================
 

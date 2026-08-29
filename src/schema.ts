@@ -17,6 +17,16 @@ import { z } from 'zod';
 
 import { ROOT_CAUSES } from '../fixtures/model.ts';
 
+/**
+ * Shortest quote that is worth anything.
+ *
+ * A one-character quote resolves against almost any line, so a report could
+ * point at the right lines while committing to nothing about their contents and
+ * still score as fully cited. The floor forces a citation to name something
+ * specific enough to be wrong.
+ */
+export const MIN_QUOTE = 12;
+
 export const CitationSchema = z.object({
   /** Bundle-relative path, e.g. "logs/app.jsonl" or "metrics/http.csv". */
   source: z.string().min(1),
@@ -30,7 +40,7 @@ export const CitationSchema = z.object({
    * appear on the line it names is provably wrong, and the workflow's verifier
    * catches it before the report is emitted.
    */
-  quote: z.string().min(1),
+  quote: z.string().min(MIN_QUOTE),
 });
 
 export const FindingSchema = z.object({

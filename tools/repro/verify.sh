@@ -52,5 +52,8 @@ say "replaying every variant with no API key"
 
 # Compares the graded outcome of every case, not the rendered table: wall-clock
 # timings differ between machines and are not part of the claim.
+say "checking that every committed review cites a line present in the clone"
+./bin/mise exec -- task project:verify:citations
+
 say "comparing every graded case against the committed results"
 ./bin/mise exec -- python3 tools/repro/compare_results.py "$REPO_ROOT/results" results

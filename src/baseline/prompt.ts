@@ -14,6 +14,7 @@ import type { IncidentBundle } from '../bundle.ts';
 import { bulkFiles, deduped, sample, smallSources } from '../context.ts';
 import type { ChatMessage } from '../llm/types.ts';
 import { ROOT_CAUSES } from '../../fixtures/model.ts';
+import { MIN_QUOTE } from '../schema.ts';
 
 /** Sampled info/debug lines kept for context around the errors. */
 const CONTEXT_SAMPLE = 120;
@@ -61,12 +62,14 @@ export function schemaInstructions(): string {
     'Every entry in timeline, evidence and ruled_out needs at least one citation.',
     'In "quote", copy a distinctive fragment of the text that appears on that exact',
     'line, verbatim. A citation whose quote is not on the line it names is rejected.',
+    `The quote must be at least ${MIN_QUOTE} characters: it has to name something`,
+    'specific enough to be wrong.',
   ].join('\n');
 }
 
 export function baselineMessages(bundle: IncidentBundle): ChatMessage[] {
   const user = [
-    `Incident ${bundle.caseId}. Below is the telemetry collected for it.`,
+    `Incident ${bundle.handle}. Below is the telemetry collected for it.`,
     '',
     ...smallSources(bundle),
     '',

@@ -78,8 +78,12 @@ export function loadDirectory(root: string): IncidentBundle {
         `${TEXT_EXTENSIONS.join(', ')} - logs, metric exports, change or alert records.`,
     );
   }
+  // A real directory keeps its own name in the prompt: the user chose it, it is
+  // context rather than a leak, and an anonymised review is harder to file.
+  const name = root.replace(/\/+$/, '').split('/').pop() ?? root;
   return {
-    caseId: root.replace(/\/+$/, '').split('/').pop() ?? root,
+    caseId: name,
+    handle: name,
     files: sources.map((source) => readTruncated(root, source)),
   };
 }

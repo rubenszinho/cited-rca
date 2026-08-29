@@ -50,13 +50,50 @@ function summariseColumn(source: string, name: string, values: number[]): Series
  * changed in front of the model and demotes the flat control series, which is
  * the reasoning step the baseline has to perform for itself.
  */
+/**
+ * Is this a numeric series file?
+ *
+ * Detected by content, not by directory. Keying on a folder called `metrics/`
+ * worked for the fixtures and silently returned nothing for a real export sitting
+ * at the root of an incident folder - so the workflow lost every metric on
+ * exactly the input ingestion exists to handle.
+ */
+function isSeriesFile(file: BundleFile): boolean {
+  const [header, first] = file.lines;
+  if (!header || !first || !header.includes(',')) return false;
+  const cells = first.split(',');
+  if (cells.length !== header.split(',').length || cells.length < 2) return false;
+  // At least one column after the timestamp has to parse as a number.
+  return cells
+    .slice(1)
+    .some((cell) => cell.trim() !== '' && Number.isFinite(Number(cell)));
+}
+
+/**
+ * Numeric cells only. A real export carries blanks, `null` and `NaN`.
+ *
+ * An empty cell is missing, not zero - `Number('')` is 0, which would drag a
+ * series' minimum to zero and rank a text column as a metric.
+ */
+function numericColumn(rows: string[], col: number): number[] {
+  const values: number[] = [];
+  for (const row of rows) {
+    const cell = row.split(',')[col]?.trim();
+    if (!cell) continue;
+    const value = Number(cell);
+    if (Number.isFinite(value)) values.push(value);
+  }
+  return values;
+}
+
 export function metricMoves(bundle: IncidentBundle): SeriesMove[] {
   const moves: SeriesMove[] = [];
-  for (const file of bundle.files.filter((f) => f.source.startsWith('metrics/'))) {
+  for (const file of bundle.files.filter(isSeriesFile)) {
     const [header, ...rows] = file.lines;
     const columns = (header ?? '').split(',');
     for (let col = 1; col < columns.length; col++) {
-      const values = rows.map((row) => Number(row.split(',')[col] ?? 0));
+      const values = numericColumn(rows, col);
+      if (values.length === 0) continue;
       moves.push(summariseColumn(file.source, columns[col] ?? `col${col}`, values));
     }
   }

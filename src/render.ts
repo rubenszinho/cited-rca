@@ -43,13 +43,25 @@ function section(bundle: IncidentBundle, title: string, findings: Finding[]): st
   return out;
 }
 
+/** Acronyms that a naive capitalisation turns into "Dns failure". */
+const ACRONYMS = new Set(['dns', 'cpu', 'io', 'tls', 'ssl', 'db', 'api']);
+
 function humanCause(cause: string): string {
-  return cause.replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase());
+  return cause
+    .split('_')
+    .map((word, i) =>
+      ACRONYMS.has(word)
+        ? word.toUpperCase()
+        : i === 0
+          ? word.charAt(0).toUpperCase() + word.slice(1)
+          : word,
+    )
+    .join(' ');
 }
 
 function head(bundle: IncidentBundle, report: RcaReport): string[] {
   return [
-    `# Incident review — ${bundle.caseId}`,
+    `# Incident review — ${bundle.handle}`,
     '',
     `**Root cause:** ${humanCause(report.root_cause)}  `,
     `**Onset:** ${report.onset_ts}`,

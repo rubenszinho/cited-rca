@@ -22,9 +22,34 @@ export type BundleFile = {
 };
 
 export type IncidentBundle = {
+  /** Directory name. Bookkeeping only — never shown to a model. */
   caseId: string;
+  /**
+   * What the model is told the incident is called.
+   *
+   * The case directories are named after the fault they contain
+   * (`05-connection-pool-exhaustion`), which is a description of the answer. A
+   * prompt that opened with the case id was handing over the root cause in its
+   * first line, and `cause_accuracy` was partly measuring string overlap with a
+   * directory name rather than diagnosis.
+   *
+   * Graded cases therefore get an opaque handle. A real directory keeps its own
+   * name: the user chose it, it is context rather than a leak, and hiding it
+   * would make the review harder to file.
+   */
+  handle: string;
   files: BundleFile[];
 };
+
+/** Stable opaque handle for a graded case. Same id, same handle, always. */
+export function opaqueHandle(caseId: string): string {
+  let h = 2166136261;
+  for (let i = 0; i < caseId.length; i++) {
+    h ^= caseId.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return `incident-${(h >>> 0).toString(16).padStart(8, '0').slice(0, 6)}`;
+}
 
 export function listCases(): string[] {
   const index = JSON.parse(readFileSync(join(CASES_DIR, 'index.json'), 'utf8'));
@@ -43,7 +68,11 @@ export function loadBundle(caseId: string): IncidentBundle {
   for (const name of readdirSync(join(root, 'metrics')).sort()) {
     sources.push(`metrics/${name}`);
   }
-  return { caseId, files: sources.map((source) => readLines(root, source)) };
+  return {
+    caseId,
+    handle: opaqueHandle(caseId),
+    files: sources.map((source) => readLines(root, source)),
+  };
 }
 
 /** Grader-only. Nothing on the solution path may call this. */

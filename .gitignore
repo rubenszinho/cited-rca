@@ -9,7 +9,10 @@
 # must be visible in a diff.
 
 # --- generic -----------------------------------------------------------
-*.log
+# Scoped to the repo root on purpose. A bare `*.log` also swallowed the worked
+# example's telemetry, so its committed review cited lines that were not in the
+# clone - breaking the one property this project exists to guarantee.
+/*.log
 .DS_Store
 __pycache__/
 *.py[cod]
@@ -30,3 +33,6 @@ examples/public-*/*.log
 
 # Scratch space for reading the challenge brief. Not part of the deliverable.
 specs/
+
+# Fetched from loghub, never redistributed. See tools/demo/fetch-public-logs.sh.
+examples/public-*/*.log
