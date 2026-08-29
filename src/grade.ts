@@ -20,11 +20,40 @@ import type { IncidentBundle } from './bundle.ts';
 import { describeCitation, resolve } from './citation.ts';
 import type { Citation, Finding, RcaReport } from './schema.ts';
 
+/**
+ * How a case ended, as one word.
+ *
+ * The original grader had one boolean and could not tell these apart. A report
+ * that failed schema validation scored exactly like a confident wrong
+ * diagnosis, so "the model cannot write JSON" and "the model cannot read
+ * telemetry" landed in the same number - and on a weaker model the first
+ * silently became most of the second.
+ */
+export type Outcome =
+  /** No parseable report. The workflow produced nothing to review. */
+  | 'invalid'
+  /** A report, naming the wrong cause. */
+  | 'wrong-cause'
+  /** Right cause, but the argument does not hold: bad citations, missing
+   *  evidence, or a red herring used as support. */
+  | 'unsupported'
+  /** Right cause, every citation resolves, every required line cited, no
+   *  herring leaned on. */
+  | 'sound';
+
 export type Grade = {
   case_id: string;
+  outcome: Outcome;
+  /** `outcome === 'sound'`. The headline metric. */
   passed: boolean;
+  /** False only when nothing parseable came back. */
+  report_produced: boolean;
   cause_correct: boolean;
   citations_valid: boolean;
+  /** Citations that resolve, over citations made. Coarse booleans hid the
+   *  difference between one bad citation and twenty. */
+  citations_total: number;
+  citations_resolved: number;
   evidence_recall: number;
   red_herring_blamed: boolean;
   /** Human-readable reasons the case failed, for the report and the video. */
@@ -100,28 +129,30 @@ function describe(
   truth: Truth,
   found: { unresolved: Citation[]; missing: EvidenceRef[]; blamed: RedHerring[] },
 ): string[] {
-  const notes: string[] = [];
-  if (!causeCorrect) {
-    notes.push(`cause: said ${report.root_cause}, actual ${truth.root_cause}`);
-  }
-  for (const c of found.unresolved) {
-    notes.push(`citation does not resolve: ${describeCitation(c)}`);
-  }
-  for (const ref of found.missing) {
-    notes.push(`evidence not cited: ${ref.source} ~ "${ref.match}" (${ref.why})`);
-  }
-  for (const herring of found.blamed) {
-    notes.push(
-      `red herring used as evidence: "${herring.match}" (${herring.why_tempting})`,
-    );
-  }
-  return notes;
+  const notes = causeCorrect
+    ? []
+    : [`cause: said ${report.root_cause}, actual ${truth.root_cause}`];
+  return [
+    ...notes,
+    ...found.unresolved.map((c) => `citation does not resolve: ${describeCitation(c)}`),
+    ...found.missing.map(
+      (ref) => `evidence not cited: ${ref.source} ~ "${ref.match}" (${ref.why})`,
+    ),
+    ...found.blamed.map(
+      (h) => `red herring used as evidence: "${h.match}" (${h.why_tempting})`,
+    ),
+  ];
 }
 
-export function grade(bundle: IncidentBundle, truth: Truth, report: RcaReport): Grade {
-  const causeCorrect = report.root_cause === truth.root_cause;
-  const unresolved = unresolvedCitations(bundle, report);
+type Findings = {
+  unresolved: Citation[];
+  missing: EvidenceRef[];
+  blamed: RedHerring[];
+  recall: number;
+};
 
+/** Everything the four pass conditions are decided from. */
+function assess(bundle: IncidentBundle, truth: Truth, report: RcaReport): Findings {
   // Recall is measured against the sections that argue for the cause, not
   // against ruled_out: supporting evidence has to appear where the argument is.
   const supporting = citedLines(
@@ -130,19 +161,43 @@ export function grade(bundle: IncidentBundle, truth: Truth, report: RcaReport): 
   );
   const missing = missingEvidence(supporting, truth);
   const required = truth.required_evidence.length;
-  const recall = required === 0 ? 1 : 1 - missing.length / required;
-
   const ruledOut = citedLines(bundle, citationsOf(report.ruled_out));
-  const blamed = blamedHerrings(supporting, ruledOut, truth);
+  return {
+    unresolved: unresolvedCitations(bundle, report),
+    missing,
+    blamed: blamedHerrings(supporting, ruledOut, truth),
+    recall: required === 0 ? 1 : 1 - missing.length / required,
+  };
+}
+
+/** All four pass conditions met: right cause, and an argument that holds. */
+function isSound(causeCorrect: boolean, found: Findings): boolean {
+  return (
+    causeCorrect &&
+    found.unresolved.length === 0 &&
+    found.recall === 1 &&
+    found.blamed.length === 0
+  );
+}
+
+export function grade(bundle: IncidentBundle, truth: Truth, report: RcaReport): Grade {
+  const causeCorrect = report.root_cause === truth.root_cause;
+  const found = assess(bundle, truth, report);
+  const all = [...report.timeline, ...report.evidence, ...report.ruled_out];
+  const total = citationsOf(all).length;
+  const sound = isSound(causeCorrect, found);
 
   return {
     case_id: truth.case_id,
-    passed:
-      causeCorrect && unresolved.length === 0 && recall === 1 && blamed.length === 0,
+    outcome: sound ? 'sound' : causeCorrect ? 'unsupported' : 'wrong-cause',
+    passed: sound,
+    report_produced: true,
     cause_correct: causeCorrect,
-    citations_valid: unresolved.length === 0,
-    evidence_recall: Number(recall.toFixed(4)),
-    red_herring_blamed: blamed.length > 0,
-    notes: describe(causeCorrect, report, truth, { unresolved, missing, blamed }),
+    citations_valid: found.unresolved.length === 0,
+    citations_total: total,
+    citations_resolved: total - found.unresolved.length,
+    evidence_recall: Number(found.recall.toFixed(4)),
+    red_herring_blamed: found.blamed.length > 0,
+    notes: describe(causeCorrect, report, truth, found),
   };
 }

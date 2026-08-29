@@ -14,9 +14,13 @@ import type { Grade } from './grade.ts';
 function graded(note: string): Grade {
   return {
     case_id: 'x',
+    outcome: 'invalid',
     passed: false,
+    report_produced: false,
     cause_correct: false,
     citations_valid: false,
+    citations_total: 0,
+    citations_resolved: 0,
     evidence_recall: 0,
     red_herring_blamed: false,
     notes: [note],

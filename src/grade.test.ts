@@ -165,3 +165,39 @@ describe('grade', () => {
     expect(bundle.files.map((f) => f.source)).not.toContain('truth.json');
   });
 });
+
+describe('outcome tiers', () => {
+  it('calls a sound report sound', () => {
+    expect(grade(bundle, truth, report()).outcome).toBe('sound');
+  });
+
+  it('separates a wrong cause from an unsupported one', () => {
+    expect(grade(bundle, truth, report({ root_cause: 'memory_leak' })).outcome).toBe(
+      'wrong-cause',
+    );
+    // Right cause, no evidence behind it. Not the same failure, and averaging
+    // the two into one boolean was hiding which one a variant was making.
+    const unsupported = grade(bundle, truth, report({ timeline: [], evidence: [] }));
+    expect(unsupported.outcome).toBe('unsupported');
+    expect(unsupported.cause_correct).toBe(true);
+  });
+
+  it('counts citations resolved against citations made', () => {
+    const mixed = report();
+    mixed.timeline[0]!.citations.push({
+      source: 'changes.jsonl',
+      line: 9999,
+      quote: 'not on any line',
+    });
+    const result = grade(bundle, truth, mixed);
+    expect(result.citations_total).toBe(4);
+    expect(result.citations_resolved).toBe(3);
+    // One bad citation in four is not the same failure as four in four, and
+    // the boolean could not tell them apart.
+    expect(result.citations_valid).toBe(false);
+  });
+
+  it('marks a graded report as produced', () => {
+    expect(grade(bundle, truth, report()).report_produced).toBe(true);
+  });
+});

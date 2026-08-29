@@ -1,0 +1,186 @@
+{
+  "cmd": "pnpm exec tsx src/agent/run.ts",
+  "commit": "f51c15dfec949ed582cd268ded52176b3c3b2c84-dirty",
+  "duration_s": 0.6607,
+  "env": {
+    "container": "host",
+    "machine": "x86_64",
+    "os": "Linux 6.18.33.2-microsoft-standard-WSL2",
+    "python": "3.12.14"
+  },
+  "exit_code": 0,
+  "metrics": {
+    "cases": 12,
+    "cases_detail": [
+      {
+        "case_id": "01-bad-deploy-null-deref",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 1,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:645 ~ \"\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\"",
+          "citation does not resolve: logs/app.jsonl:645 ~ \"\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\"\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "02-config-flag-misflip",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:533 ~ \"\"session binding mismatch, forcing re-auth\",\"flag\":\"strict_session_binding\"\"",
+          "citation does not resolve: logs/app.jsonl:535 ~ \"\"request rejected: session invalid\",\"status\":401\"",
+          "citation does not resolve: logs/app.jsonl:533 ~ \"\"session binding mismatch, forcing re-auth\",\"flag\":\"strict_session_binding\"\"",
+          "citation does not resolve: logs/app.jsonl:535 ~ \"\"request rejected: session invalid\",\"status\":401\"",
+          "evidence not cited: logs/app.jsonl ~ \"session binding mismatch\" (the warning naming the flag)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "03-schema-migration-index-drop",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: logs/app.jsonl ~ \"Seq Scan on orders\" (the plan change proving the index is gone)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "04-cert-expiry",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:922 ~ \"\"tls: failed to verify certificate: certificate has expired\",\"notAfter\":\"2026-03-17T09:30:00Z\"\"",
+          "evidence not cited: metrics/callbacks.csv ~ \"2026-03-17T09:30:00.000Z\" (the delivered_per_min series at onset, delivery collapsing at the same minute)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "05-connection-pool-exhaustion",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)",
+          "red herring used as evidence: \"timed out acquiring database connection\" (the error names the database, so it reads as a slow database - but database CPU and mean query time are both flat)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "06-memory-leak-oom",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [],
+        "outcome": "sound",
+        "passed": true,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "07-disk-exhaustion-logs",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.3333,
+        "notes": [
+          "evidence not cited: metrics/disk.csv ~ \"2026-03-17T09:34:00.000Z\" (the api3_used_pct series at onset, one node climbing while its peers stay flat)",
+          "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "08-cache-stampede",
+        "cause_correct": false,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "cause: said resource_exhaustion_pool, actual cache_stampede",
+          "evidence not cited: logs/app.jsonl ~ \"cache miss, recomputing\" (concurrent recomputation of the same key, which is what makes it a stampede)"
+        ],
+        "outcome": "wrong-cause",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "09-downstream-timeout",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [],
+        "outcome": "sound",
+        "passed": true,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "10-dns-failure",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [],
+        "outcome": "sound",
+        "passed": true,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "11-upstream-rate-limit",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [],
+        "outcome": "sound",
+        "passed": true,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "12-batch-job-contention",
+        "cause_correct": false,
+        "citations_valid": false,
+        "evidence_recall": 0,
+        "notes": [
+          "solver threw: evidence.2.citations.1.quote: Too small: expected string to have >=12 characters; ruled_out.1.citations.1.quote: Too small: expected string to have >=12 characters"
+        ],
+        "outcome": "invalid",
+        "passed": false,
+        "red_herring_blamed": false
+      }
+    ],
+    "cause_accuracy": 0.9091,
+    "citation_precision": 0.9591,
+    "citation_validity": 0.7273,
+    "completion_rate": 0.9167,
+    "completion_tokens": 37365,
+    "cost_usd": 1.268,
+    "evidence_recall": 0.7879,
+    "llm_calls": 36,
+    "model": "gpt-4.1-mini",
+    "outcomes": {
+      "invalid": 1,
+      "sound": 4,
+      "unsupported": 6,
+      "wrong_cause": 1
+    },
+    "pass_rate": 0.3333,
+    "prompt_tokens": 235842,
+    "provider_errors": 0,
+    "red_herring_rate": 0.0909,
+    "replayed_calls": 36,
+    "seconds_per_case": 0.007
+  },
+  "seed": 1,
+  "started_at": "2026-08-29T23:24:45.006031+00:00",
+  "variant": "agent-withtriage"
+}

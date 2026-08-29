@@ -1,0 +1,203 @@
+{
+  "cmd": "pnpm exec tsx src/agent/run.ts",
+  "commit": "f51c15dfec949ed582cd268ded52176b3c3b2c84-dirty",
+  "duration_s": 0.6751,
+  "env": {
+    "container": "host",
+    "machine": "x86_64",
+    "os": "Linux 6.18.33.2-microsoft-standard-WSL2",
+    "python": "3.12.14"
+  },
+  "exit_code": 0,
+  "metrics": {
+    "cases": 12,
+    "cases_detail": [
+      {
+        "case_id": "01-bad-deploy-null-deref",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 1,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "02-config-flag-misflip",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 1,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:535 ~ \"\"request rejected: session invalid\",\"status\":401\"",
+          "citation does not resolve: alerts.jsonl:1 ~ \"\"AuthReauthSpike\",\"state\":\"firing\"\"",
+          "citation does not resolve: alerts.jsonl:2 ~ \"\"Api401RateHigh\",\"state\":\"firing\"\"",
+          "citation does not resolve: logs/app.jsonl:535 ~ \"\"request rejected: session invalid\",\"status\":401\"",
+          "citation does not resolve: alerts.jsonl:1 ~ \"\"AuthReauthSpike\",\"state\":\"firing\"\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "03-schema-migration-index-drop",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [],
+        "outcome": "sound",
+        "passed": true,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "04-cert-expiry",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:922 ~ \"2026-03-17T09:35:10.000Z\",\"level\":\"error\",\"msg\":\"tls: failed to verify certificate: certificate has expired\",\"peer\":\"payments.partner.example\",\"notAfter\":\"2026-03-17T09:30:00Z\"\"",
+          "citation does not resolve: logs/app.jsonl:1214 ~ \"2026-03-17T09:42:28.000Z\",\"level\":\"error\",\"msg\":\"tls: failed to verify certificate: certificate has expired\",\"peer\":\"payments.partner.example\",\"notAfter\":\"2026-03-17T09:30:00Z\"\"",
+          "citation does not resolve: logs/app.jsonl:1411 ~ \"2026-03-17T09:47:31.000Z\",\"level\":\"error\",\"msg\":\"tls: failed to verify certificate: certificate has expired\",\"peer\":\"payments.partner.example\",\"notAfter\":\"2026-03-17T09:30:00Z\"\"",
+          "citation does not resolve: logs/app.jsonl:1510 ~ \"2026-03-17T09:50:02.000Z\",\"level\":\"error\",\"msg\":\"tls: failed to verify certificate: certificate has expired\",\"peer\":\"payments.partner.example\",\"notAfter\":\"2026-03-17T09:30:00Z\"\"",
+          "citation does not resolve: logs/app.jsonl:1811 ~ \"2026-03-17T09:57:36.000Z\",\"level\":\"error\",\"msg\":\"tls: failed to verify certificate: certificate has expired\",\"peer\":\"payments.partner.example\",\"notAfter\":\"2026-03-17T09:30:00Z\"\"",
+          "evidence not cited: metrics/callbacks.csv ~ \"2026-03-17T09:30:00.000Z\" (the delivered_per_min series at onset, delivery collapsing at the same minute)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "05-connection-pool-exhaustion",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "06-memory-leak-oom",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: metrics/worker.csv ~ \"2026-03-17T09:14:00.000Z\" (the rss_mb series at onset, memory climbing monotonically rather than spiking)",
+          "red herring used as evidence: \"worker replicas 4 -> 8\" (a change during the incident, but an operator mitigation rather than the cause)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "07-disk-exhaustion-logs",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 0.3333,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:1007 ~ \"2026-03-17T09:34:05.000Z\",\"level\":\"error\",\"msg\":\"write failed: no space left on device\",\"node\":\"api-3\"\"",
+          "citation does not resolve: logs/app.jsonl:1009 ~ \"2026-03-17T09:34:08.000Z\",\"level\":\"warn\",\"msg\":\"log rotation failed\",\"node\":\"api-3\",\"free_bytes\":0\"",
+          "evidence not cited: metrics/disk.csv ~ \"2026-03-17T09:34:00.000Z\" (the api3_used_pct series at onset, one node climbing while its peers stay flat)",
+          "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)",
+          "red herring used as evidence: \"ApiWriteErrors\" (the alert is fleet-scoped and names no node, so it reads as a fleet-wide fault when only api-3 is affected)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "08-cache-stampede",
+        "cause_correct": false,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "cause: said resource_exhaustion_pool, actual cache_stampede",
+          "evidence not cited: logs/app.jsonl ~ \"cache miss, recomputing\" (concurrent recomputation of the same key, which is what makes it a stampede)"
+        ],
+        "outcome": "wrong-cause",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "09-downstream-timeout",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [],
+        "outcome": "sound",
+        "passed": true,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "10-dns-failure",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 0.3333,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:458 ~ \"2026-03-17T09:16:08.000Z\",\"level\":\"error\",\"msg\":\"dial tcp: lookup payments.internal: SERVFAIL\"",
+          "citation does not resolve: logs/app.jsonl:458 ~ \"2026-03-17T09:16:08.000Z\",\"level\":\"error\",\"msg\":\"dial tcp: lookup payments.internal: SERVFAIL\"",
+          "evidence not cited: logs/app.jsonl ~ \"SERVFAIL\" (the resolution failure itself)",
+          "evidence not cited: alerts.jsonl ~ \"MultiServiceErrorSpike\" (three unrelated services failing at once points below the application layer)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "11-upstream-rate-limit",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 1,
+        "notes": [
+          "citation does not resolve: changes.jsonl:1 ~ \"{\"ts\":\"2026-03-17T09:12:00.000Z\",\"kind\":\"deploy\",\"summary\":\"checkout: raise retry attempts 2 -> 5\"}\"",
+          "citation does not resolve: changes.jsonl:1 ~ \"{\"ts\":\"2026-03-17T09:12:00.000Z\",\"kind\":\"deploy\",\"summary\":\"checkout: raise retry attempts 2 -> 5\"}\"",
+          "red herring used as evidence: \"CheckoutConversionDrop\" (reads as a checkout regression rather than an upstream rejecting our excess volume)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "12-batch-job-contention",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\"\"",
+          "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\"\"",
+          "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      }
+    ],
+    "cause_accuracy": 0.9167,
+    "citation_precision": 0.9082,
+    "citation_validity": 0.4167,
+    "completion_rate": 1,
+    "completion_tokens": 28286,
+    "cost_usd": 0.8088,
+    "evidence_recall": 0.75,
+    "llm_calls": 18,
+    "model": "gpt-4.1-mini",
+    "outcomes": {
+      "invalid": 0,
+      "sound": 2,
+      "unsupported": 9,
+      "wrong_cause": 1
+    },
+    "pass_rate": 0.1667,
+    "prompt_tokens": 128158,
+    "provider_errors": 0,
+    "red_herring_rate": 0.25,
+    "replayed_calls": 18,
+    "seconds_per_case": 0.006
+  },
+  "seed": 2,
+  "started_at": "2026-08-29T23:24:41.259543+00:00",
+  "variant": "agent-noverify"
+}

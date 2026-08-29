@@ -16,13 +16,25 @@ import type { RcaReport } from './schema.ts';
 
 export type Solver = (bundle: IncidentBundle, client: LlmClient) => Promise<RcaReport>;
 
-/** A case that threw counts as a failure, never as a skip. */
+/**
+ * A case that threw counts as a failure, never as a skip.
+ *
+ * `outcome: 'invalid'` rather than a wrong answer: nothing parseable came back,
+ * so there is no diagnosis to be right or wrong about. Reporting it as a wrong
+ * cause would make "the model cannot write JSON" indistinguishable from "the
+ * model cannot read telemetry", and on a weaker model the first quietly becomes
+ * most of the second.
+ */
 function failedGrade(caseId: string, error: unknown): Grade {
   return {
     case_id: caseId,
+    outcome: 'invalid',
     passed: false,
+    report_produced: false,
     cause_correct: false,
     citations_valid: false,
+    citations_total: 0,
+    citations_resolved: 0,
     evidence_recall: 0,
     red_herring_blamed: false,
     notes: [`solver threw: ${error instanceof Error ? error.message : String(error)}`],
@@ -70,9 +82,40 @@ function costUsd(promptTokens: number, completionTokens: number): number {
   );
 }
 
+/**
+ * Mean over the cases that produced a report.
+ *
+ * Conditioning matters: a schema failure is not evidence that the model chose
+ * the wrong cause, and averaging it in as a zero makes a reasoning metric move
+ * when only the JSON changed. `completion_rate` carries that loss separately,
+ * so nothing is hidden by the conditioning.
+ */
+function meanOfProduced(grades: Grade[], pick: (g: Grade) => number): number {
+  const produced = grades.filter((g) => g.report_produced);
+  return produced.length === 0 ? 0 : mean(produced.map(pick));
+}
+
+/** How many cases ended in each tier. The shape of a variant's failure. */
+function countOutcomes(grades: Grade[]) {
+  return {
+    sound: grades.filter((g) => g.outcome === 'sound').length,
+    unsupported: grades.filter((g) => g.outcome === 'unsupported').length,
+    wrong_cause: grades.filter((g) => g.outcome === 'wrong-cause').length,
+    invalid: grades.filter((g) => g.outcome === 'invalid').length,
+  };
+}
+
+function citationTotals(grades: Grade[]): { cited: number; resolved: number } {
+  return {
+    cited: grades.reduce((n, g) => n + g.citations_total, 0),
+    resolved: grades.reduce((n, g) => n + g.citations_resolved, 0),
+  };
+}
+
 function summarise(grades: Grade[], client: LlmClient, elapsedMs: number) {
   const totals = client.totals();
   const providerErrors = grades.filter(isProviderError).length;
+  const { cited, resolved } = citationTotals(grades);
   return {
     /**
      * Cases lost to the provider, not to the workflow. Any value above zero
@@ -83,10 +126,18 @@ function summarise(grades: Grade[], client: LlmClient, elapsedMs: number) {
     // Primary metric: a case counts only if the cause is right AND the argument
     // for it is sound. See src/grade.ts for the four conditions.
     pass_rate: mean(grades.map((g) => (g.passed ? 1 : 0))),
-    cause_accuracy: mean(grades.map((g) => (g.cause_correct ? 1 : 0))),
-    citation_validity: mean(grades.map((g) => (g.citations_valid ? 1 : 0))),
-    evidence_recall: mean(grades.map((g) => g.evidence_recall)),
-    red_herring_rate: mean(grades.map((g) => (g.red_herring_blamed ? 1 : 0))),
+    /** Cases that returned a parseable report at all. */
+    completion_rate: mean(grades.map((g) => (g.report_produced ? 1 : 0))),
+    // The four below are conditioned on a report existing, so they measure
+    // reasoning rather than JSON compliance. completion_rate carries the rest.
+    cause_accuracy: meanOfProduced(grades, (g) => (g.cause_correct ? 1 : 0)),
+    citation_validity: meanOfProduced(grades, (g) => (g.citations_valid ? 1 : 0)),
+    /** Citations that resolve over citations made, across every report. One
+     *  bad citation in twenty-eight is not the same failure as twenty-eight. */
+    citation_precision: cited === 0 ? 0 : Number((resolved / cited).toFixed(4)),
+    evidence_recall: meanOfProduced(grades, (g) => g.evidence_recall),
+    red_herring_rate: meanOfProduced(grades, (g) => (g.red_herring_blamed ? 1 : 0)),
+    outcomes: countOutcomes(grades),
     cases: grades.length,
     model: configFromEnv().model,
     llm_calls: totals.calls,
@@ -100,6 +151,7 @@ function summarise(grades: Grade[], client: LlmClient, elapsedMs: number) {
     // incident a variant lost or why. compare.py ignores non-numeric fields.
     cases_detail: grades.map((g) => ({
       case_id: g.case_id,
+      outcome: g.outcome,
       passed: g.passed,
       cause_correct: g.cause_correct,
       citations_valid: g.citations_valid,

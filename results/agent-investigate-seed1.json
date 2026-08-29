@@ -1,0 +1,193 @@
+{
+  "cmd": "pnpm exec tsx src/agent/run.ts",
+  "commit": "f51c15dfec949ed582cd268ded52176b3c3b2c84-dirty",
+  "duration_s": 0.7804,
+  "env": {
+    "container": "host",
+    "machine": "x86_64",
+    "os": "Linux 6.18.33.2-microsoft-standard-WSL2",
+    "python": "3.12.14"
+  },
+  "exit_code": 0,
+  "metrics": {
+    "cases": 12,
+    "cases_detail": [
+      {
+        "case_id": "01-bad-deploy-null-deref",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 1,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\"",
+          "citation does not resolve: logs/app.jsonl:2120 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\"",
+          "citation does not resolve: changes.jsonl:2 ~ \"\"ts\":\"2026-03-17T09:22:00.000Z\",\"ref\":\"v2026.3.17-a1\"\"",
+          "citation does not resolve: logs/app.jsonl:645 ~ \"\"ts\":\"2026-03-17T09:23:01.000Z\",\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\"\"",
+          "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\"\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "02-config-flag-misflip",
+        "cause_correct": false,
+        "citations_valid": false,
+        "evidence_recall": 0,
+        "notes": [
+          "solver threw: ruled_out.2.citations: Too small: expected array to have >=1 items"
+        ],
+        "outcome": "invalid",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "03-schema-migration-index-drop",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 1,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:699 ~ \"\"msg\":\"statement timeout after 5000ms\",\"route\":\"/orders/history\"\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "04-cert-expiry",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: metrics/callbacks.csv ~ \"2026-03-17T09:30:00.000Z\" (the delivered_per_min series at onset, delivery collapsing at the same minute)",
+          "red herring used as evidence: \"v2026.3.17-c2\" (the only deploy in the window, and it touched retry logic)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "05-connection-pool-exhaustion",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.3333,
+        "notes": [
+          "evidence not cited: logs/app.jsonl ~ \"connection pool wait exceeded\" (the pool, not the database, is the contended resource)",
+          "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "06-memory-leak-oom",
+        "cause_correct": false,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "cause: said resource_exhaustion_pool, actual memory_leak",
+          "evidence not cited: metrics/worker.csv ~ \"2026-03-17T09:14:00.000Z\" (the rss_mb series at onset, memory climbing monotonically rather than spiking)",
+          "red herring used as evidence: \"worker replicas 4 -> 8\" (a change during the incident, but an operator mitigation rather than the cause)"
+        ],
+        "outcome": "wrong-cause",
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "07-disk-exhaustion-logs",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.3333,
+        "notes": [
+          "evidence not cited: metrics/disk.csv ~ \"2026-03-17T09:34:00.000Z\" (the api3_used_pct series at onset, one node climbing while its peers stay flat)",
+          "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "08-cache-stampede",
+        "cause_correct": false,
+        "citations_valid": true,
+        "evidence_recall": 0.3333,
+        "notes": [
+          "cause: said resource_exhaustion_pool, actual cache_stampede",
+          "evidence not cited: metrics/cache.csv ~ \"2026-03-17T09:25:00.000Z\" (the hit_rate series at onset, hit rate collapsing rather than degrading)",
+          "evidence not cited: logs/app.jsonl ~ \"cache miss, recomputing\" (concurrent recomputation of the same key, which is what makes it a stampede)"
+        ],
+        "outcome": "wrong-cause",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "09-downstream-timeout",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [],
+        "outcome": "sound",
+        "passed": true,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "10-dns-failure",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [],
+        "outcome": "sound",
+        "passed": true,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "11-upstream-rate-limit",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [
+          "red herring used as evidence: \"CheckoutConversionDrop\" (reads as a checkout regression rather than an upstream rejecting our excess volume)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "12-batch-job-contention",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 1,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:945 ~ \"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\"\"",
+          "citation does not resolve: logs/app.jsonl:945 ~ \"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\"\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      }
+    ],
+    "cause_accuracy": 0.8182,
+    "citation_precision": 0.9577,
+    "citation_validity": 0.7273,
+    "completion_rate": 0.9167,
+    "completion_tokens": 55130,
+    "cost_usd": 2.4263,
+    "evidence_recall": 0.7576,
+    "llm_calls": 64,
+    "model": "gpt-4.1-mini",
+    "outcomes": {
+      "invalid": 1,
+      "sound": 2,
+      "unsupported": 7,
+      "wrong_cause": 2
+    },
+    "pass_rate": 0.1667,
+    "prompt_tokens": 533104,
+    "provider_errors": 0,
+    "red_herring_rate": 0.2727,
+    "replayed_calls": 64,
+    "seconds_per_case": 0.013
+  },
+  "seed": 1,
+  "started_at": "2026-08-29T23:24:47.324070+00:00",
+  "variant": "agent-investigate"
+}
