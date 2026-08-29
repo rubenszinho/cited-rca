@@ -18,8 +18,8 @@
     },
     {
       "source": "metrics/db.csv",
-      "match": "seq_scans_per_min",
-      "why": "sequential scans jumping two orders of magnitude"
+      "match": "2026-03-17T09:26:00.000Z",
+      "why": "the seq_scans_per_min series at onset, sequential scans jumping two orders of magnitude"
     }
   ],
   "red_herrings": [

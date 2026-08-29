@@ -13,13 +13,13 @@
     },
     {
       "source": "metrics/downstream.csv",
-      "match": "supplier_p95_ms",
-      "why": "the step change is on the supplier side, not ours"
+      "match": "2026-03-17T09:19:00.000Z",
+      "why": "the supplier_p95_ms series at onset, the step change is on the supplier side, not ours"
     },
     {
       "source": "metrics/downstream.csv",
-      "match": "inflight_requests",
-      "why": "requests piling up because the calls have no timeout"
+      "match": "2026-03-17T09:19:00.000Z",
+      "why": "the inflight_requests series at onset, requests piling up because the calls have no timeout"
     }
   ],
   "red_herrings": [

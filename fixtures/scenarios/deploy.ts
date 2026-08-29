@@ -73,8 +73,8 @@ export const DEPLOY_SCENARIOS: Scenario[] = [
       },
       {
         source: 'metrics/http.csv',
-        match: 'error_rate',
-        why: 'the step change in error rate at onset',
+        match: '$onset',
+        why: 'the error_rate series at onset, showing the step change in error rate',
       },
     ],
     redHerrings: [
@@ -171,8 +171,8 @@ export const DEPLOY_SCENARIOS: Scenario[] = [
       },
       {
         source: 'metrics/auth.csv',
-        match: 'active_sessions',
-        why: 'sessions draining rather than a traffic change',
+        match: '$onset',
+        why: 'the active_sessions series at onset, sessions draining rather than a traffic change',
       },
     ],
     redHerrings: [
@@ -276,8 +276,8 @@ export const DEPLOY_SCENARIOS: Scenario[] = [
       },
       {
         source: 'metrics/db.csv',
-        match: 'seq_scans_per_min',
-        why: 'sequential scans jumping two orders of magnitude',
+        match: '$onset',
+        why: 'the seq_scans_per_min series at onset, sequential scans jumping two orders of magnitude',
       },
     ],
     redHerrings: [
@@ -375,8 +375,8 @@ export const DEPLOY_SCENARIOS: Scenario[] = [
       },
       {
         source: 'metrics/callbacks.csv',
-        match: 'delivered_per_min',
-        why: 'delivery collapsing at the same minute',
+        match: '$onset',
+        why: 'the delivered_per_min series at onset, delivery collapsing at the same minute',
       },
     ],
     redHerrings: [

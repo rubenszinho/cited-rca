@@ -13,8 +13,8 @@
     },
     {
       "source": "metrics/dns.csv",
-      "match": "resolve_p95_ms",
-      "why": "resolution latency stepping up at onset"
+      "match": "2026-03-17T09:16:00.000Z",
+      "why": "the resolve_p95_ms series at onset, resolution latency stepping up"
     },
     {
       "source": "alerts.jsonl",

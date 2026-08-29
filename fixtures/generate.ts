@@ -12,7 +12,7 @@ import { mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import type { Bundle } from './model.ts';
+import type { Bundle, EvidenceRef } from './model.ts';
 import { Random } from './rng.ts';
 import { SCENARIOS } from './scenarios/index.ts';
 import { emitAlerts, emitChanges } from './synth/events.ts';
@@ -23,6 +23,24 @@ import { atMinute } from './synth/timeline.ts';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const CASES_DIR = join(HERE, 'cases');
+
+/**
+ * Sentinel for "the metric row at onset".
+ *
+ * A metric series is named only in the CSV header, so requiring the column name
+ * as evidence would require citing a header row - which proves nothing and is
+ * not what an engineer would point at. The row at onset is the line that
+ * actually shows the change, and it is deterministic because the window start
+ * is fixed.
+ */
+const ONSET_SENTINEL = '$onset';
+
+function resolveEvidence(scenario: Scenario): EvidenceRef[] {
+  const onset = atMinute(scenario.onsetMinute);
+  return scenario.requiredEvidence.map((ref) =>
+    ref.match === ONSET_SENTINEL ? { ...ref, match: onset } : ref,
+  );
+}
 
 function build(scenario: Scenario): Bundle {
   // One stream per case, seeded from the id: adding a case never shifts the
@@ -37,7 +55,7 @@ function build(scenario: Scenario): Bundle {
       root_cause_summary: scenario.summary,
       onset_ts: atMinute(scenario.onsetMinute),
       detected_ts: atMinute(scenario.detectMinute),
-      required_evidence: scenario.requiredEvidence,
+      required_evidence: resolveEvidence(scenario),
       red_herrings: scenario.redHerrings,
     },
     logs: emitLogs(scenario.logs, window, rand),

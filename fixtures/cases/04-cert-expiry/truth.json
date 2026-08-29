@@ -18,8 +18,8 @@
     },
     {
       "source": "metrics/callbacks.csv",
-      "match": "delivered_per_min",
-      "why": "delivery collapsing at the same minute"
+      "match": "2026-03-17T09:30:00.000Z",
+      "why": "the delivered_per_min series at onset, delivery collapsing at the same minute"
     }
   ],
   "red_herrings": [

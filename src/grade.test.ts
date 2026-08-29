@@ -47,7 +47,8 @@ function report(overrides: Partial<RcaReport> = {}): RcaReport {
       },
       {
         statement: 'Error rate stepped up at onset.',
-        citations: [{ source: 'metrics/http.csv', line: 1, quote: 'error_rate' }],
+        // The metric row at onset, not the header: a column name proves nothing.
+        citations: [cite('metrics/http.csv', truth.onset_ts)],
       },
     ],
     ruled_out: [],

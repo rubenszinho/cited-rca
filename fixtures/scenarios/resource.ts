@@ -110,21 +110,22 @@ export const RESOURCE_SCENARIOS: Scenario[] = [
       },
       {
         source: 'metrics/pool.csv',
-        match: 'idle',
-        why: 'idle connections draining to zero',
+        match: '$onset',
+        why: 'the idle series at onset, idle connections draining to zero',
       },
       {
         source: 'metrics/db.csv',
-        match: 'cpu_pct',
-        why: 'database CPU flat, ruling out a slow database',
+        match: '$onset',
+        why: 'the cpu_pct series at onset, database CPU flat, ruling out a slow database',
       },
     ],
     redHerrings: [
       {
-        source: 'metrics/http.csv',
-        match: 'p95_ms',
+        source: 'logs/app.jsonl',
+        match: 'timed out acquiring database connection',
         why_tempting:
-          'latency is the symptom every alert points at, but it is downstream of the pool',
+          'the error names the database, so it reads as a slow database - but database ' +
+          'CPU and mean query time are both flat',
       },
     ],
   },
@@ -216,8 +217,8 @@ export const RESOURCE_SCENARIOS: Scenario[] = [
       },
       {
         source: 'metrics/worker.csv',
-        match: 'rss_mb',
-        why: 'memory climbing monotonically rather than spiking',
+        match: '$onset',
+        why: 'the rss_mb series at onset, memory climbing monotonically rather than spiking',
       },
       {
         source: 'changes.jsonl',
@@ -314,8 +315,8 @@ export const RESOURCE_SCENARIOS: Scenario[] = [
       },
       {
         source: 'metrics/disk.csv',
-        match: 'api3_used_pct',
-        why: 'one node climbing while its peers stay flat',
+        match: '$onset',
+        why: 'the api3_used_pct series at onset, one node climbing while its peers stay flat',
       },
       {
         source: 'changes.jsonl',
@@ -325,10 +326,11 @@ export const RESOURCE_SCENARIOS: Scenario[] = [
     ],
     redHerrings: [
       {
-        source: 'metrics/http.csv',
-        match: 'error_rate',
+        source: 'alerts.jsonl',
+        match: 'ApiWriteErrors',
         why_tempting:
-          'a fleet-wide error rate that looks like a fleet-wide fault, though only one node is affected',
+          'the alert is fleet-scoped and names no node, so it reads as a fleet-wide ' +
+          'fault when only api-3 is affected',
       },
     ],
   },
@@ -405,8 +407,8 @@ export const RESOURCE_SCENARIOS: Scenario[] = [
       },
       {
         source: 'metrics/cache.csv',
-        match: 'hit_rate',
-        why: 'hit rate collapsing rather than degrading',
+        match: '$onset',
+        why: 'the hit_rate series at onset, hit rate collapsing rather than degrading',
       },
       {
         source: 'logs/app.jsonl',

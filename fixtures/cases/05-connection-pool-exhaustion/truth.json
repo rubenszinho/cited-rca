@@ -13,20 +13,20 @@
     },
     {
       "source": "metrics/pool.csv",
-      "match": "idle",
-      "why": "idle connections draining to zero"
+      "match": "2026-03-17T09:21:00.000Z",
+      "why": "the idle series at onset, idle connections draining to zero"
     },
     {
       "source": "metrics/db.csv",
-      "match": "cpu_pct",
-      "why": "database CPU flat, ruling out a slow database"
+      "match": "2026-03-17T09:21:00.000Z",
+      "why": "the cpu_pct series at onset, database CPU flat, ruling out a slow database"
     }
   ],
   "red_herrings": [
     {
-      "source": "metrics/http.csv",
-      "match": "p95_ms",
-      "why_tempting": "latency is the symptom every alert points at, but it is downstream of the pool"
+      "source": "logs/app.jsonl",
+      "match": "timed out acquiring database connection",
+      "why_tempting": "the error names the database, so it reads as a slow database - but database CPU and mean query time are both flat"
     }
   ]
 }

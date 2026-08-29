@@ -18,8 +18,8 @@
     },
     {
       "source": "metrics/auth.csv",
-      "match": "active_sessions",
-      "why": "sessions draining rather than a traffic change"
+      "match": "2026-03-17T09:18:00.000Z",
+      "why": "the active_sessions series at onset, sessions draining rather than a traffic change"
     }
   ],
   "red_herrings": [

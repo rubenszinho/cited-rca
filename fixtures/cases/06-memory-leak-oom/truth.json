@@ -13,8 +13,8 @@
     },
     {
       "source": "metrics/worker.csv",
-      "match": "rss_mb",
-      "why": "memory climbing monotonically rather than spiking"
+      "match": "2026-03-17T09:14:00.000Z",
+      "why": "the rss_mb series at onset, memory climbing monotonically rather than spiking"
     },
     {
       "source": "changes.jsonl",

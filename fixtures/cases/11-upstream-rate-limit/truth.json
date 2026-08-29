@@ -13,8 +13,8 @@
     },
     {
       "source": "metrics/payments.csv",
-      "match": "calls_per_min",
-      "why": "our call volume doubling, which is what crossed the quota"
+      "match": "2026-03-17T09:28:00.000Z",
+      "why": "the calls_per_min series at onset, our call volume doubling, which is what crossed the quota"
     },
     {
       "source": "changes.jsonl",
@@ -24,9 +24,9 @@
   ],
   "red_herrings": [
     {
-      "source": "metrics/payments.csv",
-      "match": "authorised_per_min",
-      "why_tempting": "authorisations falling looks like a provider outage rather than our own volume"
+      "source": "alerts.jsonl",
+      "match": "CheckoutConversionDrop",
+      "why_tempting": "reads as a checkout regression rather than an upstream rejecting our excess volume"
     }
   ]
 }

@@ -18,8 +18,8 @@
     },
     {
       "source": "metrics/http.csv",
-      "match": "error_rate",
-      "why": "the step change in error rate at onset"
+      "match": "2026-03-17T09:23:00.000Z",
+      "why": "the error_rate series at onset, showing the step change in error rate"
     }
   ],
   "red_herrings": [

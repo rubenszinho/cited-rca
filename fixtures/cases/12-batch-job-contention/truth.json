@@ -18,8 +18,8 @@
     },
     {
       "source": "metrics/db.csv",
-      "match": "lock_waits_per_min",
-      "why": "lock waits rather than resource saturation"
+      "match": "2026-03-17T09:31:00.000Z",
+      "why": "the lock_waits_per_min series at onset, lock waits rather than resource saturation"
     }
   ],
   "red_herrings": [

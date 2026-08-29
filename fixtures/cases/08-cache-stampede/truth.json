@@ -13,8 +13,8 @@
     },
     {
       "source": "metrics/cache.csv",
-      "match": "hit_rate",
-      "why": "hit rate collapsing rather than degrading"
+      "match": "2026-03-17T09:25:00.000Z",
+      "why": "the hit_rate series at onset, hit rate collapsing rather than degrading"
     },
     {
       "source": "logs/app.jsonl",

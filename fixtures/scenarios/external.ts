@@ -91,13 +91,13 @@ export const EXTERNAL_SCENARIOS: Scenario[] = [
       },
       {
         source: 'metrics/downstream.csv',
-        match: 'supplier_p95_ms',
-        why: 'the step change is on the supplier side, not ours',
+        match: '$onset',
+        why: 'the supplier_p95_ms series at onset, the step change is on the supplier side, not ours',
       },
       {
         source: 'metrics/downstream.csv',
-        match: 'inflight_requests',
-        why: 'requests piling up because the calls have no timeout',
+        match: '$onset',
+        why: 'the inflight_requests series at onset, requests piling up because the calls have no timeout',
       },
     ],
     redHerrings: [
@@ -189,8 +189,8 @@ export const EXTERNAL_SCENARIOS: Scenario[] = [
       },
       {
         source: 'metrics/dns.csv',
-        match: 'resolve_p95_ms',
-        why: 'resolution latency stepping up at onset',
+        match: '$onset',
+        why: 'the resolve_p95_ms series at onset, resolution latency stepping up',
       },
       {
         source: 'alerts.jsonl',
@@ -292,8 +292,8 @@ export const EXTERNAL_SCENARIOS: Scenario[] = [
       },
       {
         source: 'metrics/payments.csv',
-        match: 'calls_per_min',
-        why: 'our call volume doubling, which is what crossed the quota',
+        match: '$onset',
+        why: 'the calls_per_min series at onset, our call volume doubling, which is what crossed the quota',
       },
       {
         source: 'changes.jsonl',
@@ -303,10 +303,10 @@ export const EXTERNAL_SCENARIOS: Scenario[] = [
     ],
     redHerrings: [
       {
-        source: 'metrics/payments.csv',
-        match: 'authorised_per_min',
+        source: 'alerts.jsonl',
+        match: 'CheckoutConversionDrop',
         why_tempting:
-          'authorisations falling looks like a provider outage rather than our own volume',
+          'reads as a checkout regression rather than an upstream rejecting our excess volume',
       },
     ],
   },
@@ -408,8 +408,8 @@ export const EXTERNAL_SCENARIOS: Scenario[] = [
       },
       {
         source: 'metrics/db.csv',
-        match: 'lock_waits_per_min',
-        why: 'lock waits rather than resource saturation',
+        match: '$onset',
+        why: 'the lock_waits_per_min series at onset, lock waits rather than resource saturation',
       },
     ],
     redHerrings: [

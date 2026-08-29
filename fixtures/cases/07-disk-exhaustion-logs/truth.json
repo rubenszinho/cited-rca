@@ -13,8 +13,8 @@
     },
     {
       "source": "metrics/disk.csv",
-      "match": "api3_used_pct",
-      "why": "one node climbing while its peers stay flat"
+      "match": "2026-03-17T09:34:00.000Z",
+      "why": "the api3_used_pct series at onset, one node climbing while its peers stay flat"
     },
     {
       "source": "changes.jsonl",
@@ -24,9 +24,9 @@
   ],
   "red_herrings": [
     {
-      "source": "metrics/http.csv",
-      "match": "error_rate",
-      "why_tempting": "a fleet-wide error rate that looks like a fleet-wide fault, though only one node is affected"
+      "source": "alerts.jsonl",
+      "match": "ApiWriteErrors",
+      "why_tempting": "the alert is fleet-scoped and names no node, so it reads as a fleet-wide fault when only api-3 is affected"
     }
   ]
 }
