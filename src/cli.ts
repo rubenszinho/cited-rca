@@ -12,6 +12,7 @@ import { listCases, loadBundle, loadTruth } from './bundle.ts';
 import { loadDirectory } from './ingest.ts';
 import { verify } from './agent/verify.ts';
 import { renderComparison, type Side } from './compare.ts';
+import { enableProgress } from './progress.ts';
 import { grade } from './grade.ts';
 import { renderMarkdown } from './render.ts';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -132,6 +133,8 @@ async function alternateMode(): Promise<number | undefined> {
 }
 
 async function main(): Promise<number> {
+  // Interactive runs narrate; the evaluation stays quiet.
+  if (!process.argv.includes('--quiet')) enableProgress();
   const alternate = await alternateMode();
   if (alternate !== undefined) return alternate;
 

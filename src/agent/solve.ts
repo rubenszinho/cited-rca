@@ -16,6 +16,7 @@
  */
 import { DEFAULT_QUERIES, enabledFeatures } from './features.ts';
 import { IncidentMemory, renderRecall } from './memory.ts';
+import { detail, progress } from '../progress.ts';
 import { searchLog } from './tools.ts';
 import { completeJson } from '../llm/structured.ts';
 import type { ChatMessage, LlmClient } from '../llm/types.ts';
@@ -48,10 +49,22 @@ const MAX_ROUNDS = 3;
 function runSearches(bundle: IncidentBundle, queries: string[]): string {
   const blocks = queries.map((query) => {
     const hits = searchLog(bundle, query, HITS_PER_QUERY);
+    detail(`search ${JSON.stringify(query).padEnd(22)} ${hits.length} line(s)`);
     const body = hits.length ? hits.join('\n') : '(no matches)';
     return `--- search "${query}" ---\n${body}`;
   });
   return blocks.join('\n\n');
+}
+
+/** Narrate the verifier's verdict and return whether the draft is clean. */
+function reportVerification(problems: { where: string }[]): boolean {
+  if (problems.length === 0) {
+    progress('  verify   every citation resolves');
+    return true;
+  }
+  progress(`  verify   ${problems.length} problem(s), repairing`);
+  for (const problem of problems.slice(0, 3)) detail(problem.where);
+  return false;
 }
 
 /**
@@ -70,7 +83,7 @@ async function repairLoop(
   let report = first;
   for (let round = 0; round < MAX_REPAIRS; round++) {
     const problems = verify(bundle, report);
-    if (problems.length === 0) return report;
+    if (reportVerification(problems)) return report;
     const { value } = await completeJson({
       client,
       step: `agent:repair${round}:${bundle.caseId}`,
@@ -86,7 +99,6 @@ async function repairLoop(
   return report;
 }
 
-/** Triage, or a fixed stand-in when the triage step is ablated. */
 /**
  * Search, read, decide what to search next, repeat.
  *
@@ -131,6 +143,7 @@ async function gatherEvidence(
   features: Set<string>,
   opening: string[],
 ): Promise<string> {
+  progress('  search   gathering evidence');
   if (!features.has('search')) return '(log search disabled for this variant)';
   if (!features.has('investigate')) return runSearches(bundle, opening);
   return investigate(bundle, client, opening);
@@ -178,10 +191,12 @@ export async function solveWithAgent(
     schema: RcaReportSchema,
     messages,
   });
+  progress('  draft    written');
 
   const report = features.has('verify')
     ? await repairLoop(client, bundle, messages, draft)
     : draft;
+  progress(`  done     cause: ${report.root_cause}`);
 
   // Remember the conclusion, right or wrong. A memory that only kept the
   // correct ones would be reading the answer key.

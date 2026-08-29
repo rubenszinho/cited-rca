@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/baseline/run.ts",
-  "commit": "4c0d1a80d2985db6b60b5453302bc19cb00a930c-dirty",
-  "duration_s": 33.6669,
+  "commit": "61387feabc61a5c092863f4c7ba479f9d7f25626-dirty",
+  "duration_s": 0.3905,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -156,10 +156,10 @@
     "prompt_tokens": 144429,
     "provider_errors": 0,
     "red_herring_rate": 0.3333,
-    "replayed_calls": 11,
-    "seconds_per_case": 2.777
+    "replayed_calls": 12,
+    "seconds_per_case": 0.003
   },
   "seed": 2,
-  "started_at": "2026-08-29T18:28:55.184668+00:00",
+  "started_at": "2026-08-29T19:09:22.596289+00:00",
   "variant": "baseline"
 }
