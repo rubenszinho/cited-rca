@@ -69,7 +69,7 @@ toolchain is pinned and provisioned into the repo.
 ```bash
 git clone <repo-url> cited-rca && cd cited-rca
 
-./bin/mise install                  # pinned toolchain into ./.mise (~2 min)
+./bin/mise install                  # pinned toolchain into ./.mise (~3 min)
 ./bin/mise exec -- task setup       # render .env, install hooks, install deps
 
 ./bin/mise exec -- task validate    # lint, types, 93 tests, quality ratchet
@@ -79,6 +79,11 @@ git clone <repo-url> cited-rca && cd cited-rca
 
 Once `mise` is activated in your shell you can drop the `./bin/mise exec --`
 prefix. `task -l` lists everything.
+
+The toolchain installs into `./.mise` and is not relocatable — pipx bakes an
+absolute path into its virtualenv, so moving an existing checkout breaks
+`lizard` and with it the quality gate. Re-run `./bin/mise install` after a move.
+A fresh clone is unaffected.
 
 ### This costs nothing to reproduce
 
