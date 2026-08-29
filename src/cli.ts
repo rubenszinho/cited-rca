@@ -11,6 +11,7 @@
 import { listCases, loadBundle, loadTruth } from './bundle.ts';
 import { loadDirectory } from './ingest.ts';
 import { verify } from './agent/verify.ts';
+import { renderComparison, type Side } from './compare.ts';
 import { grade } from './grade.ts';
 import { renderMarkdown } from './render.ts';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -94,14 +95,45 @@ async function runDirectory(dir: string, variant: string): Promise<number> {
   return problems.length === 0 ? 0 : 1;
 }
 
-async function main(): Promise<number> {
+/**
+ * Both variants on one incident, so the difference is visible rather than
+ * inferred from an aggregate.
+ */
+async function runComparison(caseId: string): Promise<number> {
+  const bundle = loadBundle(caseId);
+  const truth = loadTruth(caseId);
+  const sides: Side[] = [];
+
+  for (const [label, solver] of [
+    ['baseline  (one direct prompt)', solveWithBaseline],
+    ['workflow  (search + verify)', solveWithAgent],
+  ] as const) {
+    const client = createClient();
+    const report = await solver(bundle, client);
+    sides.push({ label, report, grade: grade(bundle, truth, report) });
+  }
+
+  console.log(renderComparison(bundle, truth.root_cause, sides));
+  return sides.every((side) => side.grade.passed) ? 0 : 1;
+}
+
+/** Modes that do not grade a committed case, dispatched before the default. */
+async function alternateMode(): Promise<number | undefined> {
   if (process.argv.includes('--list')) {
     for (const id of listCases()) console.log(`${id}  ${loadTruth(id).title}`);
     return 0;
   }
-
   const dir = argValue('--dir', '');
   if (dir) return runDirectory(dir, argValue('--variant', 'agent'));
+  if (process.argv.includes('--compare')) {
+    return runComparison(argValue('--case', listCases()[0] ?? ''));
+  }
+  return undefined;
+}
+
+async function main(): Promise<number> {
+  const alternate = await alternateMode();
+  if (alternate !== undefined) return alternate;
 
   const caseId = argValue('--case', listCases()[0] ?? '');
   const variant = argValue('--variant', 'agent');
