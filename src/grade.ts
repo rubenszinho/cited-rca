@@ -16,7 +16,8 @@
  * right cause for the wrong reasons fails on evidence recall.
  */
 import type { EvidenceRef, RedHerring, Truth } from '../fixtures/model.ts';
-import { findFile, type IncidentBundle } from './bundle.ts';
+import type { IncidentBundle } from './bundle.ts';
+import { describeCitation, resolve } from './citation.ts';
 import type { Citation, Finding, RcaReport } from './schema.ts';
 
 export type Grade = {
@@ -29,12 +30,6 @@ export type Grade = {
   /** Human-readable reasons the case failed, for the report and the video. */
   notes: string[];
 };
-
-/** The text a citation points at, or undefined if it does not resolve. */
-function resolve(bundle: IncidentBundle, citation: Citation): string | undefined {
-  const file = findFile(bundle, citation.source);
-  return file?.lines[citation.line - 1];
-}
 
 function citationsOf(findings: Finding[]): Citation[] {
   return findings.flatMap((finding) => finding.citations);
@@ -110,7 +105,7 @@ function describe(
     notes.push(`cause: said ${report.root_cause}, actual ${truth.root_cause}`);
   }
   for (const c of found.unresolved) {
-    notes.push(`citation does not resolve: ${c.source}:${c.line}`);
+    notes.push(`citation does not resolve: ${describeCitation(c)}`);
   }
   for (const ref of found.missing) {
     notes.push(`evidence not cited: ${ref.source} ~ "${ref.match}" (${ref.why})`);

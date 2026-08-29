@@ -7,9 +7,11 @@
  *    string comparison that a judge reruns and gets the same answer, with no
  *    model in the grading loop.
  *
- * 2. Every finding carries citations pointing at a file and a 1-indexed line in
- *    the bundle. That turns "connect every claim to the evidence" from a
- *    promise in the write-up into something the grader mechanically checks.
+ * 2. Every finding carries citations naming a file, a 1-indexed line, and the
+ *    verbatim text on it. That turns "connect every claim to the evidence" from
+ *    a promise in the write-up into something the grader mechanically checks,
+ *    and the quote makes a fabricated citation detectable rather than merely
+ *    unlikely.
  */
 import { z } from 'zod';
 
@@ -20,6 +22,15 @@ export const CitationSchema = z.object({
   source: z.string().min(1),
   /** 1-indexed line within that file. */
   line: z.number().int().positive(),
+  /**
+   * Verbatim text the citation claims is on that line.
+   *
+   * This is what makes a citation checkable without knowing the answer. A line
+   * number alone can be confidently wrong and look fine; a quote that does not
+   * appear on the line it names is provably wrong, and the workflow's verifier
+   * catches it before the report is emitted.
+   */
+  quote: z.string().min(1),
 });
 
 export const FindingSchema = z.object({
