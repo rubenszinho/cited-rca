@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
   "commit": "c7868fe5e81b16821909ba47ec60340a483dbc86-dirty",
-  "duration_s": 0.3961,
+  "duration_s": 0.3794,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -65,8 +65,9 @@
         "case_id": "06-memory-leak-oom",
         "cause_correct": true,
         "citations_valid": true,
-        "evidence_recall": 1,
+        "evidence_recall": 0.6667,
         "notes": [
+          "evidence not cited: metrics/worker.csv ~ \"2026-03-17T09:14:00.000Z\" (the rss_mb series at onset, memory climbing monotonically rather than spiking)",
           "red herring used as evidence: \"worker replicas 4 -> 8\" (a change during the incident, but an operator mitigation rather than the cause)"
         ],
         "passed": false,
@@ -103,11 +104,11 @@
       },
       {
         "case_id": "10-dns-failure",
-        "cause_correct": false,
-        "citations_valid": true,
+        "cause_correct": true,
+        "citations_valid": false,
         "evidence_recall": 1,
         "notes": [
-          "cause: said resource_exhaustion_pool, actual dns_failure"
+          "citation does not resolve: metrics/http.csv:17 ~ \"320\""
         ],
         "passed": false,
         "red_herring_blamed": false
@@ -133,20 +134,20 @@
         "red_herring_blamed": false
       }
     ],
-    "cause_accuracy": 0.8333,
-    "citation_validity": 1,
-    "completion_tokens": 33909,
-    "cost_usd": 0.9611,
-    "evidence_recall": 0.9722,
-    "llm_calls": 24,
+    "cause_accuracy": 0.9167,
+    "citation_validity": 0.9167,
+    "completion_tokens": 28124,
+    "cost_usd": 0.695,
+    "evidence_recall": 0.9444,
+    "llm_calls": 13,
     "pass_rate": 0.5833,
-    "prompt_tokens": 150806,
+    "prompt_tokens": 91045,
     "provider_errors": 0,
     "red_herring_rate": 0.3333,
-    "replayed_calls": 24,
+    "replayed_calls": 13,
     "seconds_per_case": 0.004
   },
-  "seed": 2,
-  "started_at": "2026-08-29T15:20:08.869386+00:00",
-  "variant": "agent-withtriage"
+  "seed": 0,
+  "started_at": "2026-08-29T15:20:05.665412+00:00",
+  "variant": "agent-noverify"
 }

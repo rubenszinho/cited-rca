@@ -18,9 +18,9 @@
  * rather than ablate a workflow feature.
  */
 
-export type Feature = 'triage' | 'search' | 'verify' | 'memory';
+export type Feature = 'triage' | 'search' | 'investigate' | 'verify' | 'memory';
 
-const ALL: Feature[] = ['triage', 'search', 'verify', 'memory'];
+const ALL: Feature[] = ['triage', 'search', 'investigate', 'verify', 'memory'];
 
 /**
  * The shipped configuration. Two of the four features are deliberately absent.
@@ -44,7 +44,7 @@ const ALL: Feature[] = ['triage', 'search', 'verify', 'memory'];
  * Both stay implemented and switchable so the results can be reproduced:
  *   AGENT_FEATURES=triage,search,verify,memory
  */
-const DEFAULT: Feature[] = ['search', 'verify'];
+const DEFAULT: Feature[] = ['search', 'investigate', 'verify'];
 
 /**
  * Fixed searches used when triage is disabled.

@@ -17,6 +17,21 @@ import { metricMoves, type SeriesMove } from './tools.ts';
 /** Metric series ranked by movement, so the flat controls sort to the bottom. */
 export const MAX_QUERIES = 5;
 
+/**
+ * One round of investigation.
+ *
+ * The workflow reads what its last searches returned and decides what to look
+ * at next, the way a person reads a log and then greps for the thing they just
+ * noticed. An empty `next_queries` means it has seen enough, which is the
+ * decision that makes this a loop rather than a fixed pipeline.
+ */
+export const NextStepSchema = z.object({
+  reasoning: z.string().min(1),
+  next_queries: z.array(z.string().min(2)).max(MAX_QUERIES),
+});
+
+export type NextStep = z.infer<typeof NextStepSchema>;
+
 export const TriageSchema = z.object({
   onset_ts: z.string().min(1),
   reasoning: z.string().min(1),
@@ -105,6 +120,62 @@ export function draftMessages(
   return [
     { role: 'system', content: SYSTEM },
     { role: 'user', content: draftBody(bundle, triage, searchResults, recall) },
+  ];
+}
+
+/**
+ * Ask what to look at next, given what has been found so far.
+ *
+ * The evidence is passed back verbatim rather than summarised. Summarising it
+ * would lose the line addresses, and an address that never reaches the model is
+ * one it cannot cite.
+ */
+const INVESTIGATE_GUIDANCE = [
+  'Decide what to read next. Look for the line that would distinguish between',
+  'the causes still open, and for anything that would rule one out. A series',
+  'that stayed flat is evidence too.',
+].join('\n');
+
+const NEXT_STEP_SHAPE = [
+  'Reply with a single JSON object and nothing else:',
+  '{',
+  '  "reasoning": "what the evidence so far points at, and what is still open",',
+  `  "next_queries": ["substring to search the log for", ...]  // 0 to ${MAX_QUERIES}`,
+  '}',
+].join('\n');
+
+function investigateBody(
+  bundle: IncidentBundle,
+  found: string,
+  roundsLeft: number,
+): string {
+  return [
+    `Incident ${bundle.caseId}. You are working out what happened.`,
+    '',
+    ...smallSources(bundle),
+    '',
+    renderMoves(metricMoves(bundle)),
+    '',
+    '--- what your searches have returned so far ---',
+    found,
+    '',
+    INVESTIGATE_GUIDANCE,
+    '',
+    `You have ${roundsLeft} more round(s) of searching. Return an empty`,
+    'next_queries when you have enough to write the review.',
+    '',
+    NEXT_STEP_SHAPE,
+  ].join('\n');
+}
+
+export function investigateMessages(
+  bundle: IncidentBundle,
+  found: string,
+  roundsLeft: number,
+): ChatMessage[] {
+  return [
+    { role: 'system', content: SYSTEM },
+    { role: 'user', content: investigateBody(bundle, found, roundsLeft) },
   ];
 }
 

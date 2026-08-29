@@ -24,6 +24,8 @@ import type { IncidentBundle } from '../bundle.ts';
 import { describeProblems, verify } from './verify.ts';
 import {
   draftMessages,
+  investigateMessages,
+  NextStepSchema,
   repairMessages,
   triageMessages,
   TriageSchema,
@@ -34,6 +36,14 @@ const HITS_PER_QUERY = 12;
 
 /** Verification rounds before the draft is emitted as-is. */
 const MAX_REPAIRS = 2;
+
+/**
+ * Investigation rounds after the opening search.
+ *
+ * Three is where it stopped paying: by the fourth the queries were rephrasings
+ * of ones already run, and the extra call bought nothing but tokens.
+ */
+const MAX_ROUNDS = 3;
 
 function runSearches(bundle: IncidentBundle, queries: string[]): string {
   const blocks = queries.map((query) => {
@@ -77,6 +87,55 @@ async function repairLoop(
 }
 
 /** Triage, or a fixed stand-in when the triage step is ablated. */
+/**
+ * Search, read, decide what to search next, repeat.
+ *
+ * This is the difference between running a fixed set of queries and actually
+ * investigating. The opening searches are generic; every round after that is
+ * chosen from what the previous round returned, and the loop stops when the
+ * workflow says it has enough rather than when a counter runs out.
+ */
+async function investigate(
+  bundle: IncidentBundle,
+  client: LlmClient,
+  opening: string[],
+): Promise<string> {
+  const transcript: string[] = [runSearches(bundle, opening)];
+  const asked = new Set(opening.map((q) => q.toLowerCase()));
+
+  for (let round = 0; round < MAX_ROUNDS; round++) {
+    const { value } = await completeJson({
+      client,
+      step: `agent:investigate${round}:${bundle.caseId}`,
+      schema: NextStepSchema,
+      messages: investigateMessages(
+        bundle,
+        transcript.join('\n\n'),
+        MAX_ROUNDS - round,
+      ),
+    });
+
+    // Repeating a query wastes a round and returns text already in context.
+    const fresh = value.next_queries.filter((q) => !asked.has(q.toLowerCase()));
+    if (fresh.length === 0) break;
+    for (const query of fresh) asked.add(query.toLowerCase());
+    transcript.push(runSearches(bundle, fresh));
+  }
+  return transcript.join('\n\n');
+}
+
+/** Whichever retrieval strategy this variant has switched on. */
+async function gatherEvidence(
+  bundle: IncidentBundle,
+  client: LlmClient,
+  features: Set<string>,
+  opening: string[],
+): Promise<string> {
+  if (!features.has('search')) return '(log search disabled for this variant)';
+  if (!features.has('investigate')) return runSearches(bundle, opening);
+  return investigate(bundle, client, opening);
+}
+
 async function triageStep(bundle: IncidentBundle, client: LlmClient, on: boolean) {
   if (!on) {
     return {
@@ -109,9 +168,7 @@ export async function solveWithAgent(
 ): Promise<RcaReport> {
   const features = enabledFeatures();
   const triage = await triageStep(bundle, client, features.has('triage'));
-  const searches = features.has('search')
-    ? runSearches(bundle, triage.log_queries)
-    : '(log search disabled for this variant)';
+  const searches = await gatherEvidence(bundle, client, features, triage.log_queries);
 
   const recall = features.has('memory') ? renderRecall(memory.recall(bundle)) : '';
   const messages = draftMessages(bundle, triage, searches, recall);

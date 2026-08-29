@@ -29,6 +29,32 @@ const TRIAGE = JSON.stringify({
   log_queries: ['percentOff', 'checkout'],
 });
 
+/** One more round, then stop. */
+const INVESTIGATE_MORE = JSON.stringify({
+  reasoning: 'the TypeError names a handler; look for the release tag too',
+  next_queries: ['v2026.3.17-a1'],
+});
+
+/** Nothing further needed. */
+const INVESTIGATE_DONE = JSON.stringify({ reasoning: 'enough', next_queries: [] });
+
+/**
+ * Respond by step name rather than call index.
+ *
+ * Indices break every time a step is added to the workflow, and the breakage
+ * looks like a logic failure rather than a stale test.
+ */
+function scripted(overrides: Record<string, string> = {}) {
+  return (options: { step: string }) => {
+    for (const [needle, response] of Object.entries(overrides)) {
+      if (options.step.includes(needle)) return response;
+    }
+    if (options.step.includes('triage')) return TRIAGE;
+    if (options.step.includes('investigate')) return INVESTIGATE_DONE;
+    return JSON.stringify(goodReport());
+  };
+}
+
 function goodReport(): RcaReport {
   return {
     root_cause: 'bad_deploy_regression',
@@ -79,20 +105,23 @@ describe('solveWithAgent (shipped configuration)', () => {
     // Triage is deliberately not in the default: the ablation showed it lowers
     // both pass rate and cause accuracy. See src/agent/features.ts.
     let draftPrompt = '';
+    const respond = scripted();
     const client = stubClient((options) => {
-      draftPrompt = options.messages.map((m) => m.content).join('\n');
-      return JSON.stringify(goodReport());
+      if (options.step.includes('draft')) {
+        draftPrompt = options.messages.map((m) => m.content).join('\n');
+      }
+      return respond(options);
     });
 
     await solveWithAgent(bundle, client);
 
     expect(client.steps.some((s) => s.includes('triage'))).toBe(false);
-    expect(client.steps[0]).toContain('draft');
+    expect(client.steps[0]).toContain('investigate');
     expect(draftPrompt).toContain('search "error"');
   });
 
   it('emits a clean draft without spending a repair turn', async () => {
-    const client = stubClient(() => JSON.stringify(goodReport()));
+    const client = stubClient(scripted());
     const report = await solveWithAgent(bundle, client);
     expect(report.root_cause).toBe('bad_deploy_regression');
     expect(client.steps.filter((s) => s.includes('repair'))).toHaveLength(0);
@@ -102,10 +131,12 @@ describe('solveWithAgent (shipped configuration)', () => {
     process.env.AGENT_FEATURES = 'triage,search,verify';
     try {
       let draftPrompt = '';
-      const client = stubClient((options, index) => {
-        if (index === 0) return TRIAGE;
-        draftPrompt = options.messages.map((m) => m.content).join('\n');
-        return JSON.stringify(goodReport());
+      const respond = scripted();
+      const client = stubClient((options) => {
+        if (options.step.includes('draft')) {
+          draftPrompt = options.messages.map((m) => m.content).join('\n');
+        }
+        return respond(options);
       });
       await solveWithAgent(bundle, client);
       expect(client.steps[0]).toContain('triage');
@@ -121,10 +152,18 @@ describe('solveWithAgent (shipped configuration)', () => {
     fabricated.evidence[0]!.citations[0]!.quote = 'the discount service was disabled';
 
     let repairPrompt = '';
-    const client = stubClient((options, index) => {
-      if (index === 0) return JSON.stringify(fabricated);
-      repairPrompt = options.messages.at(-1)?.content ?? '';
-      return JSON.stringify(goodReport());
+    let drafted = false;
+    const respond = scripted();
+    const client = stubClient((options) => {
+      if (options.step.includes('repair')) {
+        repairPrompt = options.messages.at(-1)?.content ?? '';
+        return JSON.stringify(goodReport());
+      }
+      if (options.step.includes('draft') && !drafted) {
+        drafted = true;
+        return JSON.stringify(fabricated);
+      }
+      return respond(options);
     });
 
     const report = await solveWithAgent(bundle, client);
@@ -139,7 +178,9 @@ describe('solveWithAgent (shipped configuration)', () => {
   it('gives up after the repair budget and returns the last draft', async () => {
     const broken = goodReport();
     broken.timeline[0]!.citations[0]!.line = 99999;
-    const client = stubClient(() => JSON.stringify(broken));
+    const client = stubClient(
+      scripted({ draft: JSON.stringify(broken), repair: JSON.stringify(broken) }),
+    );
 
     const report = await solveWithAgent(bundle, client);
 
@@ -160,9 +201,12 @@ describe('ablations', () => {
   it('skips the triage call and uses fixed queries when triage is off', async () => {
     process.env.AGENT_FEATURES = 'search,verify';
     let draftPrompt = '';
+    const respond = scripted();
     const client = stubClient((options) => {
-      draftPrompt = options.messages.map((m) => m.content).join('\n');
-      return JSON.stringify(goodReport());
+      if (options.step.includes('draft')) {
+        draftPrompt = options.messages.map((m) => m.content).join('\n');
+      }
+      return respond(options);
     });
 
     await solveWithAgent(bundle, client);
@@ -175,10 +219,12 @@ describe('ablations', () => {
   it('omits search results when search is off', async () => {
     process.env.AGENT_FEATURES = 'triage,verify';
     let draftPrompt = '';
-    const client = stubClient((options, index) => {
-      if (index === 0) return TRIAGE;
-      draftPrompt = options.messages.map((m) => m.content).join('\n');
-      return JSON.stringify(goodReport());
+    const respond = scripted();
+    const client = stubClient((options) => {
+      if (options.step.includes('draft')) {
+        draftPrompt = options.messages.map((m) => m.content).join('\n');
+      }
+      return respond(options);
     });
 
     await solveWithAgent(bundle, client);
@@ -191,9 +237,7 @@ describe('ablations', () => {
     process.env.AGENT_FEATURES = 'triage,search';
     const broken = goodReport();
     broken.evidence[0]!.citations[0]!.quote = 'never appeared anywhere';
-    const client = stubClient((_options, index) =>
-      index === 0 ? TRIAGE : JSON.stringify(broken),
-    );
+    const client = stubClient(scripted({ draft: JSON.stringify(broken) }));
 
     const report = await solveWithAgent(bundle, client);
 
@@ -203,7 +247,70 @@ describe('ablations', () => {
 
   it('rejects an unknown feature name rather than silently ignoring it', async () => {
     process.env.AGENT_FEATURES = 'triage,nonsense';
-    const client = stubClient(() => JSON.stringify(goodReport()));
+    const client = stubClient(scripted());
     await expect(solveWithAgent(bundle, client)).rejects.toThrow(/nonsense/);
+  });
+});
+
+describe('investigation loop', () => {
+  const original = process.env.AGENT_FEATURES;
+  afterEach(() => {
+    if (original === undefined) delete process.env.AGENT_FEATURES;
+    else process.env.AGENT_FEATURES = original;
+  });
+
+  it('feeds each round the results of the previous one', async () => {
+    const prompts: string[] = [];
+    let round = 0;
+    const client = stubClient((options) => {
+      if (options.step.includes('investigate')) {
+        prompts.push(options.messages.map((m) => m.content).join('\n'));
+        return round++ === 0 ? INVESTIGATE_MORE : INVESTIGATE_DONE;
+      }
+      return JSON.stringify(goodReport());
+    });
+
+    await solveWithAgent(bundle, client);
+
+    // Round two must be able to see what round one turned up, or it is not a
+    // loop, just two independent searches.
+    expect(prompts[1]).toContain('search "v2026.3.17-a1"');
+  });
+
+  it('stops when the workflow says it has enough', async () => {
+    const client = stubClient(scripted());
+    await solveWithAgent(bundle, client);
+    // One round asked, answered "done", so no second round.
+    expect(client.steps.filter((s) => s.includes('investigate'))).toHaveLength(1);
+  });
+
+  it('does not spend a round re-running a query it already ran', async () => {
+    // A repeated query returns text already in the context window and burns a
+    // round for nothing.
+    const repeat = JSON.stringify({ reasoning: 'again', next_queries: ['error'] });
+    const client = stubClient(scripted({ investigate: repeat }));
+    await solveWithAgent(bundle, client);
+    expect(client.steps.filter((s) => s.includes('investigate'))).toHaveLength(1);
+  });
+
+  it('caps the number of rounds', async () => {
+    let n = 0;
+    const client = stubClient((options) => {
+      if (options.step.includes('investigate')) {
+        return JSON.stringify({ reasoning: 'more', next_queries: [`q${n++}`] });
+      }
+      return JSON.stringify(goodReport());
+    });
+    await solveWithAgent(bundle, client);
+    expect(
+      client.steps.filter((s) => s.includes('investigate')).length,
+    ).toBeLessThanOrEqual(3);
+  });
+
+  it('falls back to one fixed round when investigation is off', async () => {
+    process.env.AGENT_FEATURES = 'search,verify';
+    const client = stubClient(scripted());
+    await solveWithAgent(bundle, client);
+    expect(client.steps.some((s) => s.includes('investigate'))).toBe(false);
   });
 });
