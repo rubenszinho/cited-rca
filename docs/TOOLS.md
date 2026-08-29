@@ -18,7 +18,8 @@ No other assistant, autocomplete, or MCP server was used.
 ## Agents inside the deliverable
 
 The workflow is a fixed sequence of model calls with deterministic tooling
-between them, rather than a single agent with a tool loop. Each step is its own
+between them, rather than a single agent with a tool loop. An iterative variant
+exists and was measured; it lost, and the reasoning is in the changelog. Each step is its own
 prompt with its own contract, which is what lets the changelog attribute the
 improvement to a specific step instead of to the whole.
 
@@ -38,12 +39,12 @@ the workflow JSON repair would move the measurement onto plumbing.
 
 ### Model
 
-|             |                                                   |
-| ----------- | ------------------------------------------------- |
-| Provider    | OpenRouter (any OpenAI-compatible endpoint works) |
-| Model       | `anthropic/claude-sonnet-4.5`                     |
-| Temperature | 0                                                 |
-| Max tokens  | 8000                                              |
+|             |                                               |
+| ----------- | --------------------------------------------- |
+| Provider    | OpenAI (any OpenAI-compatible endpoint works) |
+| Model       | `gpt-4.1-mini`                                |
+| Temperature | 0                                             |
+| Max tokens  | 8000                                          |
 
 Set in `env.template`. Nothing in the code names a provider.
 

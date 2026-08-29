@@ -80,5 +80,5 @@ Run `task dev:stop-clean` first, or pass `-- --force` if there is nothing
 running.
 
 **A port conflicts anyway** — ports are re-rolled past anything currently
-bound, so a process started *after* rendering can still collide. Re-run
+bound, so a process started _after_ rendering can still collide. Re-run
 `task env:render -- --force`.

@@ -105,7 +105,7 @@ git clone <repo-url> cited-rca && cd cited-rca
 ./bin/mise install                  # pinned toolchain into ./.mise (~3 min)
 ./bin/mise exec -- task setup       # render .env, install hooks, install deps
 
-./bin/mise exec -- task validate    # lint, types, 163 tests, quality ratchet
+./bin/mise exec -- task validate    # lint, types, 167 tests, quality ratchet
 ./bin/mise exec -- task project:eval        # both variants over all 12 cases
 ./bin/mise exec -- task project:report      # regenerate docs/RESULTS.md
 ```
