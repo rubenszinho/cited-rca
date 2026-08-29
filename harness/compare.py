@@ -96,6 +96,30 @@ def render_provenance(order, by_variant) -> list[str]:
     return lines
 
 
+def render_contamination(by_variant) -> list[str]:
+    """Call out runs that lost cases to the provider.
+
+    Averaging these in would present a billing failure as a measurement. The
+    row stays in the table so the run is not silently dropped, but it is
+    labelled so nobody reads a number off it.
+    """
+    bad = []
+    for name, recs in by_variant.items():
+        for rec in recs:
+            errors = (rec.get("metrics") or {}).get("provider_errors", 0)
+            if errors:
+                bad.append((name, rec["seed"], errors, len(rec["metrics"].get("cases_detail", []))))
+    if not bad:
+        return []
+    lines = ["\n## Unreliable runs\n",
+             "These lost cases to the provider (auth, credit or rate limits), not to the "
+             "workflow. Their numbers measure nothing and must not be compared.\n",
+             "| variant | seed | cases lost |", "|---|---|---|"]
+    for name, seed, errors, total in bad:
+        lines.append(f"| `{name}` | {seed} | {errors}/{total} |")
+    return lines
+
+
 def render_failures(by_variant) -> list[str]:
     failed = [(n, r["seed"], r.get("error", "")[:80])
               for n, recs in by_variant.items() for r in recs
@@ -108,7 +132,11 @@ def render_failures(by_variant) -> list[str]:
 def header(reference: str) -> list[str]:
     return ["# Results\n",
             f"Reference variant: `{reference}`. Each cell is mean ± stdev "
-            "across seeds; delta is versus the reference.\n"]
+            "across seeds; delta is versus the reference.\n",
+            "`replayed_calls` equal to `llm_calls` means the run came from the "
+            "committed cassettes. For those rows `duration_s` and "
+            "`seconds_per_case` measure replay, not the recorded run; token "
+            "counts and cost are the recorded values and are comparable.\n"]
 
 
 def main() -> int:
@@ -131,6 +159,7 @@ def main() -> int:
     lines = header(args.baseline)
     lines += render_table(order, aggs, by_variant, metrics, args.baseline)
     lines += render_provenance(order, by_variant)
+    lines += render_contamination(by_variant)
     lines += render_failures(by_variant)
 
     text = "\n".join(lines) + "\n"

@@ -29,6 +29,22 @@ function failedGrade(caseId: string, error: unknown): Grade {
   };
 }
 
+/**
+ * Did this case fail because of the provider rather than the workflow?
+ *
+ * The distinction has to survive into the metrics. An exhausted account and a
+ * workflow that cannot reason both show up as a zero pass rate, and the
+ * aggregate alone cannot tell them apart - a run that ran out of credits
+ * halfway produced a clean-looking 0.000 that read as a finding.
+ */
+function isProviderError(grade: Grade): boolean {
+  return grade.notes.some(
+    (note) =>
+      note.includes('solver threw') &&
+      /\b(401|402|403|429|5\d\d)\b|credits|rate.?limit|quota/i.test(note),
+  );
+}
+
 function mean(values: number[]): number {
   if (values.length === 0) return 0;
   return Number((values.reduce((a, b) => a + b, 0) / values.length).toFixed(4));
@@ -44,7 +60,14 @@ function costUsd(promptTokens: number, completionTokens: number): number {
 
 function summarise(grades: Grade[], client: LlmClient, elapsedMs: number) {
   const totals = client.totals();
+  const providerErrors = grades.filter(isProviderError).length;
   return {
+    /**
+     * Cases lost to the provider, not to the workflow. Any value above zero
+     * makes every other number here unreliable, and compare.py says so rather
+     * than quietly averaging them in.
+     */
+    provider_errors: providerErrors,
     // Primary metric: a case counts only if the cause is right AND the argument
     // for it is sound. See src/grade.ts for the four conditions.
     pass_rate: mean(grades.map((g) => (g.passed ? 1 : 0))),
@@ -74,25 +97,42 @@ function summarise(grades: Grade[], client: LlmClient, elapsedMs: number) {
   };
 }
 
+/** Grade one case, turning any throw into an honest failure rather than a skip. */
+async function runCase(
+  caseId: string,
+  solve: Solver,
+  client: LlmClient,
+): Promise<Grade> {
+  const bundle = loadBundle(caseId);
+  try {
+    return grade(bundle, loadTruth(caseId), await solve(bundle, client));
+  } catch (error) {
+    return failedGrade(caseId, error);
+  }
+}
+
 export async function runVariant(solve: Solver): Promise<void> {
   const client = createClient();
   const grades: Grade[] = [];
   const started = Date.now();
 
   for (const caseId of listCases()) {
-    const bundle = loadBundle(caseId);
-    let result: Grade;
-    try {
-      result = grade(bundle, loadTruth(caseId), await solve(bundle, client));
-    } catch (error) {
-      result = failedGrade(caseId, error);
-    }
+    const result = await runCase(caseId, solve, client);
     grades.push(result);
-    const mark = result.passed ? 'PASS' : 'FAIL';
-    console.error(`${mark}  ${caseId}  ${result.notes.join(' | ')}`);
+    console.error(
+      `${result.passed ? 'PASS' : 'FAIL'}  ${caseId}  ${result.notes.join(' | ')}`,
+    );
   }
 
+  const summary = summarise(grades, client, Date.now() - started);
+  if (summary.provider_errors > 0) {
+    console.error(
+      `\nWARNING: ${summary.provider_errors}/${grades.length} cases failed at the ` +
+        'provider, not in the workflow. These numbers are not a measurement of ' +
+        'anything - fix the account and re-run.',
+    );
+  }
   // stdout carries only the metrics object; progress goes to stderr so the
   // harness can read one without the other.
-  console.log(JSON.stringify(summarise(grades, client, Date.now() - started)));
+  console.log(JSON.stringify(summary));
 }

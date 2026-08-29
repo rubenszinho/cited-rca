@@ -132,6 +132,12 @@ tasks:
       - AGENT_FEATURES=triage,verify {{.RUN}} --variant agent-nosearch
       - AGENT_FEATURES=triage,search {{.RUN}} --variant agent-noverify
 
+  ablate:noverify:
+    desc: Re-run just the verifier ablation
+    cmds:
+      - AGENT_FEATURES=triage,search {{.PY}} harness/run.py --variant agent-noverify
+        --seeds 1 --cmd "pnpm exec tsx src/agent/run.ts"
+
   eval:
     desc: Run both variants over the same cases
     cmds:
