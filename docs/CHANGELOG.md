@@ -179,6 +179,44 @@ the distinction this whole project is built on.
 wrong, the key is the thing to check first. Three of the defects found in this
 project were in the measurement rather than the thing measured.
 
+### The investigation loop: more agency, more variance
+
+Letting the workflow choose its next search from what the last one returned —
+rather than firing four fixed queries once — is the most agentic thing in this
+project. It is also the closest call.
+
+```
+agent (fixed search)   0.667, 0.667, 0.667
+agent-investigate      0.750, 0.750, 0.583
+```
+
+The shipped configuration returns the same number on every repeat. The
+investigating one swings across a range that contains it. Its mean is higher by
+0.028; its own standard deviation is 0.096.
+
+Case level is where it becomes interesting. It **wins** cases 06 and 11 — both
+previously 0/3, both failures caused by citing a red herring — and **loses**
+cases 01 and 10, both previously 3/3. Red-herring rate falls from 0.333 to
+0.222, consistent with what it won.
+
+So it is not that following up on evidence does not work. It works on exactly
+the cases where one pass of generic queries misses the distinguishing line. It
+also wanders on cases the simple version gets right first time, because three
+more rounds of searching is three more chances to find something interesting
+and irrelevant.
+
+**Not shipped**, on the rule that has decided every other feature here: the gain
+is not larger than its own noise. It costs 3.8× the calls and 2.6× the money for
+a difference of one case in thirty-six.
+
+**What it taught me:** agency is not free, and its cost is not only tokens. More
+autonomy widened the outcome distribution in both directions. For a task whose
+whole selling point is that its output can be trusted, a version that is
+sometimes better and sometimes worse is a poor trade against one that is the
+same every time. If I ran this again I would give the loop a stopping rule
+tied to evidence sufficiency rather than a round budget, and measure whether
+that recovers the reach without the wandering.
+
 ### Two features I could not measure, handled differently
 
 Ranked metric movement is not ablatable — it changes how a bundle is presented

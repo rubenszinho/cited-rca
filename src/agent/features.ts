@@ -41,11 +41,13 @@ const ALL: Feature[] = ['triage', 'search', 'investigate', 'verify', 'memory'];
  * a secondary metric after seeing the results is how an evaluation stops
  * meaning anything, so both features are off despite each winning on something.
  *
- * `investigate` - an iterative search loop - is implemented but NOT measured.
- * The run that would have graded it exhausted the account's credits partway
- * through, so 22 of 36 case-runs returned 402 and the numbers mean nothing. It
- * is therefore off. Shipping a feature whose only evidence is that it exists
- * would undo the point of everything else here.
+ * `investigate` - an iterative search loop - reached further and held on less.
+ * It won two cases the fixed search never passes and lost two it always passes,
+ * for a mean of 0.694 against 0.667. Its own spread is +/- 0.096 while the
+ * shipped configuration returns 0.667 on every repeat, so the gain is not
+ * distinguishable from its own noise - at 3.8x the calls and 2.6x the cost.
+ * Red herrings did fall, 0.333 to 0.222, which is a real directional signal and
+ * not enough on its own.
  *
  * All three stay implemented and switchable so the results can be reproduced,
  * and so the investigation loop can be graded by anyone with credits:
