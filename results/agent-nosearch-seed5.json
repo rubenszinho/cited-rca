@@ -1,0 +1,206 @@
+{
+  "cmd": "pnpm exec tsx src/agent/run.ts",
+  "commit": "f9dcf84da6add6b7e4b3492afa48316b4e3af197-dirty",
+  "duration_s": 0.6036,
+  "env": {
+    "container": "host",
+    "machine": "x86_64",
+    "os": "Linux 6.18.33.2-microsoft-standard-WSL2",
+    "python": "3.12.14"
+  },
+  "exit_code": 0,
+  "metrics": {
+    "cases": 12,
+    "cases_detail": [
+      {
+        "case_id": "01-bad-deploy-null-deref",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: logs/app.jsonl ~ \"reading 'percentOff'\" (the exception naming the field and handler)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "02-config-flag-misflip",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: logs/app.jsonl ~ \"session binding mismatch\" (the warning naming the flag)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "03-schema-migration-index-drop",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: logs/app.jsonl ~ \"Seq Scan on orders\" (the plan change proving the index is gone)",
+          "statement unrelated to the line it cites: \"Database CPU usage increased steadily from 28-31% before the\"",
+          "statement unrelated to the line it cites: \"API latency p95 and error rates started rising sharply at 09\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "04-cert-expiry",
+        "cause_correct": false,
+        "citations_valid": true,
+        "evidence_recall": 0,
+        "notes": [
+          "cause: said resource_exhaustion_pool, actual certificate_expiry",
+          "evidence not cited: logs/app.jsonl ~ \"certificate has expired\" (the TLS error naming the peer and expiry instant)",
+          "evidence not cited: logs/app.jsonl ~ \"2026-03-17T09:30:00Z\" (the notAfter matching onset exactly)",
+          "evidence not cited: metrics/callbacks.csv ~ \"2026-03-17T09:30:00.000Z\" (the delivered_per_min series at onset, delivery collapsing at the same minute)"
+        ],
+        "outcome": "wrong-cause",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "05-connection-pool-exhaustion",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.3333,
+        "notes": [
+          "evidence not cited: logs/app.jsonl ~ \"connection pool wait exceeded\" (the pool, not the database, is the contended resource)",
+          "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)",
+          "statement unrelated to the line it cites: \"HTTP p95 latency and error rates rose sharply starting at 09\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "06-memory-leak-oom",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 0.3333,
+        "notes": [
+          "citation does not resolve: alerts.jsonl:1 ~ \"2026-03-17T09:32:00.000Z,\"WorkerRestartLoop\",\"severity\":\"page\",\"state\":\"firing\"\"",
+          "citation does not resolve: alerts.jsonl:2 ~ \"2026-03-17T09:38:00.000Z,\"JobBacklogGrowing\",\"severity\":\"ticket\",\"state\":\"firing\"\"",
+          "citation does not resolve: alerts.jsonl:1 ~ \"2026-03-17T09:32:00.000Z,\"WorkerRestartLoop\",\"severity\":\"page\",\"state\":\"firing\"\"",
+          "citation does not resolve: alerts.jsonl:2 ~ \"2026-03-17T09:38:00.000Z,\"JobBacklogGrowing\",\"severity\":\"ticket\",\"state\":\"firing\"\"",
+          "evidence not cited: logs/app.jsonl ~ \"OOMKilled\" (the kill reason and exit code 137)",
+          "evidence not cited: metrics/worker.csv ~ \"2026-03-17T09:14:00.000Z\" (the rss_mb series at onset, memory climbing monotonically rather than spiking)",
+          "statement unrelated to the line it cites: \"The WorkerRestartLoop alert fired at 09:32, followed by the \"",
+          "statement unrelated to the line it cites: \"The WorkerRestartLoop alert firing at 09:32 and JobBacklogGr\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "07-disk-exhaustion-logs",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0,
+        "notes": [
+          "evidence not cited: logs/app.jsonl ~ \"no space left on device\" (the failure mode, scoped to one node)",
+          "evidence not cited: metrics/disk.csv ~ \"2026-03-17T09:34:00.000Z\" (the api3_used_pct series at onset, one node climbing while its peers stay flat)",
+          "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)",
+          "statement unrelated to the line it cites: \"Disk space usage on api-3 started increasing sharply at 09:3\"",
+          "statement unrelated to the line it cites: \"Disk usage on api-3 rose from 60.6% at 09:00 to 100.7% at 09\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "08-cache-stampede",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.3333,
+        "notes": [
+          "evidence not cited: metrics/cache.csv ~ \"2026-03-17T09:25:00.000Z\" (the hit_rate series at onset, hit rate collapsing rather than degrading)",
+          "evidence not cited: logs/app.jsonl ~ \"cache miss, recomputing\" (concurrent recomputation of the same key, which is what makes it a stampede)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "09-downstream-timeout",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: logs/app.jsonl ~ \"supplier-inventory\" (the failing peer, named in the log line)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "10-dns-failure",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: logs/app.jsonl ~ \"SERVFAIL\" (the resolution failure itself)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "11-upstream-rate-limit",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: logs/app.jsonl ~ \"returned 429\" (the provider rejecting on quota, with the quota named)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "12-batch-job-contention",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)",
+          "statement unrelated to the line it cites: \"HTTP error rates and latencies increased sharply after 09:30\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      }
+    ],
+    "cause_accuracy": 0.9167,
+    "citation_precision": 0.9783,
+    "citation_validity": 0.9167,
+    "completion_rate": 1,
+    "completion_tokens": 33097,
+    "cost_usd": 0.1088,
+    "evidence_recall": 0.4722,
+    "grounding_rate": 0.5833,
+    "llm_calls": 25,
+    "model": "gpt-4.1-mini",
+    "outcomes": {
+      "invalid": 0,
+      "sound": 0,
+      "unsupported": 11,
+      "wrong_cause": 1
+    },
+    "pass_rate": 0,
+    "prompt_tokens": 139733,
+    "provider_errors": 0,
+    "red_herring_rate": 0,
+    "replayed_calls": 25,
+    "seconds_per_case": 0.003
+  },
+  "seed": 5,
+  "started_at": "2026-08-30T16:34:04.388960+00:00",
+  "variant": "agent-nosearch"
+}

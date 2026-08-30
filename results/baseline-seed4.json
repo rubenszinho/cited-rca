@@ -1,0 +1,222 @@
+{
+  "cmd": "pnpm exec tsx src/baseline/run.ts",
+  "commit": "f9dcf84da6add6b7e4b3492afa48316b4e3af197-dirty",
+  "duration_s": 0.5689,
+  "env": {
+    "container": "host",
+    "machine": "x86_64",
+    "os": "Linux 6.18.33.2-microsoft-standard-WSL2",
+    "python": "3.12.14"
+  },
+  "exit_code": 0,
+  "metrics": {
+    "cases": 12,
+    "cases_detail": [
+      {
+        "case_id": "01-bad-deploy-null-deref",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 1,
+        "notes": [
+          "citation does not resolve: changes.jsonl:2 ~ \"\"ref\":\"v2026.3.17-a1\",\"summary\":\"checkout: add tiered discount support\"\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "02-config-flag-misflip",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 1,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:535 ~ \"\"request rejected: session invalid\",\"status\":401\"",
+          "citation does not resolve: alerts.jsonl:1 ~ \"\"AuthReauthSpike\",\"state\":\"firing\"\"",
+          "citation does not resolve: alerts.jsonl:2 ~ \"\"Api401RateHigh\",\"state\":\"firing\"\"",
+          "citation does not resolve: logs/app.jsonl:535 ~ \"\"request rejected: session invalid\",\"status\":401\"",
+          "citation does not resolve: logs/app.jsonl:535 ~ \"\"request rejected: session invalid\",\"status\":401\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "03-schema-migration-index-drop",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 1,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:699 ~ \"\"msg\":\"statement timeout after 5000ms\",\"route\":\"/orders/history\"\"",
+          "citation does not resolve: logs/app.jsonl:685 ~ \"\"msg\":\"slow query\",\"table\":\"orders\"\"",
+          "citation does not resolve: logs/app.jsonl:699 ~ \"\"msg\":\"statement timeout after 5000ms\",\"route\":\"/orders/history\"\"",
+          "statement unrelated to the line it cites: \"API errors and increased latency correlate with the database\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "04-cert-expiry",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: metrics/callbacks.csv ~ \"2026-03-17T09:30:00.000Z\" (the delivered_per_min series at onset, delivery collapsing at the same minute)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "05-connection-pool-exhaustion",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [
+          "red herring used as evidence: \"timed out acquiring database connection\" (the error names the database, so it reads as a slow database - but database CPU and mean query time are both flat)",
+          "statement unrelated to the line it cites: \"The HTTP metrics show increased latency and error rates star\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "06-memory-leak-oom",
+        "cause_correct": false,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "cause: said resource_exhaustion_pool, actual memory_leak",
+          "evidence not cited: metrics/worker.csv ~ \"2026-03-17T09:14:00.000Z\" (the rss_mb series at onset, memory climbing monotonically rather than spiking)",
+          "red herring used as evidence: \"worker replicas 4 -> 8\" (a change during the incident, but an operator mitigation rather than the cause)",
+          "statement unrelated to the line it cites: \"Worker memory usage increased from ~431MB at 09:00 to over 1\""
+        ],
+        "outcome": "wrong-cause",
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "07-disk-exhaustion-logs",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "citation does not resolve: alerts.jsonl:1 ~ \"\"name\":\"ApiWriteErrors\",\"state\":\"firing\"\"",
+          "citation does not resolve: alerts.jsonl:2 ~ \"\"name\":\"DiskSpaceCritical\",\"state\":\"firing\"\"",
+          "evidence not cited: metrics/disk.csv ~ \"2026-03-17T09:34:00.000Z\" (the api3_used_pct series at onset, one node climbing while its peers stay flat)",
+          "statement unrelated to the line it cites: \"Disk usage on api-3 started increasing gradually from 60.6% \"",
+          "statement unrelated to the line it cites: \"HTTP error rates increased sharply starting at 09:34, peakin\"",
+          "statement unrelated to the line it cites: \"The timing of the disk space exhaustion aligns with the firi\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "08-cache-stampede",
+        "cause_correct": false,
+        "citations_valid": false,
+        "evidence_recall": 1,
+        "notes": [
+          "cause: said resource_exhaustion_pool, actual cache_stampede",
+          "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:24:00.000Z\",\"summary\":\"manual FLUSHALL on the catalog cache after a pricing correction\"\"",
+          "citation does not resolve: logs/app.jsonl:789 ~ \"\"msg\":\"cache miss, recomputing\",\"concurrent\":212\"",
+          "red herring used as evidence: \"too many connections\" (the database is where the pain surfaces, but it is saturated by the stampede rather than causing it)",
+          "statement unrelated to the line it cites: \"At 09:24:00 a manual FLUSHALL was performed on the catalog c\""
+        ],
+        "outcome": "wrong-cause",
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "09-downstream-timeout",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 1,
+        "notes": [
+          "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:03:00.000Z\",\"kind\":\"deploy\",\"summary\":\"api: copy tweaks on the product page\"\"",
+          "citation does not resolve: changes.jsonl:1 ~ \"\"kind\":\"deploy\",\"summary\":\"api: copy tweaks on the product page\"\"",
+          "statement unrelated to the line it cites: \"A deployment was made at 09:03:00 with summary 'api: copy tw\"",
+          "statement unrelated to the line it cites: \"API latency and error rates increased starting at 09:19:00, \""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "10-dns-failure",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 1,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:458 ~ \"\"ts\":\"2026-03-17T09:16:08.000Z\",\"msg\":\"dial tcp: lookup payments.internal: SERVFAIL\"\"",
+          "citation does not resolve: alerts.jsonl:1 ~ \"\"name\":\"MultiServiceErrorSpike\",\"state\":\"firing\"\"",
+          "citation does not resolve: alerts.jsonl:2 ~ \"\"name\":\"DnsResolveLatency\",\"state\":\"firing\"\"",
+          "citation does not resolve: metrics/http.csv:2 ~ \"error_rate,0.0028\"",
+          "statement unrelated to the line it cites: \"DNS-related errors (SERVFAIL) started appearing in logs for \"",
+          "statement unrelated to the line it cites: \"HTTP error rates increased sharply starting at 09:16 UTC, co\"",
+          "statement unrelated to the line it cites: \"The alerts for MultiServiceErrorSpike and DnsResolveLatency \""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "11-upstream-rate-limit",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:12:00.000Z\",\"summary\":\"checkout: raise retry attempts 2 -> 5\"\"",
+          "citation does not resolve: alerts.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:31:00.000Z\",\"name\":\"PaymentAuthFailures\",\"state\":\"firing\"\"",
+          "citation does not resolve: alerts.jsonl:2 ~ \"\"ts\":\"2026-03-17T09:33:00.000Z\",\"name\":\"CheckoutConversionDrop\",\"state\":\"firing\"\"",
+          "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:12:00.000Z\",\"summary\":\"checkout: raise retry attempts 2 -> 5\"\"",
+          "evidence not cited: changes.jsonl ~ \"retry attempts 2 -> 5\" (the retry change that turned a blip into a storm)",
+          "statement unrelated to the line it cites: \"A deployment was made at 09:12 that increased retry attempts\"",
+          "statement unrelated to the line it cites: \"Alerts for PaymentAuthFailures and CheckoutConversionDrop fi\"",
+          "statement unrelated to the line it cites: \"The deployment at 09:12 increased retry attempts, which like\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "12-batch-job-contention",
+        "cause_correct": false,
+        "citations_valid": false,
+        "evidence_recall": 0,
+        "notes": [
+          "solver threw: evidence.1.citations.1.quote: Too small: expected string to have >=12 characters"
+        ],
+        "outcome": "invalid",
+        "passed": false,
+        "red_herring_blamed": false
+      }
+    ],
+    "cause_accuracy": 0.8182,
+    "citation_precision": 0.8763,
+    "citation_validity": 0.2727,
+    "completion_rate": 0.9167,
+    "completion_tokens": 25140,
+    "cost_usd": 0.1153,
+    "evidence_recall": 0.8788,
+    "grounding_rate": 0.2727,
+    "llm_calls": 16,
+    "model": "gpt-4.1-mini",
+    "outcomes": {
+      "invalid": 1,
+      "sound": 0,
+      "unsupported": 9,
+      "wrong_cause": 2
+    },
+    "pass_rate": 0,
+    "prompt_tokens": 187683,
+    "provider_errors": 0,
+    "red_herring_rate": 0.2727,
+    "replayed_calls": 16,
+    "seconds_per_case": 0.006
+  },
+  "seed": 4,
+  "started_at": "2026-08-30T16:33:56.220601+00:00",
+  "variant": "baseline"
+}

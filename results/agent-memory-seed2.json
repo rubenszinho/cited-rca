@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "45ebddb402159d9cb3b00ff0f7dc004809d80046",
-  "duration_s": 0.4071,
+  "commit": "f9dcf84da6add6b7e4b3492afa48316b4e3af197-dirty",
+  "duration_s": 0.5562,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -74,6 +74,7 @@
           "citation does not resolve: logs/app.jsonl:559 ~ \"\"msg\":\"timed out acquiring database connection\",\"waited_ms\":5000\"",
           "citation does not resolve: logs/app.jsonl:559 ~ \"\"msg\":\"timed out acquiring database connection\",\"waited_ms\":5000\"",
           "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)",
+          "statement unrelated to the line it cites: \"Simultaneously, HTTP p95 latency and error rates increased s\"",
           "statement unrelated to the line it cites: \"Logs show repeated errors of 'timed out acquiring database c\""
         ],
         "outcome": "unsupported",
@@ -88,7 +89,8 @@
         "notes": [
           "cause: said resource_exhaustion_pool, actual memory_leak",
           "evidence not cited: metrics/worker.csv ~ \"2026-03-17T09:14:00.000Z\" (the rss_mb series at onset, memory climbing monotonically rather than spiking)",
-          "red herring used as evidence: \"worker replicas 4 -> 8\" (a change during the incident, but an operator mitigation rather than the cause)"
+          "red herring used as evidence: \"worker replicas 4 -> 8\" (a change during the incident, but an operator mitigation rather than the cause)",
+          "statement unrelated to the line it cites: \"Starting at 09:14, HTTP error rates increased sharply from b\""
         ],
         "outcome": "wrong-cause",
         "passed": false,
@@ -101,7 +103,8 @@
         "evidence_recall": 0.3333,
         "notes": [
           "evidence not cited: metrics/disk.csv ~ \"2026-03-17T09:34:00.000Z\" (the api3_used_pct series at onset, one node climbing while its peers stay flat)",
-          "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)"
+          "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)",
+          "statement unrelated to the line it cites: \"Disk usage on api-3 started increasing sharply at 09:37 and \""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -168,9 +171,9 @@
     "citation_validity": 0.7273,
     "completion_rate": 0.9167,
     "completion_tokens": 37093,
-    "cost_usd": 1.1622,
+    "cost_usd": 0.1401,
     "evidence_recall": 0.8182,
-    "grounding_rate": 0.7273,
+    "grounding_rate": 0.5455,
     "llm_calls": 27,
     "model": "gpt-4.1-mini",
     "outcomes": {
@@ -184,9 +187,9 @@
     "provider_errors": 0,
     "red_herring_rate": 0.2727,
     "replayed_calls": 27,
-    "seconds_per_case": 0.004
+    "seconds_per_case": 0.006
   },
   "seed": 2,
-  "started_at": "2026-08-30T03:56:31.454654+00:00",
+  "started_at": "2026-08-30T16:34:09.665866+00:00",
   "variant": "agent-memory"
 }

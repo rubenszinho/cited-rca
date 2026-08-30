@@ -68,8 +68,16 @@ export function terms(text: string): Set<string> {
  * A metric row is entirely numeric, so a statement describing it shares no term
  * with it — "error rate stepped up at onset" against
  * `2026-03-17T09:23:00.000Z,42.9,182,0.09,343`. The header names what those
- * numbers are, and the path names the series, so both belong to the line's
- * meaning even though neither is on it.
+ * numbers are, so it belongs to the line's meaning even though it is not on it.
+ *
+ * The file path deliberately does NOT. It was in this context once, and it made
+ * the check bypassable in one token: naming the source inside the statement
+ * grounds the statement against itself. "Badgers operate the load balancer, per
+ * logs/app.jsonl line 645" scored 12/12 sound. That is not an adversarial
+ * curiosity — "per metrics/http.csv, latency stepped up" is ordinary phrasing,
+ * so every report that cited its sources in prose was auto-grounded and the
+ * check was silently off for exactly the reports it was meant to judge. The
+ * header carries the naming the path was there for.
  */
 function citationContext(
   bundle: IncidentBundle,
@@ -78,7 +86,7 @@ function citationContext(
 ): string {
   const file = bundle.files.find((f) => f.source === citation.source);
   const header = file && citation.line > 1 ? (file.lines[0] ?? '') : '';
-  return `${line} ${citation.quote} ${citation.source} ${header}`;
+  return `${line} ${header}`;
 }
 
 /**

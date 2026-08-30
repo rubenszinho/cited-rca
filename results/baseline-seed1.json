@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/baseline/run.ts",
-  "commit": "45ebddb402159d9cb3b00ff0f7dc004809d80046",
-  "duration_s": 0.3872,
+  "commit": "f9dcf84da6add6b7e4b3492afa48316b4e3af197-dirty",
+  "duration_s": 0.517,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -70,7 +70,9 @@
           "citation does not resolve: logs/app.jsonl:926 ~ \"\"msg\":\"timed out acquiring database connection\",\"waited_ms\":5000\"",
           "evidence not cited: metrics/pool.csv ~ \"2026-03-17T09:21:00.000Z\" (the idle series at onset, idle connections draining to zero)",
           "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)",
-          "statement unrelated to the line it cites: \"Repeated error logs show 'timed out acquiring database conne\""
+          "statement unrelated to the line it cites: \"HTTP p95 latency and error rates increased sharply starting \"",
+          "statement unrelated to the line it cites: \"Repeated error logs show 'timed out acquiring database conne\"",
+          "statement unrelated to the line it cites: \"The HTTP p95 latency rose from around 180ms to over 1400ms a\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -85,7 +87,9 @@
           "citation does not resolve: changes.jsonl:1 ~ \"{\"kind\":\"deploy\"\"",
           "citation does not resolve: changes.jsonl:2 ~ \"{\"kind\":\"scale\"\"",
           "evidence not cited: metrics/worker.csv ~ \"2026-03-17T09:14:00.000Z\" (the rss_mb series at onset, memory climbing monotonically rather than spiking)",
-          "red herring used as evidence: \"worker replicas 4 -> 8\" (a change during the incident, but an operator mitigation rather than the cause)"
+          "red herring used as evidence: \"worker replicas 4 -> 8\" (a change during the incident, but an operator mitigation rather than the cause)",
+          "statement unrelated to the line it cites: \"Worker RSS memory usage steadily increased from 431 MB at 09\"",
+          "statement unrelated to the line it cites: \"Worker memory usage increased steadily over the incident per\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -98,7 +102,8 @@
         "evidence_recall": 0.6667,
         "notes": [
           "evidence not cited: metrics/disk.csv ~ \"2026-03-17T09:34:00.000Z\" (the api3_used_pct series at onset, one node climbing while its peers stay flat)",
-          "red herring used as evidence: \"ApiWriteErrors\" (the alert is fleet-scoped and names no node, so it reads as a fleet-wide fault when only api-3 is affected)"
+          "red herring used as evidence: \"ApiWriteErrors\" (the alert is fleet-scoped and names no node, so it reads as a fleet-wide fault when only api-3 is affected)",
+          "statement unrelated to the line it cites: \"HTTP error rates on the API increased significantly starting\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -200,9 +205,9 @@
     "citation_validity": 0.25,
     "completion_rate": 1,
     "completion_tokens": 22890,
-    "cost_usd": 0.8304,
+    "cost_usd": 0.1016,
     "evidence_recall": 0.8056,
-    "grounding_rate": 0.4167,
+    "grounding_rate": 0.25,
     "llm_calls": 14,
     "model": "gpt-4.1-mini",
     "outcomes": {
@@ -216,9 +221,9 @@
     "provider_errors": 0,
     "red_herring_rate": 0.3333,
     "replayed_calls": 14,
-    "seconds_per_case": 0.003
+    "seconds_per_case": 0.005
   },
   "seed": 1,
-  "started_at": "2026-08-30T03:56:26.098338+00:00",
+  "started_at": "2026-08-30T16:33:54.613830+00:00",
   "variant": "baseline"
 }

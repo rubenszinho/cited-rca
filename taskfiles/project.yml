@@ -15,7 +15,14 @@ version: '3'
 vars:
   PY: python3
   # Every run is recorded under results/ by the harness, keyed on variant+seed.
-  SEEDS: '{{.SEEDS | default "3"}}'
+  #
+  # Six, and the same six for every variant. It was three, with `agent` and
+  # `agent-withtriage` extended to six by hand to settle the triage question.
+  # Two things broke. The documented repro path regenerated three-seed means
+  # while the docs quoted six-seed ones, so `verify:claims` failed from a clean
+  # clone on figures that were perfectly honest. And the headline compared a
+  # six-seed agent against a three-seed baseline, which is not a comparison.
+  SEEDS: '{{.SEEDS | default "6"}}'
 
 tasks:
   # === forge hook points ==============================================
@@ -144,8 +151,14 @@ tasks:
     # Invoking harness/run.py directly skips dotenv, and the run then fails
     # twelve times over with "LLM_API_KEY is unset" - which has happened twice.
     cmds:
+      # SEED_START re-records a single seed in place. A provider error during a
+      # live recording leaves that seed's calls uncassetted, and replay then
+      # reports a cassette miss forever; without this the only repair was
+      # re-running the whole variant. Defaults to 0, so the common case is
+      # unchanged.
       - AGENT_FEATURES={{.FEATURES}} {{.PY}} harness/run.py --variant {{.VARIANT}}
-        --seeds {{.SEEDS}} --cmd "pnpm exec tsx src/agent/run.ts"
+        --seeds {{.SEEDS}} --seed-start {{.SEED_START | default 0}}
+        --cmd "pnpm exec tsx src/agent/run.ts"
 
   eval:
     desc: Run both variants over the same cases
@@ -154,9 +167,20 @@ tasks:
       - task: agent
       - task: report
 
-  report:
-    desc: Regenerate docs/RESULTS.md from the recorded runs
+  paired:
+    desc: Recompute the committed paired comparisons under results/paired/
+    # The prose compares rivals to the shipped workflow seed by seed, and a mean
+    # of differences is not any run's value nor any variant's mean. Committing
+    # the comparison is what lets verify:claims back those figures without
+    # accepting every possible paired difference - see harness/paired.py.
     cmds:
+      - '{{.PY}} harness/paired.py agent-withtriage agent'
+      - '{{.PY}} harness/paired.py agent-memory agent'
+
+  report:
+    desc: Regenerate docs/RESULTS.md and the paired comparisons from the runs
+    cmds:
+      - task: paired
       - '{{.PY}} harness/compare.py --out docs/RESULTS.md'
 
   repro:

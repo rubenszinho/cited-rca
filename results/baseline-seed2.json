@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/baseline/run.ts",
-  "commit": "45ebddb402159d9cb3b00ff0f7dc004809d80046",
-  "duration_s": 0.3748,
+  "commit": "f9dcf84da6add6b7e4b3492afa48316b4e3af197-dirty",
+  "duration_s": 0.519,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -105,7 +105,9 @@
         "evidence_recall": 0.3333,
         "notes": [
           "evidence not cited: metrics/disk.csv ~ \"2026-03-17T09:34:00.000Z\" (the api3_used_pct series at onset, one node climbing while its peers stay flat)",
-          "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)"
+          "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)",
+          "statement unrelated to the line it cites: \"Disk usage on api-3 started increasing gradually from 60.6% \"",
+          "statement unrelated to the line it cites: \"The disk usage on api-3 reached 100.7% at 09:59, confirming \""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -151,9 +153,11 @@
         "cause_correct": true,
         "citations_valid": true,
         "evidence_recall": 1,
-        "notes": [],
-        "outcome": "sound",
-        "passed": true,
+        "notes": [
+          "statement unrelated to the line it cites: \"HTTP error rates increased significantly starting at 09:16, \""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
         "red_herring_blamed": false
       },
       {
@@ -193,25 +197,25 @@
     "citation_validity": 0.3333,
     "completion_rate": 1,
     "completion_tokens": 20948,
-    "cost_usd": 0.7614,
+    "cost_usd": 0.0931,
     "evidence_recall": 0.7778,
-    "grounding_rate": 0.6667,
+    "grounding_rate": 0.5,
     "llm_calls": 13,
     "model": "gpt-4.1-mini",
     "outcomes": {
       "invalid": 0,
-      "sound": 2,
-      "unsupported": 9,
+      "sound": 1,
+      "unsupported": 10,
       "wrong_cause": 1
     },
-    "pass_rate": 0.1667,
+    "pass_rate": 0.0833,
     "prompt_tokens": 149072,
     "provider_errors": 0,
     "red_herring_rate": 0.1667,
     "replayed_calls": 13,
-    "seconds_per_case": 0.003
+    "seconds_per_case": 0.005
   },
   "seed": 2,
-  "started_at": "2026-08-30T03:56:26.486041+00:00",
+  "started_at": "2026-08-30T16:33:55.131397+00:00",
   "variant": "baseline"
 }

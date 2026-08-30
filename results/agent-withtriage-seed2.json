@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "45ebddb402159d9cb3b00ff0f7dc004809d80046",
-  "duration_s": 0.3882,
+  "commit": "f9dcf84da6add6b7e4b3492afa48316b4e3af197-dirty",
+  "duration_s": 0.5524,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -56,7 +56,8 @@
         "citations_valid": true,
         "evidence_recall": 0.6667,
         "notes": [
-          "evidence not cited: metrics/callbacks.csv ~ \"2026-03-17T09:30:00.000Z\" (the delivered_per_min series at onset, delivery collapsing at the same minute)"
+          "evidence not cited: metrics/callbacks.csv ~ \"2026-03-17T09:30:00.000Z\" (the delivered_per_min series at onset, delivery collapsing at the same minute)",
+          "statement unrelated to the line it cites: \"HTTP service metrics remained stable, ruling out general ser\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -96,7 +97,9 @@
         "notes": [
           "evidence not cited: metrics/disk.csv ~ \"2026-03-17T09:34:00.000Z\" (the api3_used_pct series at onset, one node climbing while its peers stay flat)",
           "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)",
-          "red herring used as evidence: \"ApiWriteErrors\" (the alert is fleet-scoped and names no node, so it reads as a fleet-wide fault when only api-3 is affected)"
+          "red herring used as evidence: \"ApiWriteErrors\" (the alert is fleet-scoped and names no node, so it reads as a fleet-wide fault when only api-3 is affected)",
+          "statement unrelated to the line it cites: \"Disk usage on api-3 increased sharply from 62.5% at 09:35 to\"",
+          "statement unrelated to the line it cites: \"Disk usage on api-3 reached 100.7% by 09:59, indicating full\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -121,9 +124,11 @@
         "cause_correct": true,
         "citations_valid": true,
         "evidence_recall": 1,
-        "notes": [],
-        "outcome": "sound",
-        "passed": true,
+        "notes": [
+          "statement unrelated to the line it cites: \"The stable request per second (rps) metric during the incide\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
         "red_herring_blamed": false
       },
       {
@@ -168,25 +173,25 @@
     "citation_validity": 0.8182,
     "completion_rate": 0.9167,
     "completion_tokens": 42696,
-    "cost_usd": 1.4652,
+    "cost_usd": 0.1783,
     "evidence_recall": 0.7879,
-    "grounding_rate": 0.9091,
+    "grounding_rate": 0.6364,
     "llm_calls": 40,
     "model": "gpt-4.1-mini",
     "outcomes": {
       "invalid": 1,
-      "sound": 2,
-      "unsupported": 8,
+      "sound": 1,
+      "unsupported": 9,
       "wrong_cause": 1
     },
-    "pass_rate": 0.1667,
+    "pass_rate": 0.0833,
     "prompt_tokens": 274911,
     "provider_errors": 0,
     "red_herring_rate": 0.4545,
     "replayed_calls": 40,
-    "seconds_per_case": 0.004
+    "seconds_per_case": 0.006
   },
   "seed": 2,
-  "started_at": "2026-08-30T03:56:38.050481+00:00",
+  "started_at": "2026-08-30T16:34:13.076148+00:00",
   "variant": "agent-withtriage"
 }

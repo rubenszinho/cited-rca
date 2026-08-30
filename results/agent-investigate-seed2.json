@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "45ebddb402159d9cb3b00ff0f7dc004809d80046",
-  "duration_s": 0.4647,
+  "commit": "f9dcf84da6add6b7e4b3492afa48316b4e3af197-dirty",
+  "duration_s": 0.7185,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -91,7 +91,8 @@
         "notes": [
           "cause: said resource_exhaustion_pool, actual memory_leak",
           "evidence not cited: metrics/worker.csv ~ \"2026-03-17T09:14:00.000Z\" (the rss_mb series at onset, memory climbing monotonically rather than spiking)",
-          "red herring used as evidence: \"worker replicas 4 -> 8\" (a change during the incident, but an operator mitigation rather than the cause)"
+          "red herring used as evidence: \"worker replicas 4 -> 8\" (a change during the incident, but an operator mitigation rather than the cause)",
+          "statement unrelated to the line it cites: \"Worker memory usage increased significantly, consistent with\""
         ],
         "outcome": "wrong-cause",
         "passed": false,
@@ -107,6 +108,8 @@
           "citation does not resolve: alerts.jsonl:2 ~ \"\"name\":\"DiskSpaceCritical\",\"state\":\"firing\"\"",
           "evidence not cited: metrics/disk.csv ~ \"2026-03-17T09:34:00.000Z\" (the api3_used_pct series at onset, one node climbing while its peers stay flat)",
           "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)",
+          "statement unrelated to the line it cites: \"Disk usage on api-3 started increasing significantly from 09\"",
+          "statement unrelated to the line it cites: \"Disk usage on api-3 reached 100.7% at 09:59, confirming disk\"",
           "statement unrelated to the line it cites: \"Alerts for disk space critical and API write errors coincide\""
         ],
         "outcome": "unsupported",
@@ -131,9 +134,11 @@
         "cause_correct": true,
         "citations_valid": true,
         "evidence_recall": 1,
-        "notes": [],
-        "outcome": "sound",
-        "passed": true,
+        "notes": [
+          "statement unrelated to the line it cites: \"HTTP p95 latency and error rates increased significantly dur\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
         "red_herring_blamed": false
       },
       {
@@ -141,9 +146,11 @@
         "cause_correct": true,
         "citations_valid": true,
         "evidence_recall": 1,
-        "notes": [],
-        "outcome": "sound",
-        "passed": true,
+        "notes": [
+          "statement unrelated to the line it cites: \"HTTP error rates increased sharply starting at 09:16, coinci\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
         "red_herring_blamed": false
       },
       {
@@ -167,7 +174,8 @@
           "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\",\"waited_ms\":4800\"",
           "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\",\"waited_ms\":4800\"",
           "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)",
-          "statement unrelated to the line it cites: \"Warnings of lock wait timeouts on orders caused by 'reconcil\""
+          "statement unrelated to the line it cites: \"Warnings of lock wait timeouts on orders caused by 'reconcil\"",
+          "statement unrelated to the line it cites: \"HTTP error rates and latencies increased significantly after\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -179,25 +187,25 @@
     "citation_validity": 0.5833,
     "completion_rate": 1,
     "completion_tokens": 60268,
-    "cost_usd": 2.6357,
+    "cost_usd": 0.3273,
     "evidence_recall": 0.8056,
-    "grounding_rate": 0.5,
+    "grounding_rate": 0.25,
     "llm_calls": 71,
     "model": "gpt-4.1-mini",
     "outcomes": {
       "invalid": 0,
-      "sound": 2,
-      "unsupported": 8,
+      "sound": 0,
+      "unsupported": 10,
       "wrong_cause": 2
     },
-    "pass_rate": 0.1667,
+    "pass_rate": 0,
     "prompt_tokens": 577237,
     "provider_errors": 0,
     "red_herring_rate": 0.3333,
     "replayed_calls": 71,
-    "seconds_per_case": 0.009
+    "seconds_per_case": 0.012
   },
   "seed": 2,
-  "started_at": "2026-08-30T03:56:34.005314+00:00",
+  "started_at": "2026-08-30T16:34:16.813878+00:00",
   "variant": "agent-investigate"
 }

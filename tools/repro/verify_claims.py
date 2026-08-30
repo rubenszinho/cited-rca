@@ -63,11 +63,30 @@ def means() -> set[str]:
     return seen
 
 
+def paired() -> set[str]:
+    """Committed paired comparisons, for claims about one variant against another.
+
+    Deliberately reads only the pairs under results/paired/ rather than deriving
+    every pair on demand. All-pairs backing was measured: it grows the accepted
+    set from 359 to 772 of the 1000 possible three-decimal values, which passes
+    almost any figure. See harness/paired.py.
+    """
+    seen: set[str] = set()
+    for path in (RESULTS / "paired").glob("*.json"):
+        record = json.loads(path.read_text(encoding="utf-8"))
+        for stats in record["differences"].values():
+            for key in ("mean", "stdev"):
+                seen.add(f"{abs(stats[key]):.3f}")
+            for delta in stats["per_seed"]:
+                seen.add(f"{abs(delta):.3f}")
+    return seen
+
+
 def main() -> int:
     if not RESULTS.exists() or not any(RESULTS.glob("*.json")):
         print("error: no results to check claims against", file=sys.stderr)
         return 2
-    known = observed() | means() | IGNORE
+    known = observed() | means() | paired() | IGNORE
 
     problems: list[str] = []
     for arg in sys.argv[1:]:

@@ -45,10 +45,17 @@ say "fixtures rebuild byte-for-byte from their seeds"
 # variants as cloned files made the comparison trivially pass on them.
 say "clearing the cloned results so nothing is compared against itself"
 rm -f results/*.json
+# Including the derived paired comparisons: left in place they would be the
+# cloned files, and the claims gate would then back the prose with the very
+# artifact the clone was supposed to regenerate.
+rm -rf results/paired
 
-say "replaying every variant with no API key"
-./bin/mise exec -- task project:eval
-./bin/mise exec -- task project:ablate
+# Pinned, not inherited. The seed count is what the documents' means are over;
+# if the default ever moves, this path must fail loudly rather than quietly
+# regenerate different numbers and blame the documents for them.
+say "replaying every variant with no API key, at the seed count the docs quote"
+SEEDS=6 ./bin/mise exec -- task project:eval
+SEEDS=6 ./bin/mise exec -- task project:ablate
 
 # Compares the graded outcome of every case, not the rendered table: wall-clock
 # timings differ between machines and are not part of the claim.

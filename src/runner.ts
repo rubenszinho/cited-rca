@@ -11,6 +11,7 @@
 import { listCases, loadBundle, loadTruth, type IncidentBundle } from './bundle.ts';
 import { grade, type Grade } from './grade.ts';
 import { configFromEnv, createClient } from './llm/client.ts';
+import { costUsd } from './llm/pricing.ts';
 import type { LlmClient } from './llm/types.ts';
 import type { RcaReport } from './schema.ts';
 
@@ -75,14 +76,6 @@ function mean(values: number[]): number {
   return Number((values.reduce((a, b) => a + b, 0) / values.length).toFixed(4));
 }
 
-function costUsd(promptTokens: number, completionTokens: number): number {
-  const inRate = Number(process.env.LLM_PRICE_IN_PER_MTOK ?? 0);
-  const outRate = Number(process.env.LLM_PRICE_OUT_PER_MTOK ?? 0);
-  return Number(
-    ((promptTokens * inRate + completionTokens * outRate) / 1e6).toFixed(4),
-  );
-}
-
 /**
  * Mean over the cases that produced a report.
  *
@@ -132,6 +125,9 @@ function summarise(grades: Grade[], client: LlmClient, elapsedMs: number) {
   const totals = client.totals();
   const providerErrors = grades.filter(isProviderError).length;
   const { cited, resolved } = citationTotals(grades);
+  // One read, used for both the reported model and the rate it is priced at.
+  // Those two drifting apart is what published a cost eight times the real one.
+  const { model } = configFromEnv();
   return {
     /**
      * Cases lost to the provider, not to the workflow. Any value above zero
@@ -153,12 +149,12 @@ function summarise(grades: Grade[], client: LlmClient, elapsedMs: number) {
 
     outcomes: countOutcomes(grades),
     cases: grades.length,
-    model: configFromEnv().model,
+    model,
     llm_calls: totals.calls,
     replayed_calls: totals.replayed,
     prompt_tokens: totals.prompt_tokens,
     completion_tokens: totals.completion_tokens,
-    cost_usd: costUsd(totals.prompt_tokens, totals.completion_tokens),
+    cost_usd: costUsd(model, totals.prompt_tokens, totals.completion_tokens),
     seconds_per_case: Number((elapsedMs / 1000 / grades.length).toFixed(3)),
     // Per-case outcomes travel with the aggregate. "Report every result,
     // including failures" is a rule, and an aggregate alone cannot say which

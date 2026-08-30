@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "45ebddb402159d9cb3b00ff0f7dc004809d80046",
-  "duration_s": 0.405,
+  "commit": "f9dcf84da6add6b7e4b3492afa48316b4e3af197-dirty",
+  "duration_s": 0.6043,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -18,7 +18,9 @@
         "citations_valid": false,
         "evidence_recall": 1,
         "notes": [
-          "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\""
+          "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\"",
+          "statement unrelated to the line it cites: \"Error rates in HTTP metrics spiked from 0.0024 at 09:22 to 0\"",
+          "statement unrelated to the line it cites: \"HTTP p95 latency increased significantly from ~163ms at 09:2\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -94,7 +96,8 @@
         "notes": [
           "evidence not cited: metrics/disk.csv ~ \"2026-03-17T09:34:00.000Z\" (the api3_used_pct series at onset, one node climbing while its peers stay flat)",
           "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)",
-          "red herring used as evidence: \"ApiWriteErrors\" (the alert is fleet-scoped and names no node, so it reads as a fleet-wide fault when only api-3 is affected)"
+          "red herring used as evidence: \"ApiWriteErrors\" (the alert is fleet-scoped and names no node, so it reads as a fleet-wide fault when only api-3 is affected)",
+          "statement unrelated to the line it cites: \"Disk usage on api-3 started increasing gradually from 60.6% \""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -106,7 +109,8 @@
         "citations_valid": true,
         "evidence_recall": 1,
         "notes": [
-          "cause: said resource_exhaustion_pool, actual cache_stampede"
+          "cause: said resource_exhaustion_pool, actual cache_stampede",
+          "statement unrelated to the line it cites: \"HTTP error rates increased sharply from 0.0018 at 09:24 to a\""
         ],
         "outcome": "wrong-cause",
         "passed": false,
@@ -134,7 +138,8 @@
           "citation does not resolve: alerts.jsonl:2 ~ \"2026-03-17T09:23:00.000Z,\"name\":\"DnsResolveLatency\",\"severity\":\"page\",\"state\":\"firing\"\"",
           "citation does not resolve: alerts.jsonl:2 ~ \"2026-03-17T09:23:00.000Z,\"name\":\"DnsResolveLatency\",\"severity\":\"page\",\"state\":\"firing\"\"",
           "evidence not cited: alerts.jsonl ~ \"MultiServiceErrorSpike\" (three unrelated services failing at once points below the application layer)",
-          "statement unrelated to the line it cites: \"Multiple page alerts fire at 09:21 and 09:23 for MultiServic\""
+          "statement unrelated to the line it cites: \"Multiple page alerts fire at 09:21 and 09:23 for MultiServic\"",
+          "statement unrelated to the line it cites: \"HTTP error rates and p95 latency increase significantly star\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -170,9 +175,9 @@
     "citation_validity": 0.4444,
     "completion_rate": 0.75,
     "completion_tokens": 40223,
-    "cost_usd": 1.2199,
+    "cost_usd": 0.1466,
     "evidence_recall": 0.8519,
-    "grounding_rate": 0.6667,
+    "grounding_rate": 0.3333,
     "llm_calls": 28,
     "model": "gpt-4.1-mini",
     "outcomes": {
@@ -186,9 +191,9 @@
     "provider_errors": 0,
     "red_herring_rate": 0.1111,
     "replayed_calls": 28,
-    "seconds_per_case": 0.004
+    "seconds_per_case": 0.005
   },
   "seed": 4,
-  "started_at": "2026-08-30T03:56:36.249245+00:00",
+  "started_at": "2026-08-30T16:33:59.791463+00:00",
   "variant": "agent"
 }

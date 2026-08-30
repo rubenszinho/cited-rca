@@ -51,9 +51,9 @@ wrong.
 
 That is not an opinion; it is the clearest result in the evaluation. Take the
 log away from the workflow and it still names the root cause about as often as
-the full system — **0.914 against 0.942** — from the metrics and the change
+the full system — **0.915 against 0.923** — from the metrics and the change
 timeline alone. Its pass rate is **zero**. It knows the answer and cannot show
-its work: evidence recall collapses from 0.823 to **0.476**.
+its work: evidence recall collapses from 0.834 to **0.470**.
 
 Being right and being able to demonstrate you are right are separate
 capabilities, and only the second makes a postmortem worth reading.
@@ -79,12 +79,20 @@ answer"_.
 Five capabilities were built and measured. **Three were removed because the
 evidence did not support them.**
 
-|                              | pass rate         | verdict                                            |
-| ---------------------------- | ----------------- | -------------------------------------------------- |
-| planning pass                | 0.208 ± 0.070     | better grounded, no more often right               |
-| cross-incident memory        | 0.222 ± 0.048     | worst cause accuracy of any variant keeping search |
-| iterative investigation      | 0.167 ± 0.000     | highest red-herring rate in the set                |
-| **shipped: search + verify** | **0.167 ± 0.075** | best cause accuracy; no rival clears its spread    |
+|                              | pass rate         | verdict                                      |
+| ---------------------------- | ----------------- | -------------------------------------------- |
+| planning pass                | 0.181 ± 0.097     | far better grounded, no more often right     |
+| cross-incident memory        | 0.194 ± 0.101     | worst cause accuracy and most red herrings   |
+| iterative investigation      | 0.083 ± 0.075     | lowest cause accuracy in the set             |
+| **shipped: search + verify** | **0.153 ± 0.082** | neither rival's margin clears its own spread |
+
+Two of those rank above the shipped workflow on the primary metric, and the
+honest reading is that neither margin is a result: paired on the same six
+seeds, memory leads by 0.042 with a spread of 0.087, planning by 0.028 with a
+spread of 0.126. Each mean is smaller than its own noise. Planning is the
+uncomfortable one — cause accuracy ties (0.926 against 0.923) and its grounding
+is markedly better, **0.627 against 0.413**. It is out because its lead is not
+distinguishable from chance, not because it was shown to be worse.
 
 A deliberate outcome, not an unfinished one: each rejection is reproducible with
 a flag, and [`docs/CHANGELOG.md`](docs/CHANGELOG.md) records what each taught.

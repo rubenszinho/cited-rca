@@ -52,6 +52,18 @@ describe('isGrounded', () => {
     expect(isGrounded(bundle, f)).toBe(false);
   });
 
+  it('rejects nonsense that names its own source in the statement', () => {
+    // The second bypass. The context used to include the file path, so writing
+    // the path into the prose grounded the prose against itself, and the same
+    // 12/12 nonsense report passed again. Ordinary reports phrase citations
+    // this way ("per metrics/http.csv, latency stepped up"), so the leak was
+    // not adversarial-only: it turned the check off in normal use.
+    const f = finding('Badgers operate the load balancer, per logs/app.jsonl.', [
+      cite('logs/app.jsonl', "reading 'percentOff'"),
+    ]);
+    expect(isGrounded(bundle, f)).toBe(false);
+  });
+
   it('accepts a statement about a metric row via the header naming its columns', () => {
     // A metric row is all numbers; nothing in it is a word. The header says
     // what those numbers are, so it is part of what the line is about.

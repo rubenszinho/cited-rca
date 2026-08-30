@@ -1,0 +1,228 @@
+{
+  "cmd": "pnpm exec tsx src/agent/run.ts",
+  "commit": "f9dcf84da6add6b7e4b3492afa48316b4e3af197-dirty",
+  "duration_s": 0.5848,
+  "env": {
+    "container": "host",
+    "machine": "x86_64",
+    "os": "Linux 6.18.33.2-microsoft-standard-WSL2",
+    "python": "3.12.14"
+  },
+  "exit_code": 0,
+  "metrics": {
+    "cases": 12,
+    "cases_detail": [
+      {
+        "case_id": "01-bad-deploy-null-deref",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 1,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\"",
+          "citation does not resolve: alerts.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:27:00.000Z\",\"name\":\"CheckoutErrorRateHigh\",\"state\":\"firing\"\"",
+          "statement unrelated to the line it cites: \"Error rates in HTTP metrics spiked from 0.0024 at 09:22 to 0\"",
+          "statement unrelated to the line it cites: \"HTTP p95 latency increased significantly from ~163ms at 09:2\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "02-config-flag-misflip",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 1,
+        "notes": [
+          "citation does not resolve: alerts.jsonl:1 ~ \"\"AuthReauthSpike\",\"state\":\"firing\"\"",
+          "citation does not resolve: alerts.jsonl:2 ~ \"\"Api401RateHigh\",\"state\":\"firing\"\"",
+          "citation does not resolve: alerts.jsonl:1 ~ \"\"AuthReauthSpike\",\"state\":\"firing\"\"",
+          "statement unrelated to the line it cites: \"The AuthReauthSpike alert fired at 09:24 and Api401RateHigh \""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "03-schema-migration-index-drop",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 1,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:699 ~ \"\"msg\":\"statement timeout after 5000ms\",\"route\":\"/orders/history\"\"",
+          "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:12:00.000Z\",\"kind\":\"deploy\",\"summary\":\"api: unrelated copy change on the account page\"\"",
+          "statement unrelated to the line it cites: \"Database CPU usage increased steadily after the migration, r\"",
+          "statement unrelated to the line it cites: \"API latency (p95) and error rates increased sharply starting\"",
+          "statement unrelated to the line it cites: \"The increase in database CPU usage and API latency, along wi\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "04-cert-expiry",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 0,
+        "notes": [
+          "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:08:00.000Z\",\"kind\":\"deploy\",\"summary\":\"worker: retry backoff tuning\"\"",
+          "citation does not resolve: logs/app.jsonl:719 ~ \"\"ts\":\"2026-03-17T09:30:02.000Z\",\"level\":\"error\",\"msg\":\"callback delivery failed, scheduling retry\"\"",
+          "citation does not resolve: logs/app.jsonl:922 ~ \"\"ts\":\"2026-03-17T09:35:10.000Z\",\"level\":\"error\",\"msg\":\"tls: failed to verify certificate: certificate has expired\",\"notAfter\":\"2026-03-17T09:30:00Z\"\"",
+          "citation does not resolve: alerts.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:34:00.000Z\",\"name\":\"CallbackDeliveryStalled\",\"state\":\"firing\"\"",
+          "citation does not resolve: alerts.jsonl:2 ~ \"\"ts\":\"2026-03-17T09:44:00.000Z\",\"name\":\"RetryQueueDepth\",\"state\":\"firing\"\"",
+          "citation does not resolve: logs/app.jsonl:922 ~ \"\"tls: failed to verify certificate: certificate has expired\",\"notAfter\":\"2026-03-17T09:30:00Z\"\"",
+          "citation does not resolve: logs/app.jsonl:1214 ~ \"\"tls: failed to verify certificate: certificate has expired\",\"notAfter\":\"2026-03-17T09:30:00Z\"\"",
+          "citation does not resolve: logs/app.jsonl:1411 ~ \"\"tls: failed to verify certificate: certificate has expired\",\"notAfter\":\"2026-03-17T09:30:00Z\"\"",
+          "citation does not resolve: logs/app.jsonl:1510 ~ \"\"tls: failed to verify certificate: certificate has expired\",\"notAfter\":\"2026-03-17T09:30:00Z\"\"",
+          "citation does not resolve: logs/app.jsonl:1811 ~ \"\"tls: failed to verify certificate: certificate has expired\",\"notAfter\":\"2026-03-17T09:30:00Z\"\"",
+          "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:08:00.000Z\",\"kind\":\"deploy\",\"summary\":\"worker: retry backoff tuning\"\"",
+          "evidence not cited: logs/app.jsonl ~ \"certificate has expired\" (the TLS error naming the peer and expiry instant)",
+          "evidence not cited: logs/app.jsonl ~ \"2026-03-17T09:30:00Z\" (the notAfter matching onset exactly)",
+          "evidence not cited: metrics/callbacks.csv ~ \"2026-03-17T09:30:00.000Z\" (the delivered_per_min series at onset, delivery collapsing at the same minute)",
+          "statement unrelated to the line it cites: \"A deployment was made at 09:08 to tune worker retry backoff,\"",
+          "statement unrelated to the line it cites: \"At 09:30, errors began appearing indicating callback deliver\"",
+          "statement unrelated to the line it cites: \"At 09:35, errors explicitly reported TLS certificate verific\"",
+          "statement unrelated to the line it cites: \"Alerts for CallbackDeliveryStalled and RetryQueueDepth start\"",
+          "statement unrelated to the line it cites: \"Repeated error logs explicitly state TLS certificate verific\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "05-connection-pool-exhaustion",
+        "cause_correct": false,
+        "citations_valid": false,
+        "evidence_recall": 0,
+        "notes": [
+          "solver threw: evidence.2.citations.0.quote: Too small: expected string to have >=12 characters; evidence.2.citations.1.quote: Too small: expected string to have >=12 characters; ruled_out.2.citations.0.quote: Too small: expected string to have >=12 characters; ruled_out.2.citations.1.quote: Too small: expected string to have >=12 characters"
+        ],
+        "outcome": "invalid",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "06-memory-leak-oom",
+        "cause_correct": false,
+        "citations_valid": false,
+        "evidence_recall": 0,
+        "notes": [
+          "solver threw: ruled_out.3.citations.0.quote: Too small: expected string to have >=12 characters"
+        ],
+        "outcome": "invalid",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "07-disk-exhaustion-logs",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.3333,
+        "notes": [
+          "evidence not cited: metrics/disk.csv ~ \"2026-03-17T09:34:00.000Z\" (the api3_used_pct series at onset, one node climbing while its peers stay flat)",
+          "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)",
+          "red herring used as evidence: \"ApiWriteErrors\" (the alert is fleet-scoped and names no node, so it reads as a fleet-wide fault when only api-3 is affected)",
+          "statement unrelated to the line it cites: \"Disk usage on api-3 started increasing gradually from 60.6% \""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "08-cache-stampede",
+        "cause_correct": false,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [
+          "cause: said resource_exhaustion_pool, actual cache_stampede",
+          "statement unrelated to the line it cites: \"HTTP error rates increased sharply from 0.0018 at 09:24 to a\""
+        ],
+        "outcome": "wrong-cause",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "09-downstream-timeout",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [
+          "statement unrelated to the line it cites: \"Simultaneously, API p95 latency and error rates increased si\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "10-dns-failure",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "citation does not resolve: alerts.jsonl:1 ~ \"2026-03-17T09:21:00.000Z,\"name\":\"MultiServiceErrorSpike\",\"severity\":\"page\",\"state\":\"firing\"\"",
+          "citation does not resolve: alerts.jsonl:2 ~ \"2026-03-17T09:23:00.000Z,\"name\":\"DnsResolveLatency\",\"severity\":\"page\",\"state\":\"firing\"\"",
+          "citation does not resolve: alerts.jsonl:2 ~ \"2026-03-17T09:23:00.000Z,\"name\":\"DnsResolveLatency\",\"severity\":\"page\",\"state\":\"firing\"\"",
+          "evidence not cited: alerts.jsonl ~ \"MultiServiceErrorSpike\" (three unrelated services failing at once points below the application layer)",
+          "statement unrelated to the line it cites: \"Multiple page alerts fire at 09:21 and 09:23 for MultiServic\"",
+          "statement unrelated to the line it cites: \"HTTP error rates and p95 latency increase significantly star\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "11-upstream-rate-limit",
+        "cause_correct": false,
+        "citations_valid": false,
+        "evidence_recall": 0,
+        "notes": [
+          "solver threw: ruled_out.2.citations: Too small: expected array to have >=1 items"
+        ],
+        "outcome": "invalid",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "12-batch-job-contention",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\"\"",
+          "citation does not resolve: alerts.jsonl:1 ~ \"\"CheckoutErrorRateHigh\",\"state\":\"firing\"\"",
+          "citation does not resolve: alerts.jsonl:2 ~ \"\"DbLockWaits\",\"state\":\"firing\"\"",
+          "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\"\"",
+          "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)",
+          "statement unrelated to the line it cites: \"Alerts for CheckoutErrorRateHigh and DbLockWaits fired at 09\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      }
+    ],
+    "cause_accuracy": 0.8889,
+    "citation_precision": 0.8322,
+    "citation_validity": 0.3333,
+    "completion_rate": 0.75,
+    "completion_tokens": 26519,
+    "cost_usd": 0.0905,
+    "evidence_recall": 0.7407,
+    "grounding_rate": 0,
+    "llm_calls": 17,
+    "model": "gpt-4.1-mini",
+    "outcomes": {
+      "invalid": 3,
+      "sound": 0,
+      "unsupported": 8,
+      "wrong_cause": 1
+    },
+    "pass_rate": 0,
+    "prompt_tokens": 120231,
+    "provider_errors": 0,
+    "red_herring_rate": 0.1111,
+    "replayed_calls": 17,
+    "seconds_per_case": 0.005
+  },
+  "seed": 4,
+  "started_at": "2026-08-30T16:34:07.324161+00:00",
+  "variant": "agent-noverify"
+}

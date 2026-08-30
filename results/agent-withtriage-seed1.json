@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "45ebddb402159d9cb3b00ff0f7dc004809d80046",
-  "duration_s": 0.3944,
+  "commit": "f9dcf84da6add6b7e4b3492afa48316b4e3af197-dirty",
+  "duration_s": 0.5389,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -99,7 +99,9 @@
         "evidence_recall": 0.3333,
         "notes": [
           "evidence not cited: metrics/disk.csv ~ \"2026-03-17T09:34:00.000Z\" (the api3_used_pct series at onset, one node climbing while its peers stay flat)",
-          "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)"
+          "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)",
+          "statement unrelated to the line it cites: \"Disk usage on api-3 increased sharply from 62.5% at 09:35 to\"",
+          "statement unrelated to the line it cites: \"Disk usage on api-3 reached 100.7% at 09:59, confirming disk\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -166,9 +168,9 @@
     "citation_validity": 0.7273,
     "completion_rate": 0.9167,
     "completion_tokens": 37365,
-    "cost_usd": 1.268,
+    "cost_usd": 0.1541,
     "evidence_recall": 0.7879,
-    "grounding_rate": 0.8182,
+    "grounding_rate": 0.7273,
     "llm_calls": 36,
     "model": "gpt-4.1-mini",
     "outcomes": {
@@ -182,9 +184,9 @@
     "provider_errors": 0,
     "red_herring_rate": 0.0909,
     "replayed_calls": 36,
-    "seconds_per_case": 0.004
+    "seconds_per_case": 0.005
   },
   "seed": 1,
-  "started_at": "2026-08-30T03:56:37.655546+00:00",
+  "started_at": "2026-08-30T16:34:12.535670+00:00",
   "variant": "agent-withtriage"
 }

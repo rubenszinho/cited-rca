@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "45ebddb402159d9cb3b00ff0f7dc004809d80046",
-  "duration_s": 0.3868,
+  "commit": "f9dcf84da6add6b7e4b3492afa48316b4e3af197-dirty",
+  "duration_s": 0.5745,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -91,7 +91,8 @@
         "evidence_recall": 0.3333,
         "notes": [
           "evidence not cited: metrics/disk.csv ~ \"2026-03-17T09:34:00.000Z\" (the api3_used_pct series at onset, one node climbing while its peers stay flat)",
-          "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)"
+          "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)",
+          "statement unrelated to the line it cites: \"Disk usage on api-3 started increasing gradually from 60.6% \""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -103,7 +104,9 @@
         "citations_valid": true,
         "evidence_recall": 1,
         "notes": [
-          "cause: said resource_exhaustion_pool, actual cache_stampede"
+          "cause: said resource_exhaustion_pool, actual cache_stampede",
+          "statement unrelated to the line it cites: \"HTTP error rates increased sharply from 0.0018 at 09:24 to a\"",
+          "statement unrelated to the line it cites: \"The increased database load caused higher HTTP error rates a\""
         ],
         "outcome": "wrong-cause",
         "passed": false,
@@ -159,9 +162,9 @@
     "citation_validity": 1,
     "completion_rate": 0.9167,
     "completion_tokens": 38880,
-    "cost_usd": 1.169,
+    "cost_usd": 0.1403,
     "evidence_recall": 0.8485,
-    "grounding_rate": 0.7273,
+    "grounding_rate": 0.5455,
     "llm_calls": 26,
     "model": "gpt-4.1-mini",
     "outcomes": {
@@ -175,9 +178,9 @@
     "provider_errors": 0,
     "red_herring_rate": 0.1818,
     "replayed_calls": 26,
-    "seconds_per_case": 0.004
+    "seconds_per_case": 0.005
   },
   "seed": 1,
-  "started_at": "2026-08-30T03:56:35.055161+00:00",
+  "started_at": "2026-08-30T16:33:58.028805+00:00",
   "variant": "agent"
 }

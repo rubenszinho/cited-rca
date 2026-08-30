@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/baseline/run.ts",
-  "commit": "45ebddb402159d9cb3b00ff0f7dc004809d80046",
-  "duration_s": 0.3835,
+  "commit": "f9dcf84da6add6b7e4b3492afa48316b4e3af197-dirty",
+  "duration_s": 0.5284,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -73,7 +73,9 @@
         "citations_valid": true,
         "evidence_recall": 0.6667,
         "notes": [
-          "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)"
+          "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)",
+          "statement unrelated to the line it cites: \"HTTP p95 latency and error rates increased significantly sta\"",
+          "statement unrelated to the line it cites: \"The HTTP metrics show increased latency and error rates coin\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -100,7 +102,8 @@
         "evidence_recall": 0.6667,
         "notes": [
           "evidence not cited: metrics/disk.csv ~ \"2026-03-17T09:34:00.000Z\" (the api3_used_pct series at onset, one node climbing while its peers stay flat)",
-          "red herring used as evidence: \"ApiWriteErrors\" (the alert is fleet-scoped and names no node, so it reads as a fleet-wide fault when only api-3 is affected)"
+          "red herring used as evidence: \"ApiWriteErrors\" (the alert is fleet-scoped and names no node, so it reads as a fleet-wide fault when only api-3 is affected)",
+          "statement unrelated to the line it cites: \"Disk usage on api-3 began increasing gradually from 60.6% at\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -199,9 +202,9 @@
     "citation_validity": 0.25,
     "completion_rate": 1,
     "completion_tokens": 25522,
-    "cost_usd": 0.9517,
+    "cost_usd": 0.1167,
     "evidence_recall": 0.7778,
-    "grounding_rate": 0.5833,
+    "grounding_rate": 0.4167,
     "llm_calls": 16,
     "model": "gpt-4.1-mini",
     "outcomes": {
@@ -215,9 +218,9 @@
     "provider_errors": 0,
     "red_herring_rate": 0.3333,
     "replayed_calls": 16,
-    "seconds_per_case": 0.004
+    "seconds_per_case": 0.005
   },
   "seed": 0,
-  "started_at": "2026-08-30T03:56:25.714092+00:00",
+  "started_at": "2026-08-30T16:33:54.084368+00:00",
   "variant": "baseline"
 }

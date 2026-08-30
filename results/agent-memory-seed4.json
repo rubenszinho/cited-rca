@@ -1,0 +1,213 @@
+{
+  "cmd": "pnpm exec tsx src/agent/run.ts",
+  "commit": "f9dcf84da6add6b7e4b3492afa48316b4e3af197-dirty",
+  "duration_s": 0.5611,
+  "env": {
+    "container": "host",
+    "machine": "x86_64",
+    "os": "Linux 6.18.33.2-microsoft-standard-WSL2",
+    "python": "3.12.14"
+  },
+  "exit_code": 0,
+  "metrics": {
+    "cases": 12,
+    "cases_detail": [
+      {
+        "case_id": "01-bad-deploy-null-deref",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 1,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\"",
+          "statement unrelated to the line it cites: \"Error rates in HTTP metrics spiked from 0.0024 at 09:22 to 0\"",
+          "statement unrelated to the line it cites: \"HTTP p95 latency increased significantly from ~163ms at 09:2\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "02-config-flag-misflip",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 1,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:535 ~ \"\"session invalid\",\"req\":\"req_343311\",\"status\":401\"",
+          "citation does not resolve: logs/app.jsonl:535 ~ \"\"session invalid\",\"req\":\"req_343311\",\"status\":401\"",
+          "citation does not resolve: logs/app.jsonl:535 ~ \"\"session invalid\",\"req\":\"req_343311\",\"status\":401\"",
+          "statement unrelated to the line it cites: \"Immediately after 09:17, the re-authentications per minute s\"",
+          "statement unrelated to the line it cites: \"The error logs show repeated 401 errors due to invalid sessi\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "03-schema-migration-index-drop",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:699 ~ \"\"msg\":\"statement timeout after 5000ms\",\"route\":\"/orders/history\"\"",
+          "evidence not cited: logs/app.jsonl ~ \"Seq Scan on orders\" (the plan change proving the index is gone)",
+          "statement unrelated to the line it cites: \"Database CPU usage increased steadily after the migration, r\"",
+          "statement unrelated to the line it cites: \"The slow queries and statement timeouts on the /orders/histo\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "04-cert-expiry",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:922 ~ \"\"tls: failed to verify certificate: certificate has expired\",\"notAfter\":\"2026-03-17T09:30:00Z\"\"",
+          "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:08:00.000Z\",\"kind\":\"deploy\",\"summary\":\"worker: retry backoff tuning\"\"",
+          "evidence not cited: metrics/callbacks.csv ~ \"2026-03-17T09:30:00.000Z\" (the delivered_per_min series at onset, delivery collapsing at the same minute)",
+          "red herring used as evidence: \"v2026.3.17-c2\" (the only deploy in the window, and it touched retry logic)",
+          "statement unrelated to the line it cites: \"The TLS certificate for payments.partner.example expired at \""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "05-connection-pool-exhaustion",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)",
+          "red herring used as evidence: \"timed out acquiring database connection\" (the error names the database, so it reads as a slow database - but database CPU and mean query time are both flat)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "06-memory-leak-oom",
+        "cause_correct": false,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "cause: said resource_exhaustion_pool, actual memory_leak",
+          "evidence not cited: metrics/worker.csv ~ \"2026-03-17T09:14:00.000Z\" (the rss_mb series at onset, memory climbing monotonically rather than spiking)",
+          "red herring used as evidence: \"worker replicas 4 -> 8\" (a change during the incident, but an operator mitigation rather than the cause)",
+          "statement unrelated to the line it cites: \"Worker memory RSS increased steadily from 431MB to nearly 2G\""
+        ],
+        "outcome": "wrong-cause",
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "07-disk-exhaustion-logs",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.3333,
+        "notes": [
+          "evidence not cited: metrics/disk.csv ~ \"2026-03-17T09:34:00.000Z\" (the api3_used_pct series at onset, one node climbing while its peers stay flat)",
+          "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)",
+          "red herring used as evidence: \"ApiWriteErrors\" (the alert is fleet-scoped and names no node, so it reads as a fleet-wide fault when only api-3 is affected)",
+          "statement unrelated to the line it cites: \"Disk usage on api-3 started increasing sharply from 62.5% at\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "08-cache-stampede",
+        "cause_correct": false,
+        "citations_valid": false,
+        "evidence_recall": 1,
+        "notes": [
+          "cause: said resource_exhaustion_pool, actual cache_stampede",
+          "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:24:00.000Z\",\"summary\":\"manual FLUSHALL on the catalog cache after a pricing correction\"\"",
+          "red herring used as evidence: \"too many connections\" (the database is where the pain surfaces, but it is saturated by the stampede rather than causing it)",
+          "statement unrelated to the line it cites: \"At 09:24, a manual FLUSHALL was performed on the catalog cac\""
+        ],
+        "outcome": "wrong-cause",
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "09-downstream-timeout",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [
+          "statement unrelated to the line it cites: \"Correspondingly, the API p95 latency rose from ~180ms to ove\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "10-dns-failure",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: alerts.jsonl ~ \"MultiServiceErrorSpike\" (three unrelated services failing at once points below the application layer)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "11-upstream-rate-limit",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [
+          "red herring used as evidence: \"CheckoutConversionDrop\" (reads as a checkout regression rather than an upstream rejecting our excess volume)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "12-batch-job-contention",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\",\"waited_ms\":4800\"",
+          "citation does not resolve: logs/app.jsonl:1502 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\",\"waited_ms\":4800\"",
+          "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\",\"waited_ms\":4800\"",
+          "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)",
+          "statement unrelated to the line it cites: \"Repeated warnings of 'lock wait timeout on orders' caused by\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      }
+    ],
+    "cause_accuracy": 0.8333,
+    "citation_precision": 0.9415,
+    "citation_validity": 0.5,
+    "completion_rate": 1,
+    "completion_tokens": 44955,
+    "cost_usd": 0.1744,
+    "evidence_recall": 0.7778,
+    "grounding_rate": 0.25,
+    "llm_calls": 34,
+    "model": "gpt-4.1-mini",
+    "outcomes": {
+      "invalid": 0,
+      "sound": 0,
+      "unsupported": 10,
+      "wrong_cause": 2
+    },
+    "pass_rate": 0,
+    "prompt_tokens": 256251,
+    "provider_errors": 0,
+    "red_herring_rate": 0.5,
+    "replayed_calls": 34,
+    "seconds_per_case": 0.006
+  },
+  "seed": 4,
+  "started_at": "2026-08-30T16:34:10.775186+00:00",
+  "variant": "agent-memory"
+}

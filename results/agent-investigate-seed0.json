@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "45ebddb402159d9cb3b00ff0f7dc004809d80046",
-  "duration_s": 0.4459,
+  "commit": "f9dcf84da6add6b7e4b3492afa48316b4e3af197-dirty",
+  "duration_s": 0.5887,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -93,7 +93,9 @@
           "citation does not resolve: changes.jsonl:2 ~ \"\"ts\":\"2026-03-17T09:47:00.000Z\",\"kind\":\"scale\",\"summary\":\"worker replicas 4 -> 8 (mitigation attempt)\"\"",
           "evidence not cited: metrics/worker.csv ~ \"2026-03-17T09:14:00.000Z\" (the rss_mb series at onset, memory climbing monotonically rather than spiking)",
           "red herring used as evidence: \"worker replicas 4 -> 8\" (a change during the incident, but an operator mitigation rather than the cause)",
-          "statement unrelated to the line it cites: \"Repeated OOMKilled errors with exit code 137 show containers\""
+          "statement unrelated to the line it cites: \"Worker RSS memory usage increased from 431MB at 09:00 to a p\"",
+          "statement unrelated to the line it cites: \"Repeated OOMKilled errors with exit code 137 show containers\"",
+          "statement unrelated to the line it cites: \"Worker memory RSS increased nearly 4.5x from 431MB to 1929MB\""
         ],
         "outcome": "wrong-cause",
         "passed": false,
@@ -107,7 +109,9 @@
         "notes": [
           "evidence not cited: metrics/disk.csv ~ \"2026-03-17T09:34:00.000Z\" (the api3_used_pct series at onset, one node climbing while its peers stay flat)",
           "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)",
-          "red herring used as evidence: \"ApiWriteErrors\" (the alert is fleet-scoped and names no node, so it reads as a fleet-wide fault when only api-3 is affected)"
+          "red herring used as evidence: \"ApiWriteErrors\" (the alert is fleet-scoped and names no node, so it reads as a fleet-wide fault when only api-3 is affected)",
+          "statement unrelated to the line it cites: \"Disk usage on api-3 started increasing sharply from 60.6% at\"",
+          "statement unrelated to the line it cites: \"The disk usage on api-3 reached 100.7% at 09:59, confirming \""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -139,13 +143,14 @@
       },
       {
         "case_id": "10-dns-failure",
-        "cause_correct": false,
-        "citations_valid": false,
-        "evidence_recall": 0,
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
         "notes": [
-          "solver threw: cassette miss for step \"agent:draft:10-dns-failure\" (key 50e62c5cde3e54ec0c34b774).\nThe committed cassettes replay the recorded evaluation exactly, so a miss means the prompt changed since they were recorded.\nRe-record with: LLM_MODE=record task project:agent  (needs LLM_API_KEY)"
+          "evidence not cited: alerts.jsonl ~ \"MultiServiceErrorSpike\" (three unrelated services failing at once points below the application layer)",
+          "statement unrelated to the line it cites: \"HTTP error rates increased sharply starting at 09:16, peakin\""
         ],
-        "outcome": "invalid",
+        "outcome": "unsupported",
         "passed": false,
         "red_herring_blamed": false
       },
@@ -166,36 +171,38 @@
         "cause_correct": true,
         "citations_valid": true,
         "evidence_recall": 1,
-        "notes": [],
-        "outcome": "sound",
-        "passed": true,
+        "notes": [
+          "statement unrelated to the line it cites: \"HTTP error rates and latencies increased sharply at the same\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
         "red_herring_blamed": false
       }
     ],
-    "cause_accuracy": 0.8182,
-    "citation_precision": 0.9635,
-    "citation_validity": 0.7273,
-    "completion_rate": 0.9167,
-    "completion_tokens": 50880,
-    "cost_usd": 2.2713,
-    "evidence_recall": 0.8182,
-    "grounding_rate": 0.5455,
-    "llm_calls": 62,
+    "cause_accuracy": 0.8333,
+    "citation_precision": 0.9655,
+    "citation_validity": 0.75,
+    "completion_rate": 1,
+    "completion_tokens": 52849,
+    "cost_usd": 0.2906,
+    "evidence_recall": 0.8056,
+    "grounding_rate": 0.3333,
+    "llm_calls": 64,
     "model": "gpt-4.1-mini",
     "outcomes": {
-      "invalid": 1,
-      "sound": 2,
-      "unsupported": 7,
+      "invalid": 0,
+      "sound": 1,
+      "unsupported": 9,
       "wrong_cause": 2
     },
-    "pass_rate": 0.1667,
-    "prompt_tokens": 502716,
-    "provider_errors": 1,
-    "red_herring_rate": 0.5455,
-    "replayed_calls": 62,
-    "seconds_per_case": 0.008
+    "pass_rate": 0.0833,
+    "prompt_tokens": 515087,
+    "provider_errors": 0,
+    "red_herring_rate": 0.5,
+    "replayed_calls": 64,
+    "seconds_per_case": 0.01
   },
   "seed": 0,
-  "started_at": "2026-08-30T03:56:33.115793+00:00",
+  "started_at": "2026-08-30T16:34:15.379124+00:00",
   "variant": "agent-investigate"
 }

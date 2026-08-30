@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "45ebddb402159d9cb3b00ff0f7dc004809d80046",
-  "duration_s": 0.3845,
+  "commit": "f9dcf84da6add6b7e4b3492afa48316b4e3af197-dirty",
+  "duration_s": 0.5877,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -99,7 +99,8 @@
         "evidence_recall": 0.3333,
         "notes": [
           "evidence not cited: metrics/disk.csv ~ \"2026-03-17T09:34:00.000Z\" (the api3_used_pct series at onset, one node climbing while its peers stay flat)",
-          "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)"
+          "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)",
+          "statement unrelated to the line it cites: \"Disk usage on api-3 started increasing gradually from 60.6% \""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -111,7 +112,9 @@
         "citations_valid": true,
         "evidence_recall": 1,
         "notes": [
-          "cause: said resource_exhaustion_pool, actual cache_stampede"
+          "cause: said resource_exhaustion_pool, actual cache_stampede",
+          "statement unrelated to the line it cites: \"HTTP error rates increased sharply from 0.0018 at 09:24 to a\"",
+          "statement unrelated to the line it cites: \"The increased database load caused higher HTTP error rates a\""
         ],
         "outcome": "wrong-cause",
         "passed": false,
@@ -162,6 +165,7 @@
           "statement unrelated to the line it cites: \"A deploy was made at 09:12 increasing retry attempts from 2 \"",
           "statement unrelated to the line it cites: \"Alerts for PaymentAuthFailures and CheckoutConversionDrop st\"",
           "statement unrelated to the line it cites: \"Repeated warnings of retrying authorisation attempts at 4th \"",
+          "statement unrelated to the line it cites: \"The payment provider returned 429 errors consistently starti\"",
           "statement unrelated to the line it cites: \"The deploy at 09:12 increased retry attempts but error rates\""
         ],
         "outcome": "unsupported",
@@ -181,7 +185,8 @@
           "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)",
           "statement unrelated to the line it cites: \"Long-running transactions increased dramatically from 0.3 se\"",
           "statement unrelated to the line it cites: \"Warnings about lock wait timeouts on orders caused by the re\"",
-          "statement unrelated to the line it cites: \"Lock wait timeouts on the orders table repeatedly reference \""
+          "statement unrelated to the line it cites: \"Lock wait timeouts on the orders table repeatedly reference \"",
+          "statement unrelated to the line it cites: \"Checkout errors and HTTP error rates increased sharply after\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -193,9 +198,9 @@
     "citation_validity": 0.5455,
     "completion_rate": 0.9167,
     "completion_tokens": 30080,
-    "cost_usd": 0.8554,
+    "cost_usd": 0.102,
     "evidence_recall": 0.7576,
-    "grounding_rate": 0.5455,
+    "grounding_rate": 0.3636,
     "llm_calls": 19,
     "model": "gpt-4.1-mini",
     "outcomes": {
@@ -209,9 +214,9 @@
     "provider_errors": 0,
     "red_herring_rate": 0.0909,
     "replayed_calls": 19,
-    "seconds_per_case": 0.003
+    "seconds_per_case": 0.005
   },
   "seed": 1,
-  "started_at": "2026-08-30T03:56:29.843551+00:00",
+  "started_at": "2026-08-30T16:34:05.645795+00:00",
   "variant": "agent-noverify"
 }

@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "45ebddb402159d9cb3b00ff0f7dc004809d80046",
-  "duration_s": 0.3958,
+  "commit": "f9dcf84da6add6b7e4b3492afa48316b4e3af197-dirty",
+  "duration_s": 0.5711,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -88,7 +88,8 @@
         "evidence_recall": 0.6667,
         "notes": [
           "evidence not cited: metrics/worker.csv ~ \"2026-03-17T09:14:00.000Z\" (the rss_mb series at onset, memory climbing monotonically rather than spiking)",
-          "red herring used as evidence: \"worker replicas 4 -> 8\" (a change during the incident, but an operator mitigation rather than the cause)"
+          "red herring used as evidence: \"worker replicas 4 -> 8\" (a change during the incident, but an operator mitigation rather than the cause)",
+          "statement unrelated to the line it cites: \"Worker RSS memory increased steadily from 431MB to 1929MB, s\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -102,7 +103,8 @@
         "notes": [
           "evidence not cited: metrics/disk.csv ~ \"2026-03-17T09:34:00.000Z\" (the api3_used_pct series at onset, one node climbing while its peers stay flat)",
           "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)",
-          "red herring used as evidence: \"ApiWriteErrors\" (the alert is fleet-scoped and names no node, so it reads as a fleet-wide fault when only api-3 is affected)"
+          "red herring used as evidence: \"ApiWriteErrors\" (the alert is fleet-scoped and names no node, so it reads as a fleet-wide fault when only api-3 is affected)",
+          "statement unrelated to the line it cites: \"Disk usage on api-3 started increasing gradually from 60.6% \""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -116,7 +118,8 @@
         "notes": [
           "cause: said resource_exhaustion_pool, actual cache_stampede",
           "evidence not cited: logs/app.jsonl ~ \"cache miss, recomputing\" (concurrent recomputation of the same key, which is what makes it a stampede)",
-          "red herring used as evidence: \"too many connections\" (the database is where the pain surfaces, but it is saturated by the stampede rather than causing it)"
+          "red herring used as evidence: \"too many connections\" (the database is where the pain surfaces, but it is saturated by the stampede rather than causing it)",
+          "statement unrelated to the line it cites: \"HTTP error rates increased sharply from 0.0018 at 09:24 to a\""
         ],
         "outcome": "wrong-cause",
         "passed": false,
@@ -137,9 +140,11 @@
         "cause_correct": true,
         "citations_valid": true,
         "evidence_recall": 1,
-        "notes": [],
-        "outcome": "sound",
-        "passed": true,
+        "notes": [
+          "statement unrelated to the line it cites: \"HTTP error rates and latency increased sharply after DNS fai\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
         "red_herring_blamed": false
       },
       {
@@ -177,25 +182,25 @@
     "citation_validity": 0.6667,
     "completion_rate": 1,
     "completion_tokens": 42373,
-    "cost_usd": 1.2794,
+    "cost_usd": 0.1536,
     "evidence_recall": 0.8056,
-    "grounding_rate": 0.6667,
+    "grounding_rate": 0.3333,
     "llm_calls": 29,
     "model": "gpt-4.1-mini",
     "outcomes": {
       "invalid": 0,
-      "sound": 2,
-      "unsupported": 9,
+      "sound": 1,
+      "unsupported": 10,
       "wrong_cause": 1
     },
-    "pass_rate": 0.1667,
+    "pass_rate": 0.0833,
     "prompt_tokens": 214586,
     "provider_errors": 0,
     "red_herring_rate": 0.4167,
     "replayed_calls": 29,
-    "seconds_per_case": 0.004
+    "seconds_per_case": 0.006
   },
   "seed": 3,
-  "started_at": "2026-08-30T03:56:35.852914+00:00",
+  "started_at": "2026-08-30T16:33:59.219655+00:00",
   "variant": "agent"
 }
