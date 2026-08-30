@@ -32,14 +32,27 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 RESULTS = REPO_ROOT / "results"
 
 
+# Paths whose contents decide what a run does. Deliberately excludes results/
+# and docs/: a run writes results while it executes, so checking the whole tree
+# marked every run dirty against its own output and the hash stopped
+# identifying anything. Provenance has to describe the code, not the artefacts.
+CODE_PATHS = ["src", "fixtures", "harness", "tools", "package.json", "pnpm-lock.yaml"]
+
+
 def git_commit() -> str:
+    """HEAD, marked dirty only when the *code* differs from it.
+
+    A `-dirty` suffix means the hash cannot be used to reconstruct the run, so
+    it must mean something specific. Here it means source changed since the
+    commit, which is the only thing that would change what a run produces.
+    """
     try:
         out = subprocess.run(
             ["git", "-C", str(REPO_ROOT), "rev-parse", "HEAD"],
             capture_output=True, text=True, check=True,
         ).stdout.strip()
         dirty = subprocess.run(
-            ["git", "-C", str(REPO_ROOT), "status", "--porcelain"],
+            ["git", "-C", str(REPO_ROOT), "status", "--porcelain", "--", *CODE_PATHS],
             capture_output=True, text=True, check=True,
         ).stdout.strip()
         return out + ("-dirty" if dirty else "")
