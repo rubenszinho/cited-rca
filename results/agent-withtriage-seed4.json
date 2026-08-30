@@ -1,0 +1,185 @@
+{
+  "cmd": "pnpm exec tsx src/agent/run.ts",
+  "commit": "0478a1f2352be5c4c9790e8cc6800c3be3ac35b4-dirty",
+  "duration_s": 432.8919,
+  "env": {
+    "container": "host",
+    "machine": "x86_64",
+    "os": "Linux 6.18.33.2-microsoft-standard-WSL2",
+    "python": "3.12.14"
+  },
+  "exit_code": 0,
+  "metrics": {
+    "cases": 12,
+    "cases_detail": [
+      {
+        "case_id": "01-bad-deploy-null-deref",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 1,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:645 ~ \"\"ts\":\"2026-03-17T09:23:01.000Z\",\"level\":\"error\",\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\"\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "02-config-flag-misflip",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [],
+        "outcome": "sound",
+        "passed": true,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "03-schema-migration-index-drop",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 1,
+        "notes": [
+          "citation does not resolve: logs/app.jsonl:699 ~ \"\"msg\":\"statement timeout after 5000ms\",\"route\":\"/orders/history\"\"",
+          "statement unrelated to the line it cites: \"The API errors and latency correlate tightly with the databa\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "04-cert-expiry",
+        "cause_correct": true,
+        "citations_valid": false,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:08:00.000Z\",\"kind\":\"deploy\",\"summary\":\"worker: retry backoff tuning\"\"",
+          "evidence not cited: metrics/callbacks.csv ~ \"2026-03-17T09:30:00.000Z\" (the delivered_per_min series at onset, delivery collapsing at the same minute)",
+          "red herring used as evidence: \"v2026.3.17-c2\" (the only deploy in the window, and it touched retry logic)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "05-connection-pool-exhaustion",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.3333,
+        "notes": [
+          "evidence not cited: metrics/pool.csv ~ \"2026-03-17T09:21:00.000Z\" (the idle series at onset, idle connections draining to zero)",
+          "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)",
+          "red herring used as evidence: \"timed out acquiring database connection\" (the error names the database, so it reads as a slow database - but database CPU and mean query time are both flat)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "06-memory-leak-oom",
+        "cause_correct": false,
+        "citations_valid": false,
+        "evidence_recall": 0,
+        "notes": [
+          "solver threw: evidence.1.citations.0.quote: Too small: expected string to have >=12 characters"
+        ],
+        "outcome": "invalid",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "07-disk-exhaustion-logs",
+        "cause_correct": false,
+        "citations_valid": false,
+        "evidence_recall": 0,
+        "notes": [
+          "solver threw: evidence.2.citations.0.quote: Too small: expected string to have >=12 characters"
+        ],
+        "outcome": "invalid",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "08-cache-stampede",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [],
+        "outcome": "sound",
+        "passed": true,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "09-downstream-timeout",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [],
+        "outcome": "sound",
+        "passed": true,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "10-dns-failure",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 0.6667,
+        "notes": [
+          "evidence not cited: alerts.jsonl ~ \"MultiServiceErrorSpike\" (three unrelated services failing at once points below the application layer)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      },
+      {
+        "case_id": "11-upstream-rate-limit",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [
+          "red herring used as evidence: \"CheckoutConversionDrop\" (reads as a checkout regression rather than an upstream rejecting our excess volume)"
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": true
+      },
+      {
+        "case_id": "12-batch-job-contention",
+        "cause_correct": true,
+        "citations_valid": true,
+        "evidence_recall": 1,
+        "notes": [
+          "statement unrelated to the line it cites: \"CPU usage remained stable around 31-36%, indicating the issu\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
+        "red_herring_blamed": false
+      }
+    ],
+    "cause_accuracy": 1,
+    "citation_precision": 0.9803,
+    "citation_validity": 0.7,
+    "completion_rate": 0.8333,
+    "completion_tokens": 43654,
+    "cost_usd": 1.5338,
+    "evidence_recall": 0.8667,
+    "grounding_rate": 0.8,
+    "llm_calls": 43,
+    "model": "gpt-4.1-mini",
+    "outcomes": {
+      "invalid": 2,
+      "sound": 3,
+      "unsupported": 7,
+      "wrong_cause": 0
+    },
+    "pass_rate": 0.25,
+    "prompt_tokens": 292991,
+    "provider_errors": 0,
+    "red_herring_rate": 0.3,
+    "replayed_calls": 0,
+    "seconds_per_case": 36.019
+  },
+  "seed": 4,
+  "started_at": "2026-08-30T01:22:01.585197+00:00",
+  "variant": "agent-withtriage"
+}

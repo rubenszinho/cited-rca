@@ -81,10 +81,10 @@ evidence did not support them.**
 
 |                              | pass rate         | verdict                                            |
 | ---------------------------- | ----------------- | -------------------------------------------------- |
-| planning pass                | 0.250 ± 0.083     | worse than nothing, on both models tried           |
-| cross-incident memory        | 0.278 ± 0.127     | worst cause accuracy of any variant keeping search |
-| iterative investigation      | 0.250 ± 0.083     | 11 of 36 runs returned no parseable report at all  |
-| **shipped: search + verify** | **0.306 ± 0.127** | best on the primary metric                         |
+| planning pass                | 0.208 ± 0.070     | better grounded, no more often right               |
+| cross-incident memory        | 0.222 ± 0.048     | worst cause accuracy of any variant keeping search |
+| iterative investigation      | 0.167 ± 0.000     | highest red-herring rate in the set                |
+| **shipped: search + verify** | **0.167 ± 0.075** | best cause accuracy; no rival clears its spread    |
 
 A deliberate outcome, not an unfinished one: each rejection is reproducible with
 a flag, and [`docs/CHANGELOG.md`](docs/CHANGELOG.md) records what each taught.

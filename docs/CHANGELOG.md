@@ -32,6 +32,11 @@ because the grader was hiding something:
   by precision.
 - **evidence recall** — how much of the required evidence was actually cited.
   This is the one that separates knowing from showing.
+- **grounding rate** — does every arguing statement share a term with a line it
+  cites? Added after a reviewer scored twelve of twelve with statements of pure
+  nonsense attached to the correct lines. The grader had never read the
+  statement text, so `pass_rate` meant "pointed at the right lines", never
+  "argued it".
 
 Every one of those exists because an earlier version of this table was
 misleading in a way I could not see from the table.
@@ -46,10 +51,10 @@ misleading in a way I could not see from the table.
 | **Iteration 1** — ranked metric movement   | The baseline reads sixty CSV rows per series and has to notice which moved. Compute the movement in code and hand over the ranking.                       | not isolated                                                                          | Kept, and reported as unmeasured. It changes how a bundle is presented at every step, so ablating it would move the baseline too.                                  |
 | **Iteration 2** — log search               | The baseline gets one fixed slice of a 2,100-line log. Let the workflow retrieve addressed lines instead.                                                 | removing it:<br>**pass 0.000**<br>recall 0.476<br>**cause 0.914**                     | Kept, and it is load-bearing — but not for the reason I assumed. See below.                                                                                        |
 | **Iteration 3** — triage pass              | Decide what to read before writing anything.                                                                                                              | with it: **0.250 ± 0.083**<br>cause 0.909                                             | **Removed.** Still worse than not having it, now on a second model.                                                                                                |
-| **Iteration 4** — verifier and repair loop | Check every citation against the bundle and send the draft back with the specific failures.                                                               | removing it:<br>**0.194 ± 0.048**<br>citation precision 0.883                         | Kept. The largest single contribution: +0.112 pass rate, and citation precision 0.883 → 0.984.                                                                     |
-| **Iteration 5** — cross-incident memory    | Carry forward the signals seen and the verdict reached.                                                                                                   | with it: **0.278 ± 0.127**<br>cause 0.823                                             | **Removed.** Lower on the primary metric and, on this model, lower on cause accuracy too.                                                                          |
-| **Iteration 6** — iterative investigation  | Search, read, choose the next search, repeat.                                                                                                             | with it: **0.250 ± 0.083**<br>herrings 0.384                                          | **Removed.** More turns to reason in also means more turns to fail in.                                                                                             |
-| **Final**                                  | search + verify                                                                                                                                           | **pass 0.306 ± 0.127**<br>cause 0.942<br>citation precision **0.984**<br>recall 0.823 | 3.7× the baseline pass rate. Three of five measured features removed by their own evidence.                                                                        |
+| **Iteration 4** — verifier and repair loop | Check every citation against the bundle and send the draft back with the specific failures.                                                               | removing it:<br>**0.111 ± 0.048**<br>grounding 0.432                                  | Kept. The largest single contribution: pass rate 0.111 → 0.167, and grounding 0.432 → 0.649.                                                                       |
+| **Iteration 5** — cross-incident memory    | Carry forward the signals seen and the verdict reached.                                                                                                   | with it: **0.222 ± 0.048**<br>cause 0.823                                             | **Removed.** Lower on the primary metric and, on this model, lower on cause accuracy too.                                                                          |
+| **Iteration 6** — iterative investigation  | Search, read, choose the next search, repeat.                                                                                                             | with it: **0.167 ± 0.000**<br>herrings 0.384                                          | **Removed.** More turns to reason in also means more turns to fail in.                                                                                             |
+| **Final**                                  | search + verify                                                                                                                                           | **pass 0.167 ± 0.075**<br>cause 0.923<br>citation precision **0.973**<br>recall 0.834 | 2× the baseline pass rate, and grounding 0.556 → 0.649. Three of five measured features removed by their own evidence.                                             |
 
 ### What the tiers show that a pass rate cannot
 
@@ -102,18 +107,47 @@ The finding survived. 0.914 cause accuracy with no log and no name — on prompt
 that contain nothing about the answer. Knowing and showing really are separate
 capabilities, and now the number says so.
 
+### Triage: a rejection the stricter grader nearly overturned
+
+Triage was removed early and stayed removed. Adding the grounding condition
+flipped the ordering, so I re-ran both at six seeds rather than argue about
+three.
+
+```
+paired on 6 seeds, withtriage minus shipped
+  +0.083, +0.083, 0.000, 0.000, +0.167, -0.083
+  mean +0.04, stdev 0.09   wins 3, ties 2, loses 1
+```
+
+The mean difference is under half its own spread and it loses one seed outright. By
+the rule that has decided every feature here — the primary metric, named before
+the runs — that is not an improvement, and triage stays out.
+
+But it is not nothing, and the thing it moves is worth stating: **grounding
+0.789 against 0.649**. Reports written after a triage pass are markedly more
+likely to have every statement tethered to a line it cites. The mechanism is
+plausible — having said out loud what the metrics show, the draft keeps
+referring to it — and it was completely invisible until the grader started
+reading statement text.
+
+So the honest summary is narrower than either "triage helps" or "triage hurts":
+it produces better-argued reports that are not more often correct. That
+distinction only exists because the measurement got stricter, and it is the
+closest this project came to overturning one of its own rejections.
+
 ### Memory: worse at the argument, and on this model worse at the answer too
 
 Cross-incident memory carries forward the signals seen and the verdict reached,
 and surfaces the closest priors on a new incident.
 
 ```
-agent            pass 0.167, 0.417, 0.333   cause 0.942   herrings 0.218
-agent-memory     pass 0.167, 0.417, 0.250   cause 0.823   herrings 0.351
+agent            pass 0.167 +/- 0.075   cause 0.923   grounding 0.649
+agent-memory     pass 0.222 +/- 0.048   cause 0.823   grounding 0.677
 ```
 
-Lower on the primary metric, and clearly worse on both of the things it was
-supposed to help: cause accuracy and red herrings. Recall made it reach for the
+Higher on the primary metric than the shipped configuration, by less than its
+own spread, and clearly worse on both things it was supposed to help:
+cause accuracy 0.823 against 0.923, and red herrings 0.351 against 0.242. Recall made it reach for the
 shape it had learned to expect rather than the line in front of it — on case 10
 it recalled that these signals meant DNS, then cited a coredns scale-up applied
 28 minutes _after_ onset, as supporting evidence for the cause.
@@ -127,12 +161,12 @@ Letting the workflow choose its next search from what the last one returned is
 the most agentic thing built here. It is also the clearest loss.
 
 ```
-agent                pass 0.167, 0.417, 0.333   cause 0.942   herrings 0.218
-agent-investigate    pass 0.333, 0.167, 0.250   cause 0.823   herrings 0.384
+agent                pass 0.167 +/- 0.075   cause 0.923   herrings 0.242
+agent-investigate    pass 0.167 +/- 0.000   cause 0.823   herrings 0.384
 ```
 
-Mean 0.250 against 0.306, with a red-herring rate three-quarters higher and the
-same cause accuracy as memory. Three extra rounds of searching is three more
+The same mean as the shipped configuration, with a red-herring rate half again
+higher and the same cause accuracy as memory. Three extra rounds of searching is three more
 chances to find something interesting and irrelevant, and it cites what it finds.
 
 **Removed.** Agency is not free, and its cost is not only tokens.
