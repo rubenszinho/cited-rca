@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/baseline/run.ts",
-  "commit": "1908ac9cd419f37236699d32628b99ff54758c63-dirty",
-  "duration_s": 0.4764,
+  "commit": "0c6e3e0bb531e4dca2949d8adbe4d269339f126f",
+  "duration_s": 0.3989,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -219,6 +219,6 @@
     "seconds_per_case": 0.004
   },
   "seed": 1,
-  "started_at": "2026-08-30T03:50:47.353826+00:00",
+  "started_at": "2026-08-30T03:51:17.606411+00:00",
   "variant": "baseline"
 }
