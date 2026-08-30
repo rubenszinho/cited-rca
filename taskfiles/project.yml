@@ -177,6 +177,13 @@ tasks:
       - '{{.PY}} harness/paired.py agent-withtriage agent'
       - '{{.PY}} harness/paired.py agent-memory agent'
 
+  grid:
+    desc: Print the variant comparison at terminal width
+    # The generated table in docs/RESULTS.md carries nineteen columns because
+    # each one backs a claim. This is the six a person compares variants on.
+    cmds:
+      - '{{.PY}} harness/compare.py --brief'
+
   report:
     desc: Regenerate docs/RESULTS.md from the recorded runs
     # Deliberately does NOT run :paired. `eval` calls this after baseline and

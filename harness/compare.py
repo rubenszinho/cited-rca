@@ -168,12 +168,55 @@ def header(reference: str) -> list[str]:
             "counts and cost are the recorded values and are comparable.\n"]
 
 
-def main() -> int:
+BRIEF_METRICS = (
+    ("pass", "pass_rate"),
+    ("cause", "cause_accuracy"),
+    ("ground", "grounding_rate"),
+    ("recall", "evidence_recall"),
+    ("cprec", "citation_precision"),
+    ("herring", "red_herring_rate"),
+)
+
+
+def render_brief(order: list[str], aggs: dict) -> list[str]:
+    """The grid narrow enough to read on a terminal.
+
+    The full table carries nineteen columns because every one of them backs a
+    claim somewhere. That makes it unreadable at a glance and unusable on a
+    screen share, so this prints the six a person actually compares variants on.
+    """
+    head = f"{'variant':<19}" + "".join(f"{label:>9}" for label, _ in BRIEF_METRICS)
+    rows = [head, "-" * len(head)]
+    for name in order:
+        cells = []
+        for _, metric in BRIEF_METRICS:
+            mean, _, _ = aggs[name].get(metric, (float("nan"), 0.0, 0))
+            cells.append(f"{mean:>9.3f}")
+        rows.append(f"{name:<19}" + "".join(cells))
+    return rows
+
+
+def parse_args() -> argparse.Namespace:
     ap = argparse.ArgumentParser()
     ap.add_argument("--baseline", default="baseline", help="reference variant name")
     ap.add_argument("--out", type=Path, default=None)
-    args = ap.parse_args()
+    ap.add_argument("--brief", action="store_true",
+                    help="print the six comparison columns, terminal width")
+    return ap.parse_args()
 
+
+def emit(lines: list[str], out: Path | None) -> None:
+    """Print the report, and write it too when a destination is given."""
+    text = "\n".join(lines) + "\n"
+    print(text)
+    if out:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(text, encoding="utf-8")
+        print(f"written to {out}", file=sys.stderr)
+
+
+def main() -> int:
+    args = parse_args()
     by_variant = load()
     if not by_variant:
         print(f"error: no result files in {RESULTS}", file=sys.stderr)
@@ -183,19 +226,17 @@ def main() -> int:
     # Reference first, then the rest alphabetically, so ablations read in order.
     order = ([args.baseline] if args.baseline in aggs else []) + \
             sorted(n for n in aggs if n != args.baseline)
-    metrics = sorted({m for a in aggs.values() for m in a})
 
+    if args.brief:
+        print("\n".join(render_brief(order, aggs)))
+        return 0
+
+    metrics = sorted({m for a in aggs.values() for m in a})
     lines = header(args.baseline)
     lines += render_table(order, aggs, by_variant, metrics, args.baseline)
     lines += render_provenance(order, by_variant)
     lines += render_caveats(by_variant)
-
-    text = "\n".join(lines) + "\n"
-    print(text)
-    if args.out:
-        args.out.parent.mkdir(parents=True, exist_ok=True)
-        args.out.write_text(text, encoding="utf-8")
-        print(f"written to {args.out}", file=sys.stderr)
+    emit(lines, args.out)
     return 0
 
 
