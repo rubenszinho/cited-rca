@@ -8,12 +8,13 @@ Trajectories for both are in [`../trajectories/redacted/`](../trajectories/redac
 
 ## Agents that built this project
 
-| Tool                   | Model                 | Role                                                  |
-| ---------------------- | --------------------- | ----------------------------------------------------- |
-| Claude Code (CLI)      | `claude-opus-5[1m]`   | exploration, implementation, review, refactoring      |
-| Claude Code sub-agents | inherited from parent | parallel search and review; logged under `subagents/` |
+| Tool              | Model               | Role                                             |
+| ----------------- | ------------------- | ------------------------------------------------ |
+| Claude Code (CLI) | `claude-opus-5[1m]` | exploration, implementation, review, refactoring |
 
-No other assistant, autocomplete, or MCP server was used.
+One agent, one session thread. **No sub-agents were spawned** - an earlier
+version of this table claimed they were and pointed at a `subagents/` directory
+that does not exist. No other assistant, autocomplete, or MCP server was used.
 
 ## Agents inside the deliverable
 
@@ -60,9 +61,11 @@ None, in either set.
 ## How the trajectories were produced
 
 `task project:trajectories` mirrors Claude Code's session logs
-(`~/.claude/projects/<slug>/<session>.jsonl`, and `subagents/`) into
-`trajectories/raw/`. A loop ran it every five minutes for the whole sprint,
-because a crashed or rotated session cannot be reconstructed afterwards.
+(`~/.claude/projects/<slug>/<session>.jsonl`) into `trajectories/raw/`. A loop
+ran it on a five-minute cadence, because a crashed or rotated session cannot be
+reconstructed afterwards. `trajectories/capture.log` is the record: 366 captures
+between 2026-08-28 22:13 and 2026-08-30 18:25 UTC, median gap 5.0 minutes, with
+two gaps - 1.5 hours and 13.5 hours overnight - when the machine was asleep.
 
 `task project:trajectories:redact` rewrites credential-shaped strings before
 anything is committed. `task project:trajectories:verify` fails if one
