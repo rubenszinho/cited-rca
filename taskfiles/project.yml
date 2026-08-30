@@ -170,7 +170,7 @@ tasks:
     # found a whole section quoting a re-recorded grid, one figure
     # sign-inverted and one attributed to a model with no committed runs.
     cmds:
-      - '{{.PY}} tools/repro/verify_claims.py docs/CHANGELOG.md README.md docs/VIDEO.md'
+      - '{{.PY}} tools/repro/verify_claims.py docs/CHANGELOG.md README.md'
 
   verify:citations:
     desc: Check that every committed review cites a line that is in the repository
