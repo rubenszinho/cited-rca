@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Run `task` against this repo's pinned toolchain, from any shell.
+#
+# The toolchain is provisioned into ./.mise rather than installed globally, so a
+# fresh shell has no `task` on PATH and every documented command fails with
+# "Command 'task' not found". The README worked around that by prefixing
+# `./bin/mise exec --` on some examples and not others, which meant a reader who
+# followed the quick-start and then reached the usage examples hit the error
+# anyway.
+#
+# This shim removes the prefix entirely:
+#
+#   export PATH="$PWD/bin:$PATH"
+#   task project:dev -- --case 09-downstream-timeout --variant agent
+#
+# `./bin/mise exec -- task ...` keeps working; this is the same call.
+set -euo pipefail
+exec "$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)/mise" exec -- task "$@"

@@ -111,15 +111,21 @@ toolchain is pinned and provisioned into the repo.
 git clone <repo-url> cited-rca && cd cited-rca
 
 ./bin/mise install                  # pinned toolchain into ./.mise (~3 min)
-./bin/mise exec -- task setup       # render .env, install hooks, install deps
+export PATH="$PWD/bin:$PATH"        # puts `task` on PATH for this shell
 
-./bin/mise exec -- task validate    # lint, types, 167 tests, quality ratchet
-./bin/mise exec -- task project:eval        # both variants over all 12 cases
-./bin/mise exec -- task project:report      # regenerate docs/RESULTS.md
+task setup                          # render .env, install hooks, install deps
+task validate                       # lint, types, 304 tests, quality ratchet
+task project:eval                   # both variants over all 12 cases
+task project:report                 # regenerate docs/RESULTS.md
 ```
 
-Once `mise` is activated in your shell you can drop the `./bin/mise exec --`
-prefix. `task -l` lists everything.
+`task -l` lists everything.
+
+The toolchain lives in `./.mise` rather than being installed globally, so a
+shell that has not run the `export` above has no `task` on it. `bin/task` is a
+shim onto the pinned copy — the `export` is all that is needed, in bash, zsh or
+fish. `./bin/mise exec -- task <name>` is the same call if you prefer not to
+touch `PATH`.
 
 The toolchain installs into `./.mise` and is not relocatable — pipx bakes an
 absolute path into its virtualenv, so moving an existing checkout breaks
@@ -171,12 +177,19 @@ resolves against the files.
 
 ```bash
 task project:dev -- --list
-task project:dev -- --case 12-batch-job-contention --variant agent
-task project:dev -- --case 12-batch-job-contention --variant baseline
+task project:dev -- --case 09-downstream-timeout --variant baseline
+task project:dev -- --case 09-downstream-timeout --variant agent
 ```
 
-Case 12 is the one to look at: a checkout deploy lands two minutes before onset
-on the very service that is failing, and it is innocent.
+Case 09 is the clearest side-by-side. Both name the right cause. The baseline
+fails anyway — the only deploy in the window landed sixteen minutes before onset
+and is unrelated, and it reaches for it as evidence, because a deploy near an
+outage is what postmortems blame. The workflow passes the same case with full
+evidence recall and nothing held against it.
+
+Case 12 is the harder one, and neither passes it on every seed: a checkout
+deploy lands two minutes before onset on the very service that is failing, and
+it is innocent.
 
 ### What the data is
 
