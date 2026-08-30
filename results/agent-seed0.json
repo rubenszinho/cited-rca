@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "f51c15dfec949ed582cd268ded52176b3c3b2c84-dirty",
-  "duration_s": 0.6157,
+  "commit": "0ecff2a992480ede130181e49aa30278c8a16dd4-dirty",
+  "duration_s": 0.5602,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -19,7 +19,9 @@
         "evidence_recall": 1,
         "notes": [
           "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\"",
-          "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\"\""
+          "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\"\"",
+          "statement unrelated to the line it cites: \"P95 latency increased from ~163ms at 09:22 to over 378ms by \"",
+          "statement unrelated to the line it cites: \"The error messages explicitly reference a null pointer excep\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -30,9 +32,11 @@
         "cause_correct": true,
         "citations_valid": true,
         "evidence_recall": 1,
-        "notes": [],
-        "outcome": "sound",
-        "passed": true,
+        "notes": [
+          "statement unrelated to the line it cites: \"At 09:18:00Z, re-authentication rate per minute spiked drama\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
         "red_herring_blamed": false
       },
       {
@@ -41,7 +45,8 @@
         "citations_valid": false,
         "evidence_recall": 1,
         "notes": [
-          "citation does not resolve: logs/app.jsonl:699 ~ \"\"ts\":\"2026-03-17T09:26:20.000Z\",\"service\":\"api\",\"level\":\"error\",\"msg\":\"statement timeout after 5000ms\",\"route\":\"/orders/history\"\""
+          "citation does not resolve: logs/app.jsonl:699 ~ \"\"ts\":\"2026-03-17T09:26:20.000Z\",\"service\":\"api\",\"level\":\"error\",\"msg\":\"statement timeout after 5000ms\",\"route\":\"/orders/history\"\"",
+          "statement unrelated to the line it cites: \"Database CPU usage increased steadily after the migration, r\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -56,7 +61,8 @@
           "citation does not resolve: logs/app.jsonl:922 ~ \"\"tls: failed to verify certificate: certificate has expired\",\"notAfter\":\"2026-03-17T09:30:00Z\"\"",
           "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:08:00.000Z\",\"kind\":\"deploy\",\"summary\":\"worker: retry backoff tuning\"\"",
           "evidence not cited: metrics/callbacks.csv ~ \"2026-03-17T09:30:00.000Z\" (the delivered_per_min series at onset, delivery collapsing at the same minute)",
-          "red herring used as evidence: \"v2026.3.17-c2\" (the only deploy in the window, and it touched retry logic)"
+          "red herring used as evidence: \"v2026.3.17-c2\" (the only deploy in the window, and it touched retry logic)",
+          "statement unrelated to the line it cites: \"The TLS certificate used by the worker service expired exact\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -152,7 +158,8 @@
         "citations_valid": false,
         "evidence_recall": 1,
         "notes": [
-          "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\"\""
+          "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\"\"",
+          "statement unrelated to the line it cites: \"The batch job reschedule caused lock contention, as shown by\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -166,22 +173,23 @@
     "completion_tokens": 37480,
     "cost_usd": 1.1377,
     "evidence_recall": 0.8148,
+    "grounding_rate": 0.4444,
     "llm_calls": 26,
     "model": "gpt-4.1-mini",
     "outcomes": {
       "invalid": 3,
-      "sound": 2,
-      "unsupported": 7,
+      "sound": 1,
+      "unsupported": 8,
       "wrong_cause": 0
     },
-    "pass_rate": 0.1667,
+    "pass_rate": 0.0833,
     "prompt_tokens": 191833,
     "provider_errors": 0,
     "red_herring_rate": 0.2222,
     "replayed_calls": 26,
-    "seconds_per_case": 0.006
+    "seconds_per_case": 0.005
   },
   "seed": 0,
-  "started_at": "2026-08-29T23:24:35.392970+00:00",
+  "started_at": "2026-08-30T01:01:10.508592+00:00",
   "variant": "agent"
 }

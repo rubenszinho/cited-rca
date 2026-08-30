@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "f51c15dfec949ed582cd268ded52176b3c3b2c84-dirty",
-  "duration_s": 0.6246,
+  "commit": "0ecff2a992480ede130181e49aa30278c8a16dd4-dirty",
+  "duration_s": 0.5011,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -18,7 +18,9 @@
         "citations_valid": true,
         "evidence_recall": 0.6667,
         "notes": [
-          "evidence not cited: logs/app.jsonl ~ \"reading 'percentOff'\" (the exception naming the field and handler)"
+          "evidence not cited: logs/app.jsonl ~ \"reading 'percentOff'\" (the exception naming the field and handler)",
+          "statement unrelated to the line it cites: \"P95 latency increased from 162.94 ms at 09:22 to 190.51 ms a\"",
+          "statement unrelated to the line it cites: \"No evidence of resource exhaustion or other systemic issues \""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -43,7 +45,8 @@
         "evidence_recall": 0.6667,
         "notes": [
           "evidence not cited: logs/app.jsonl ~ \"Seq Scan on orders\" (the plan change proving the index is gone)",
-          "red herring used as evidence: \"v2026.3.17-b4\" (a deploy in the same window, but 14 minutes earlier and on an unrelated page)"
+          "red herring used as evidence: \"v2026.3.17-b4\" (a deploy in the same window, but 14 minutes earlier and on an unrelated page)",
+          "statement unrelated to the line it cites: \"Database CPU usage increased from ~30% to over 70% starting \""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -175,6 +178,7 @@
     "completion_tokens": 31162,
     "cost_usd": 0.8518,
     "evidence_recall": 0.5,
+    "grounding_rate": 0.8333,
     "llm_calls": 23,
     "model": "gpt-4.1-mini",
     "outcomes": {
@@ -191,6 +195,6 @@
     "seconds_per_case": 0.003
   },
   "seed": 2,
-  "started_at": "2026-08-29T23:24:39.070839+00:00",
+  "started_at": "2026-08-30T01:01:13.769727+00:00",
   "variant": "agent-nosearch"
 }

@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "f51c15dfec949ed582cd268ded52176b3c3b2c84-dirty",
-  "duration_s": 0.6751,
+  "commit": "0ecff2a992480ede130181e49aa30278c8a16dd4-dirty",
+  "duration_s": 0.569,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -18,7 +18,8 @@
         "citations_valid": false,
         "evidence_recall": 1,
         "notes": [
-          "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\""
+          "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\"",
+          "statement unrelated to the line it cites: \"The error messages explicitly show a TypeError caused by rea\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -34,7 +35,9 @@
           "citation does not resolve: alerts.jsonl:1 ~ \"\"AuthReauthSpike\",\"state\":\"firing\"\"",
           "citation does not resolve: alerts.jsonl:2 ~ \"\"Api401RateHigh\",\"state\":\"firing\"\"",
           "citation does not resolve: logs/app.jsonl:535 ~ \"\"request rejected: session invalid\",\"status\":401\"",
-          "citation does not resolve: alerts.jsonl:1 ~ \"\"AuthReauthSpike\",\"state\":\"firing\"\""
+          "citation does not resolve: alerts.jsonl:1 ~ \"\"AuthReauthSpike\",\"state\":\"firing\"\"",
+          "statement unrelated to the line it cites: \"At 09:18, the re-authentication rate spiked dramatically fro\"",
+          "statement unrelated to the line it cites: \"Alerts for 'AuthReauthSpike' and 'Api401RateHigh' fired at 0\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -45,9 +48,12 @@
         "cause_correct": true,
         "citations_valid": true,
         "evidence_recall": 1,
-        "notes": [],
-        "outcome": "sound",
-        "passed": true,
+        "notes": [
+          "statement unrelated to the line it cites: \"Database CPU usage increased steadily after the migration, r\"",
+          "statement unrelated to the line it cites: \"API latency p95 and error rates increased sharply starting a\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
         "red_herring_blamed": false
       },
       {
@@ -61,7 +67,8 @@
           "citation does not resolve: logs/app.jsonl:1411 ~ \"2026-03-17T09:47:31.000Z\",\"level\":\"error\",\"msg\":\"tls: failed to verify certificate: certificate has expired\",\"peer\":\"payments.partner.example\",\"notAfter\":\"2026-03-17T09:30:00Z\"\"",
           "citation does not resolve: logs/app.jsonl:1510 ~ \"2026-03-17T09:50:02.000Z\",\"level\":\"error\",\"msg\":\"tls: failed to verify certificate: certificate has expired\",\"peer\":\"payments.partner.example\",\"notAfter\":\"2026-03-17T09:30:00Z\"\"",
           "citation does not resolve: logs/app.jsonl:1811 ~ \"2026-03-17T09:57:36.000Z\",\"level\":\"error\",\"msg\":\"tls: failed to verify certificate: certificate has expired\",\"peer\":\"payments.partner.example\",\"notAfter\":\"2026-03-17T09:30:00Z\"\"",
-          "evidence not cited: metrics/callbacks.csv ~ \"2026-03-17T09:30:00.000Z\" (the delivered_per_min series at onset, delivery collapsing at the same minute)"
+          "evidence not cited: metrics/callbacks.csv ~ \"2026-03-17T09:30:00.000Z\" (the delivered_per_min series at onset, delivery collapsing at the same minute)",
+          "statement unrelated to the line it cites: \"Multiple errors of TLS certificate verification failure due \""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -102,7 +109,9 @@
           "citation does not resolve: logs/app.jsonl:1009 ~ \"2026-03-17T09:34:08.000Z\",\"level\":\"warn\",\"msg\":\"log rotation failed\",\"node\":\"api-3\",\"free_bytes\":0\"",
           "evidence not cited: metrics/disk.csv ~ \"2026-03-17T09:34:00.000Z\" (the api3_used_pct series at onset, one node climbing while its peers stay flat)",
           "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)",
-          "red herring used as evidence: \"ApiWriteErrors\" (the alert is fleet-scoped and names no node, so it reads as a fleet-wide fault when only api-3 is affected)"
+          "red herring used as evidence: \"ApiWriteErrors\" (the alert is fleet-scoped and names no node, so it reads as a fleet-wide fault when only api-3 is affected)",
+          "statement unrelated to the line it cites: \"Error logs on api-3 show repeated write failures due to no s\"",
+          "statement unrelated to the line it cites: \"Warnings about log rotation failures on api-3 due to zero fr\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -140,7 +149,8 @@
           "citation does not resolve: logs/app.jsonl:458 ~ \"2026-03-17T09:16:08.000Z\",\"level\":\"error\",\"msg\":\"dial tcp: lookup payments.internal: SERVFAIL\"",
           "citation does not resolve: logs/app.jsonl:458 ~ \"2026-03-17T09:16:08.000Z\",\"level\":\"error\",\"msg\":\"dial tcp: lookup payments.internal: SERVFAIL\"",
           "evidence not cited: logs/app.jsonl ~ \"SERVFAIL\" (the resolution failure itself)",
-          "evidence not cited: alerts.jsonl ~ \"MultiServiceErrorSpike\" (three unrelated services failing at once points below the application layer)"
+          "evidence not cited: alerts.jsonl ~ \"MultiServiceErrorSpike\" (three unrelated services failing at once points below the application layer)",
+          "statement unrelated to the line it cites: \"Multiple services logged DNS lookup SERVFAIL errors starting\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -168,7 +178,8 @@
         "notes": [
           "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\"\"",
           "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\"\"",
-          "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)"
+          "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)",
+          "statement unrelated to the line it cites: \"Lock wait timeouts on orders were repeatedly logged starting\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -182,15 +193,16 @@
     "completion_tokens": 28286,
     "cost_usd": 0.8088,
     "evidence_recall": 0.75,
+    "grounding_rate": 0.4167,
     "llm_calls": 18,
     "model": "gpt-4.1-mini",
     "outcomes": {
       "invalid": 0,
-      "sound": 2,
-      "unsupported": 9,
+      "sound": 1,
+      "unsupported": 10,
       "wrong_cause": 1
     },
-    "pass_rate": 0.1667,
+    "pass_rate": 0.0833,
     "prompt_tokens": 128158,
     "provider_errors": 0,
     "red_herring_rate": 0.25,
@@ -198,6 +210,6 @@
     "seconds_per_case": 0.006
   },
   "seed": 2,
-  "started_at": "2026-08-29T23:24:41.259543+00:00",
+  "started_at": "2026-08-30T01:01:15.386786+00:00",
   "variant": "agent-noverify"
 }

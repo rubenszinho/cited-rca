@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "f51c15dfec949ed582cd268ded52176b3c3b2c84-dirty",
-  "duration_s": 0.6624,
+  "commit": "0ecff2a992480ede130181e49aa30278c8a16dd4-dirty",
+  "duration_s": 0.8578,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -20,7 +20,9 @@
         "notes": [
           "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\"",
           "citation does not resolve: changes.jsonl:2 ~ \"\"ts\":\"2026-03-17T09:22:00.000Z\",\"kind\":\"deploy\",\"ref\":\"v2026.3.17-a1\",\"summary\":\"checkout: add tiered discount support\"\"",
-          "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\"\""
+          "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\"\"",
+          "statement unrelated to the line it cites: \"The error messages consistently show a null pointer exceptio\"",
+          "statement unrelated to the line it cites: \"The incident onset closely follows the deployment of the new\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -168,6 +170,7 @@
     "completion_tokens": 42696,
     "cost_usd": 1.4652,
     "evidence_recall": 0.7879,
+    "grounding_rate": 0.9091,
     "llm_calls": 40,
     "model": "gpt-4.1-mini",
     "outcomes": {
@@ -181,9 +184,9 @@
     "provider_errors": 0,
     "red_herring_rate": 0.4545,
     "replayed_calls": 40,
-    "seconds_per_case": 0.007
+    "seconds_per_case": 0.008
   },
   "seed": 2,
-  "started_at": "2026-08-29T23:24:45.667606+00:00",
+  "started_at": "2026-08-30T01:01:19.174467+00:00",
   "variant": "agent-withtriage"
 }

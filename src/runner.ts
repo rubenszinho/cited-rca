@@ -37,6 +37,7 @@ function failedGrade(caseId: string, error: unknown): Grade {
     citations_resolved: 0,
     evidence_recall: 0,
     red_herring_blamed: false,
+    statements_grounded: false,
     notes: [`solver threw: ${error instanceof Error ? error.message : String(error)}`],
   };
 }
@@ -112,6 +113,21 @@ function citationTotals(grades: Grade[]): { cited: number; resolved: number } {
   };
 }
 
+/**
+ * The four measures of a report's quality, each conditioned on a report
+ * existing. A formatting failure is not evidence about reasoning.
+ */
+function qualityRates(grades: Grade[]) {
+  return {
+    cause_accuracy: meanOfProduced(grades, (g) => (g.cause_correct ? 1 : 0)),
+    citation_validity: meanOfProduced(grades, (g) => (g.citations_valid ? 1 : 0)),
+    evidence_recall: meanOfProduced(grades, (g) => g.evidence_recall),
+    red_herring_rate: meanOfProduced(grades, (g) => (g.red_herring_blamed ? 1 : 0)),
+    /** Reports whose every arguing statement is about a line it cites. */
+    grounding_rate: meanOfProduced(grades, (g) => (g.statements_grounded ? 1 : 0)),
+  };
+}
+
 function summarise(grades: Grade[], client: LlmClient, elapsedMs: number) {
   const totals = client.totals();
   const providerErrors = grades.filter(isProviderError).length;
@@ -130,13 +146,11 @@ function summarise(grades: Grade[], client: LlmClient, elapsedMs: number) {
     completion_rate: mean(grades.map((g) => (g.report_produced ? 1 : 0))),
     // The four below are conditioned on a report existing, so they measure
     // reasoning rather than JSON compliance. completion_rate carries the rest.
-    cause_accuracy: meanOfProduced(grades, (g) => (g.cause_correct ? 1 : 0)),
-    citation_validity: meanOfProduced(grades, (g) => (g.citations_valid ? 1 : 0)),
+    ...qualityRates(grades),
     /** Citations that resolve over citations made, across every report. One
      *  bad citation in twenty-eight is not the same failure as twenty-eight. */
     citation_precision: cited === 0 ? 0 : Number((resolved / cited).toFixed(4)),
-    evidence_recall: meanOfProduced(grades, (g) => g.evidence_recall),
-    red_herring_rate: meanOfProduced(grades, (g) => (g.red_herring_blamed ? 1 : 0)),
+
     outcomes: countOutcomes(grades),
     cases: grades.length,
     model: configFromEnv().model,

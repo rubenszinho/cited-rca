@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "f51c15dfec949ed582cd268ded52176b3c3b2c84-dirty",
-  "duration_s": 0.5776,
+  "commit": "0ecff2a992480ede130181e49aa30278c8a16dd4-dirty",
+  "duration_s": 0.5282,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -42,7 +42,9 @@
         "citations_valid": true,
         "evidence_recall": 0.6667,
         "notes": [
-          "evidence not cited: logs/app.jsonl ~ \"Seq Scan on orders\" (the plan change proving the index is gone)"
+          "evidence not cited: logs/app.jsonl ~ \"Seq Scan on orders\" (the plan change proving the index is gone)",
+          "statement unrelated to the line it cites: \"Database CPU usage increased steadily after the migration, r\"",
+          "statement unrelated to the line it cites: \"API latency (p95) and error rates increased sharply starting\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -73,7 +75,8 @@
           "citation does not resolve: alerts.jsonl:2 ~ \"2026-03-17T09:33:00.000Z,\"name\":\"DbConnectionWait\",\"severity\":\"ticket\",\"state\":\"firing\"\"",
           "citation does not resolve: changes.jsonl:1 ~ \"2026-03-17T09:06:00.000Z,\"summary\":\"api: update the 404 page copy and favicon\"\"",
           "evidence not cited: logs/app.jsonl ~ \"connection pool wait exceeded\" (the pool, not the database, is the contended resource)",
-          "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)"
+          "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)",
+          "statement unrelated to the line it cites: \"The ApiLatencyP95 alert fired at 09:29 and DbConnectionWait \""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -175,6 +178,7 @@
     "completion_tokens": 34740,
     "cost_usd": 0.9579,
     "evidence_recall": 0.4849,
+    "grounding_rate": 0.8182,
     "llm_calls": 25,
     "model": "gpt-4.1-mini",
     "outcomes": {
@@ -191,6 +195,6 @@
     "seconds_per_case": 0.003
   },
   "seed": 1,
-  "started_at": "2026-08-29T23:24:38.492681+00:00",
+  "started_at": "2026-08-30T01:01:13.240782+00:00",
   "variant": "agent-nosearch"
 }

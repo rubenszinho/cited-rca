@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "9159ebafb31d62a1b9e9c0a4301803f4cdbd4fc0-dirty",
-  "duration_s": 0.6604,
+  "commit": "0ecff2a992480ede130181e49aa30278c8a16dd4-dirty",
+  "duration_s": 0.6464,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -22,7 +22,8 @@
           "citation does not resolve: logs/app.jsonl:2120 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\"",
           "citation does not resolve: changes.jsonl:2 ~ \"\"ts\":\"2026-03-17T09:22:00.000Z\",\"ref\":\"v2026.3.17-a1\"\"",
           "citation does not resolve: logs/app.jsonl:645 ~ \"\"ts\":\"2026-03-17T09:23:01.000Z\",\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\"\"",
-          "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\"\""
+          "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\"\"",
+          "statement unrelated to the line it cites: \"The errors are consistently TypeErrors reading 'percentOff' \""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -46,7 +47,9 @@
         "citations_valid": false,
         "evidence_recall": 1,
         "notes": [
-          "citation does not resolve: logs/app.jsonl:699 ~ \"\"msg\":\"statement timeout after 5000ms\",\"route\":\"/orders/history\"\""
+          "citation does not resolve: logs/app.jsonl:699 ~ \"\"msg\":\"statement timeout after 5000ms\",\"route\":\"/orders/history\"\"",
+          "statement unrelated to the line it cites: \"Database CPU usage rose steadily, peaking at 88% at 09:58.\"",
+          "statement unrelated to the line it cites: \"API latency and error rates increased significantly starting\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -172,6 +175,7 @@
     "completion_tokens": 55130,
     "cost_usd": 2.4263,
     "evidence_recall": 0.7576,
+    "grounding_rate": 0.8182,
     "llm_calls": 64,
     "model": "gpt-4.1-mini",
     "outcomes": {
@@ -185,9 +189,9 @@
     "provider_errors": 0,
     "red_herring_rate": 0.2727,
     "replayed_calls": 64,
-    "seconds_per_case": 0.011
+    "seconds_per_case": 0.012
   },
   "seed": 1,
-  "started_at": "2026-08-29T23:30:08.843452+00:00",
+  "started_at": "2026-08-30T01:01:20.986471+00:00",
   "variant": "agent-investigate"
 }

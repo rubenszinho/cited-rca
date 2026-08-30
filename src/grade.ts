@@ -18,6 +18,7 @@
 import type { EvidenceRef, RedHerring, Truth } from '../fixtures/model.ts';
 import type { IncidentBundle } from './bundle.ts';
 import { describeCitation, resolve } from './citation.ts';
+import { ungrounded } from './grounding.ts';
 import type { Citation, Finding, RcaReport } from './schema.ts';
 
 /**
@@ -56,6 +57,8 @@ export type Grade = {
   citations_resolved: number;
   evidence_recall: number;
   red_herring_blamed: boolean;
+  /** Every arguing statement shares a term with a line it cites. */
+  statements_grounded: boolean;
   /** Human-readable reasons the case failed, for the report and the video. */
   notes: string[];
 };
@@ -123,24 +126,31 @@ function blamedHerrings(
   );
 }
 
+const evidenceNote = (ref: EvidenceRef) =>
+  `evidence not cited: ${ref.source} ~ "${ref.match}" (${ref.why})`;
+
+const herringNote = (h: RedHerring) =>
+  `red herring used as evidence: "${h.match}" (${h.why_tempting})`;
+
+const ungroundedNote = (f: Finding) =>
+  `statement unrelated to the line it cites: "${f.statement.slice(0, 60)}"`;
+
+/** One line per reason the case failed, in the order a reader would check them. */
 function describe(
   causeCorrect: boolean,
   report: RcaReport,
   truth: Truth,
-  found: { unresolved: Citation[]; missing: EvidenceRef[]; blamed: RedHerring[] },
+  found: Findings,
 ): string[] {
-  const notes = causeCorrect
+  const cause = causeCorrect
     ? []
     : [`cause: said ${report.root_cause}, actual ${truth.root_cause}`];
   return [
-    ...notes,
+    ...cause,
     ...found.unresolved.map((c) => `citation does not resolve: ${describeCitation(c)}`),
-    ...found.missing.map(
-      (ref) => `evidence not cited: ${ref.source} ~ "${ref.match}" (${ref.why})`,
-    ),
-    ...found.blamed.map(
-      (h) => `red herring used as evidence: "${h.match}" (${h.why_tempting})`,
-    ),
+    ...found.missing.map(evidenceNote),
+    ...found.blamed.map(herringNote),
+    ...found.ungrounded.map(ungroundedNote),
   ];
 }
 
@@ -148,6 +158,8 @@ type Findings = {
   unresolved: Citation[];
   missing: EvidenceRef[];
   blamed: RedHerring[];
+  /** Statements sharing no distinctive term with any line they cite. */
+  ungrounded: Finding[];
   recall: number;
 };
 
@@ -164,6 +176,9 @@ function assess(bundle: IncidentBundle, truth: Truth, report: RcaReport): Findin
   const ruledOut = citedLines(bundle, citationsOf(report.ruled_out));
   return {
     unresolved: unresolvedCitations(bundle, report),
+    // Only the sections that argue for the cause. A ruled-out note may
+    // legitimately talk about something the cited line does not name.
+    ungrounded: ungrounded(bundle, [...report.timeline, ...report.evidence]),
     missing,
     blamed: blamedHerrings(supporting, ruledOut, truth),
     recall: required === 0 ? 1 : 1 - missing.length / required,
@@ -176,7 +191,8 @@ function isSound(causeCorrect: boolean, found: Findings): boolean {
     causeCorrect &&
     found.unresolved.length === 0 &&
     found.recall === 1 &&
-    found.blamed.length === 0
+    found.blamed.length === 0 &&
+    found.ungrounded.length === 0
   );
 }
 
@@ -198,6 +214,7 @@ export function grade(bundle: IncidentBundle, truth: Truth, report: RcaReport): 
     citations_resolved: total - found.unresolved.length,
     evidence_recall: Number(found.recall.toFixed(4)),
     red_herring_blamed: found.blamed.length > 0,
+    statements_grounded: found.ungrounded.length === 0,
     notes: describe(causeCorrect, report, truth, found),
   };
 }

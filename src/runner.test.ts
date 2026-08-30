@@ -23,6 +23,7 @@ function graded(note: string): Grade {
     citations_resolved: 0,
     evidence_recall: 0,
     red_herring_blamed: false,
+    statements_grounded: false,
     notes: [note],
   };
 }

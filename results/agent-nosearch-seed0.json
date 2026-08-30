@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "f51c15dfec949ed582cd268ded52176b3c3b2c84-dirty",
-  "duration_s": 0.6035,
+  "commit": "0ecff2a992480ede130181e49aa30278c8a16dd4-dirty",
+  "duration_s": 0.5718,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -42,7 +42,8 @@
         "citations_valid": true,
         "evidence_recall": 0.6667,
         "notes": [
-          "evidence not cited: logs/app.jsonl ~ \"Seq Scan on orders\" (the plan change proving the index is gone)"
+          "evidence not cited: logs/app.jsonl ~ \"Seq Scan on orders\" (the plan change proving the index is gone)",
+          "statement unrelated to the line it cites: \"Database CPU usage increased steadily from 31.9% at 09:26 to\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -115,7 +116,9 @@
           "citation does not resolve: alerts.jsonl:1 ~ \"2026-03-17T09:27:00.000Z,\"name\":\"DbConnectionsSaturated\",\"severity\":\"page\",\"state\":\"firing\"\"",
           "citation does not resolve: alerts.jsonl:1 ~ \"2026-03-17T09:27:00.000Z,\"name\":\"DbConnectionsSaturated\",\"severity\":\"page\",\"state\":\"firing\"\"",
           "evidence not cited: metrics/cache.csv ~ \"2026-03-17T09:25:00.000Z\" (the hit_rate series at onset, hit rate collapsing rather than degrading)",
-          "evidence not cited: logs/app.jsonl ~ \"cache miss, recomputing\" (concurrent recomputation of the same key, which is what makes it a stampede)"
+          "evidence not cited: logs/app.jsonl ~ \"cache miss, recomputing\" (concurrent recomputation of the same key, which is what makes it a stampede)",
+          "statement unrelated to the line it cites: \"At 09:27, the DbConnectionsSaturated alert fired, followed b\"",
+          "statement unrelated to the line it cites: \"The DbConnectionsSaturated alert firing at 09:27 indicates b\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -178,6 +181,7 @@
     "completion_tokens": 29921,
     "cost_usd": 0.8176,
     "evidence_recall": 0.4445,
+    "grounding_rate": 0.8333,
     "llm_calls": 22,
     "model": "gpt-4.1-mini",
     "outcomes": {
@@ -194,6 +198,6 @@
     "seconds_per_case": 0.003
   },
   "seed": 0,
-  "started_at": "2026-08-29T23:24:37.888195+00:00",
+  "started_at": "2026-08-30T01:01:12.667734+00:00",
   "variant": "agent-nosearch"
 }

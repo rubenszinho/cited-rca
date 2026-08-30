@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "f51c15dfec949ed582cd268ded52176b3c3b2c84-dirty",
-  "duration_s": 0.6899,
+  "commit": "0ecff2a992480ede130181e49aa30278c8a16dd4-dirty",
+  "duration_s": 0.6224,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -18,7 +18,8 @@
         "citations_valid": false,
         "evidence_recall": 1,
         "notes": [
-          "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\""
+          "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\"",
+          "statement unrelated to the line it cites: \"The error messages explicitly show a TypeError caused by rea\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -29,9 +30,11 @@
         "cause_correct": true,
         "citations_valid": true,
         "evidence_recall": 1,
-        "notes": [],
-        "outcome": "sound",
-        "passed": true,
+        "notes": [
+          "statement unrelated to the line it cites: \"At 09:18, the re-authentication rate spiked dramatically fro\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
         "red_herring_blamed": false
       },
       {
@@ -39,9 +42,12 @@
         "cause_correct": true,
         "citations_valid": true,
         "evidence_recall": 1,
-        "notes": [],
-        "outcome": "sound",
-        "passed": true,
+        "notes": [
+          "statement unrelated to the line it cites: \"Database CPU usage increased steadily after the migration, r\"",
+          "statement unrelated to the line it cites: \"API latency p95 and error rates increased sharply starting a\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
         "red_herring_blamed": false
       },
       {
@@ -160,15 +166,16 @@
     "completion_tokens": 37595,
     "cost_usd": 1.1275,
     "evidence_recall": 0.8056,
+    "grounding_rate": 0.75,
     "llm_calls": 26,
     "model": "gpt-4.1-mini",
     "outcomes": {
       "invalid": 0,
-      "sound": 4,
-      "unsupported": 7,
+      "sound": 2,
+      "unsupported": 9,
       "wrong_cause": 1
     },
-    "pass_rate": 0.3333,
+    "pass_rate": 0.1667,
     "prompt_tokens": 187874,
     "provider_errors": 0,
     "red_herring_rate": 0.25,
@@ -176,6 +183,6 @@
     "seconds_per_case": 0.006
   },
   "seed": 2,
-  "started_at": "2026-08-29T23:24:36.749089+00:00",
+  "started_at": "2026-08-30T01:01:11.689137+00:00",
   "variant": "agent"
 }

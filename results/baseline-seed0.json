@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/baseline/run.ts",
-  "commit": "f51c15dfec949ed582cd268ded52176b3c3b2c84-dirty",
-  "duration_s": 0.6336,
+  "commit": "0ecff2a992480ede130181e49aa30278c8a16dd4-dirty",
+  "duration_s": 0.6353,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -31,7 +31,10 @@
         "evidence_recall": 1,
         "notes": [
           "citation does not resolve: logs/app.jsonl:535 ~ \"\"request rejected: session invalid\",\"status\":401\"",
-          "citation does not resolve: logs/app.jsonl:535 ~ \"\"request rejected: session invalid\",\"status\":401\""
+          "citation does not resolve: logs/app.jsonl:535 ~ \"\"request rejected: session invalid\",\"status\":401\"",
+          "statement unrelated to the line it cites: \"At 09:18, errors of 'request rejected: session invalid' with\"",
+          "statement unrelated to the line it cites: \"Re-authentication rate jumped dramatically from 9-15 per min\"",
+          "statement unrelated to the line it cites: \"The large number of 'request rejected: session invalid' erro\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -114,7 +117,10 @@
           "citation does not resolve: logs/app.jsonl:789 ~ \"\"ts\":\"2026-03-17T09:25:05.000Z\",\"level\":\"warn\",\"msg\":\"cache miss, recomputing\",\"concurrent\":212\"",
           "citation does not resolve: logs/app.jsonl:797 ~ \"\"ts\":\"2026-03-17T09:25:13.000Z\",\"level\":\"error\",\"msg\":\"too many connections\",\"active\":100,\"max\":100\"",
           "citation does not resolve: logs/app.jsonl:789 ~ \"\"msg\":\"cache miss, recomputing\",\"concurrent\":212\"",
-          "evidence not cited: logs/app.jsonl ~ \"cache miss, recomputing\" (concurrent recomputation of the same key, which is what makes it a stampede)"
+          "evidence not cited: logs/app.jsonl ~ \"cache miss, recomputing\" (concurrent recomputation of the same key, which is what makes it a stampede)",
+          "statement unrelated to the line it cites: \"Manual FLUSHALL on the catalog cache was performed at 09:24:\"",
+          "statement unrelated to the line it cites: \"Numerous 'cache miss, recomputing' warnings with high concur\"",
+          "statement unrelated to the line it cites: \"Database proxy started logging 'too many connections' errors\""
         ],
         "outcome": "wrong-cause",
         "passed": false,
@@ -145,7 +151,11 @@
           "citation does not resolve: alerts.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:21:00.000Z\",\"name\":\"MultiServiceErrorSpike\",\"state\":\"firing\"\"",
           "citation does not resolve: alerts.jsonl:2 ~ \"\"ts\":\"2026-03-17T09:23:00.000Z\",\"name\":\"DnsResolveLatency\",\"state\":\"firing\"\"",
           "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:44:00.000Z\",\"summary\":\"coredns replicas 2 -> 4 (mitigation)\"\"",
-          "evidence not cited: alerts.jsonl ~ \"MultiServiceErrorSpike\" (three unrelated services failing at once points below the application layer)"
+          "evidence not cited: alerts.jsonl ~ \"MultiServiceErrorSpike\" (three unrelated services failing at once points below the application layer)",
+          "statement unrelated to the line it cites: \"DNS-related errors started appearing in logs at 09:16:08 wit\"",
+          "statement unrelated to the line it cites: \"DNS SERVFAIL errors persisted and were widespread across mul\"",
+          "statement unrelated to the line it cites: \"Alerts for MultiServiceErrorSpike and DnsResolveLatency fire\"",
+          "statement unrelated to the line it cites: \"Mitigation was performed by scaling coredns replicas from 2 \""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -160,7 +170,9 @@
           "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:12:00.000Z\",\"kind\":\"deploy\",\"summary\":\"checkout: raise retry attempts 2 -> 5\"\"",
           "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:12:00.000Z\",\"kind\":\"deploy\",\"summary\":\"checkout: raise retry attempts 2 -> 5\"\"",
           "evidence not cited: changes.jsonl ~ \"retry attempts 2 -> 5\" (the retry change that turned a blip into a storm)",
-          "red herring used as evidence: \"CheckoutConversionDrop\" (reads as a checkout regression rather than an upstream rejecting our excess volume)"
+          "red herring used as evidence: \"CheckoutConversionDrop\" (reads as a checkout regression rather than an upstream rejecting our excess volume)",
+          "statement unrelated to the line it cites: \"A deployment was made at 09:12 that increased retry attempts\"",
+          "statement unrelated to the line it cites: \"The deployment at 09:12 increased retry attempts, which like\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -174,7 +186,8 @@
         "notes": [
           "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\"\"",
           "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\"\"",
-          "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)"
+          "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)",
+          "statement unrelated to the line it cites: \"Lock wait timeouts on orders were repeatedly logged starting\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -188,6 +201,7 @@
     "completion_tokens": 25522,
     "cost_usd": 0.9517,
     "evidence_recall": 0.7778,
+    "grounding_rate": 0.5833,
     "llm_calls": 16,
     "model": "gpt-4.1-mini",
     "outcomes": {
@@ -204,6 +218,6 @@
     "seconds_per_case": 0.005
   },
   "seed": 0,
-  "started_at": "2026-08-29T23:24:33.505730+00:00",
+  "started_at": "2026-08-30T01:01:08.716434+00:00",
   "variant": "baseline"
 }

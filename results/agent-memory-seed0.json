@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "f51c15dfec949ed582cd268ded52176b3c3b2c84-dirty",
-  "duration_s": 0.6785,
+  "commit": "0ecff2a992480ede130181e49aa30278c8a16dd4-dirty",
+  "duration_s": 0.6695,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -19,7 +19,9 @@
         "evidence_recall": 1,
         "notes": [
           "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\"",
-          "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\"\""
+          "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\"\"",
+          "statement unrelated to the line it cites: \"P95 latency increased from ~163ms at 09:22 to over 378ms by \"",
+          "statement unrelated to the line it cites: \"The error messages explicitly reference a null pointer excep\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -41,7 +43,8 @@
         "citations_valid": false,
         "evidence_recall": 1,
         "notes": [
-          "citation does not resolve: logs/app.jsonl:699 ~ \"\"msg\":\"statement timeout after 5000ms\",\"route\":\"/orders/history\"\""
+          "citation does not resolve: logs/app.jsonl:699 ~ \"\"msg\":\"statement timeout after 5000ms\",\"route\":\"/orders/history\"\"",
+          "statement unrelated to the line it cites: \"Database CPU usage increased steadily after the migration, r\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -80,7 +83,8 @@
         "notes": [
           "cause: said resource_exhaustion_pool, actual memory_leak",
           "evidence not cited: metrics/worker.csv ~ \"2026-03-17T09:14:00.000Z\" (the rss_mb series at onset, memory climbing monotonically rather than spiking)",
-          "red herring used as evidence: \"worker replicas 4 -> 8\" (a change during the incident, but an operator mitigation rather than the cause)"
+          "red herring used as evidence: \"worker replicas 4 -> 8\" (a change during the incident, but an operator mitigation rather than the cause)",
+          "statement unrelated to the line it cites: \"Despite scaling, error rates and latency remained elevated t\""
         ],
         "outcome": "wrong-cause",
         "passed": false,
@@ -157,7 +161,8 @@
         "notes": [
           "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\",\"waited_ms\":4800\"",
           "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\",\"waited_ms\":4800\"",
-          "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)"
+          "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)",
+          "statement unrelated to the line it cites: \"Warnings of 'lock wait timeout on orders' with blocking quer\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -171,6 +176,7 @@
     "completion_tokens": 38535,
     "cost_usd": 1.2616,
     "evidence_recall": 0.8182,
+    "grounding_rate": 0.6364,
     "llm_calls": 30,
     "model": "gpt-4.1-mini",
     "outcomes": {
@@ -184,9 +190,9 @@
     "provider_errors": 0,
     "red_herring_rate": 0.3636,
     "replayed_calls": 30,
-    "seconds_per_case": 0.007
+    "seconds_per_case": 0.006
   },
   "seed": 0,
-  "started_at": "2026-08-29T23:24:42.071510+00:00",
+  "started_at": "2026-08-30T01:01:16.013074+00:00",
   "variant": "agent-memory"
 }

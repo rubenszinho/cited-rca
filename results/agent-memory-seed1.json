@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "f51c15dfec949ed582cd268ded52176b3c3b2c84-dirty",
-  "duration_s": 0.7309,
+  "commit": "0ecff2a992480ede130181e49aa30278c8a16dd4-dirty",
+  "duration_s": 0.6262,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -39,9 +39,12 @@
         "cause_correct": true,
         "citations_valid": true,
         "evidence_recall": 1,
-        "notes": [],
-        "outcome": "sound",
-        "passed": true,
+        "notes": [
+          "statement unrelated to the line it cites: \"Database CPU usage increased steadily after the migration, r\"",
+          "statement unrelated to the line it cites: \"API latency (p95) and error rates increased sharply starting\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
         "red_herring_blamed": false
       },
       {
@@ -65,7 +68,10 @@
           "citation does not resolve: alerts.jsonl:1 ~ \"2026-03-17T09:29:00.000Z,\"name\":\"ApiLatencyP95\",\"severity\":\"page\",\"state\":\"firing\"\"",
           "citation does not resolve: logs/app.jsonl:559 ~ \"timed out acquiring database connection\",\"waited_ms\":5000\"",
           "citation does not resolve: logs/app.jsonl:696 ~ \"timed out acquiring database connection\",\"waited_ms\":5000\"",
-          "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)"
+          "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)",
+          "statement unrelated to the line it cites: \"At 09:29, the ApiLatencyP95 alert was triggered, indicating \"",
+          "statement unrelated to the line it cites: \"Errors about timing out acquiring database connections with \"",
+          "statement unrelated to the line it cites: \"Repeated errors about timing out acquiring database connecti\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -117,9 +123,11 @@
         "cause_correct": true,
         "citations_valid": true,
         "evidence_recall": 1,
-        "notes": [],
-        "outcome": "sound",
-        "passed": true,
+        "notes": [
+          "statement unrelated to the line it cites: \"Simultaneously, the API p95 latency rose from ~180ms to 471m\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
         "red_herring_blamed": false
       },
       {
@@ -139,7 +147,8 @@
         "evidence_recall": 1,
         "notes": [
           "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:12:00.000Z\",\"summary\":\"checkout: raise retry attempts 2 -> 5\"\"",
-          "red herring used as evidence: \"CheckoutConversionDrop\" (reads as a checkout regression rather than an upstream rejecting our excess volume)"
+          "red herring used as evidence: \"CheckoutConversionDrop\" (reads as a checkout regression rather than an upstream rejecting our excess volume)",
+          "statement unrelated to the line it cites: \"A deployment was made at 09:12 that increased retry attempts\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -163,22 +172,23 @@
     "completion_tokens": 40470,
     "cost_usd": 1.2886,
     "evidence_recall": 0.8889,
+    "grounding_rate": 0.6667,
     "llm_calls": 30,
     "model": "gpt-4.1-mini",
     "outcomes": {
       "invalid": 0,
-      "sound": 5,
-      "unsupported": 5,
+      "sound": 3,
+      "unsupported": 7,
       "wrong_cause": 2
     },
-    "pass_rate": 0.4167,
+    "pass_rate": 0.25,
     "prompt_tokens": 227181,
     "provider_errors": 0,
     "red_herring_rate": 0.4167,
     "replayed_calls": 30,
-    "seconds_per_case": 0.006
+    "seconds_per_case": 0.007
   },
   "seed": 1,
-  "started_at": "2026-08-29T23:24:42.750850+00:00",
+  "started_at": "2026-08-30T01:01:16.686307+00:00",
   "variant": "agent-memory"
 }

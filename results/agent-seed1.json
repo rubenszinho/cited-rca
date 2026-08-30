@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "f51c15dfec949ed582cd268ded52176b3c3b2c84-dirty",
-  "duration_s": 0.7383,
+  "commit": "0ecff2a992480ede130181e49aa30278c8a16dd4-dirty",
+  "duration_s": 0.6185,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -27,9 +27,11 @@
         "cause_correct": true,
         "citations_valid": true,
         "evidence_recall": 1,
-        "notes": [],
-        "outcome": "sound",
-        "passed": true,
+        "notes": [
+          "statement unrelated to the line it cites: \"At 09:18:00Z, re-authentication rate spiked dramatically fro\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
         "red_herring_blamed": false
       },
       {
@@ -38,7 +40,8 @@
         "citations_valid": true,
         "evidence_recall": 0.6667,
         "notes": [
-          "evidence not cited: logs/app.jsonl ~ \"Seq Scan on orders\" (the plan change proving the index is gone)"
+          "evidence not cited: logs/app.jsonl ~ \"Seq Scan on orders\" (the plan change proving the index is gone)",
+          "statement unrelated to the line it cites: \"Database CPU usage increased steadily after the migration, r\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -143,9 +146,11 @@
         "cause_correct": true,
         "citations_valid": true,
         "evidence_recall": 1,
-        "notes": [],
-        "outcome": "sound",
-        "passed": true,
+        "notes": [
+          "statement unrelated to the line it cites: \"Long-running transactions increased dramatically from 0.3 se\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
         "red_herring_blamed": false
       }
     ],
@@ -156,22 +161,23 @@
     "completion_tokens": 38880,
     "cost_usd": 1.169,
     "evidence_recall": 0.8485,
+    "grounding_rate": 0.7273,
     "llm_calls": 26,
     "model": "gpt-4.1-mini",
     "outcomes": {
       "invalid": 1,
-      "sound": 5,
-      "unsupported": 5,
+      "sound": 3,
+      "unsupported": 7,
       "wrong_cause": 1
     },
-    "pass_rate": 0.4167,
+    "pass_rate": 0.25,
     "prompt_tokens": 195282,
     "provider_errors": 0,
     "red_herring_rate": 0.1818,
     "replayed_calls": 26,
-    "seconds_per_case": 0.008
+    "seconds_per_case": 0.007
   },
   "seed": 1,
-  "started_at": "2026-08-29T23:24:36.009814+00:00",
+  "started_at": "2026-08-30T01:01:11.069652+00:00",
   "variant": "agent"
 }

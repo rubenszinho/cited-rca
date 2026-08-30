@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "f51c15dfec949ed582cd268ded52176b3c3b2c84-dirty",
-  "duration_s": 0.715,
+  "commit": "0ecff2a992480ede130181e49aa30278c8a16dd4-dirty",
+  "duration_s": 0.6139,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -18,7 +18,8 @@
         "citations_valid": false,
         "evidence_recall": 1,
         "notes": [
-          "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\""
+          "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\"",
+          "statement unrelated to the line it cites: \"The error messages explicitly show a TypeError caused by rea\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -44,7 +45,9 @@
         "notes": [
           "citation does not resolve: logs/app.jsonl:699 ~ \"\"msg\":\"statement timeout after 5000ms\",\"route\":\"/orders/history\"\"",
           "citation does not resolve: logs/app.jsonl:1992 ~ \"\"msg\":\"statement timeout after 5000ms\",\"route\":\"/orders/history\"\"",
-          "evidence not cited: logs/app.jsonl ~ \"Seq Scan on orders\" (the plan change proving the index is gone)"
+          "evidence not cited: logs/app.jsonl ~ \"Seq Scan on orders\" (the plan change proving the index is gone)",
+          "statement unrelated to the line it cites: \"API latency p95 rose sharply starting at 09:26, reaching ove\"",
+          "statement unrelated to the line it cites: \"The persistent statement timeouts on the /orders/history rou\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -70,7 +73,8 @@
         "notes": [
           "citation does not resolve: logs/app.jsonl:559 ~ \"\"msg\":\"timed out acquiring database connection\",\"waited_ms\":5000\"",
           "citation does not resolve: logs/app.jsonl:559 ~ \"\"msg\":\"timed out acquiring database connection\",\"waited_ms\":5000\"",
-          "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)"
+          "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)",
+          "statement unrelated to the line it cites: \"Logs show repeated errors of 'timed out acquiring database c\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -166,6 +170,7 @@
     "completion_tokens": 37093,
     "cost_usd": 1.1622,
     "evidence_recall": 0.8182,
+    "grounding_rate": 0.7273,
     "llm_calls": 27,
     "model": "gpt-4.1-mini",
     "outcomes": {
@@ -179,9 +184,9 @@
     "provider_errors": 0,
     "red_herring_rate": 0.2727,
     "replayed_calls": 27,
-    "seconds_per_case": 0.007
+    "seconds_per_case": 0.006
   },
   "seed": 2,
-  "started_at": "2026-08-29T23:24:43.482365+00:00",
+  "started_at": "2026-08-30T01:01:17.313218+00:00",
   "variant": "agent-memory"
 }

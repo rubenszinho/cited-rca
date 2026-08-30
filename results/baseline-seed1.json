@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/baseline/run.ts",
-  "commit": "f51c15dfec949ed582cd268ded52176b3c3b2c84-dirty",
-  "duration_s": 0.5622,
+  "commit": "0ecff2a992480ede130181e49aa30278c8a16dd4-dirty",
+  "duration_s": 0.5556,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -18,7 +18,8 @@
         "citations_valid": false,
         "evidence_recall": 1,
         "notes": [
-          "citation does not resolve: logs/app.jsonl:645 ~ \"\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\""
+          "citation does not resolve: logs/app.jsonl:645 ~ \"\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\"",
+          "statement unrelated to the line it cites: \"The error logs show a specific TypeError in the applyDiscoun\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -30,7 +31,8 @@
         "citations_valid": false,
         "evidence_recall": 1,
         "notes": [
-          "citation does not resolve: logs/app.jsonl:535 ~ \"\"request rejected: session invalid\",\"status\":401\""
+          "citation does not resolve: logs/app.jsonl:535 ~ \"\"request rejected: session invalid\",\"status\":401\"",
+          "statement unrelated to the line it cites: \"Re-authentication rate spiked dramatically from 9 per minute\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -67,7 +69,8 @@
           "citation does not resolve: logs/app.jsonl:559 ~ \"\"msg\":\"timed out acquiring database connection\",\"waited_ms\":5000\"",
           "citation does not resolve: logs/app.jsonl:926 ~ \"\"msg\":\"timed out acquiring database connection\",\"waited_ms\":5000\"",
           "evidence not cited: metrics/pool.csv ~ \"2026-03-17T09:21:00.000Z\" (the idle series at onset, idle connections draining to zero)",
-          "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)"
+          "evidence not cited: metrics/db.csv ~ \"2026-03-17T09:21:00.000Z\" (the cpu_pct series at onset, database CPU flat, ruling out a slow database)",
+          "statement unrelated to the line it cites: \"Repeated error logs show 'timed out acquiring database conne\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -109,7 +112,8 @@
         "notes": [
           "cause: said resource_exhaustion_pool, actual cache_stampede",
           "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:24:00.000Z\",\"summary\":\"manual FLUSHALL on the catalog cache after a pricing correction\"\"",
-          "citation does not resolve: logs/app.jsonl:789 ~ \"\"level\":\"warn\",\"msg\":\"cache miss, recomputing\",\"concurrent\":212\""
+          "citation does not resolve: logs/app.jsonl:789 ~ \"\"level\":\"warn\",\"msg\":\"cache miss, recomputing\",\"concurrent\":212\"",
+          "statement unrelated to the line it cites: \"At 09:24, a manual FLUSHALL was performed on the catalog cac\""
         ],
         "outcome": "wrong-cause",
         "passed": false,
@@ -122,7 +126,9 @@
         "evidence_recall": 1,
         "notes": [
           "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:03:00.000Z\",\"kind\":\"deploy\",\"summary\":\"api: copy tweaks on the product page\"\"",
-          "red herring used as evidence: \"v2026.3.17-g2\" (the only deploy in the window, 16 minutes before onset and unrelated)"
+          "red herring used as evidence: \"v2026.3.17-g2\" (the only deploy in the window, 16 minutes before onset and unrelated)",
+          "statement unrelated to the line it cites: \"A deployment was performed at 09:03:00 with summary 'api: co\"",
+          "statement unrelated to the line it cites: \"API latency and error rates increased in parallel with downs\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -142,7 +148,12 @@
           "citation does not resolve: logs/app.jsonl:466 ~ \"\"ts\":\"2026-03-17T09:16:25.000Z\",\"msg\":\"dial tcp: lookup queue.internal: SERVFAIL\"\"",
           "citation does not resolve: logs/app.jsonl:476 ~ \"\"ts\":\"2026-03-17T09:16:39.000Z\",\"msg\":\"dial tcp: lookup db-proxy.internal: SERVFAIL\"\"",
           "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:44:00.000Z\",\"kind\":\"scale\",\"ref\":\"coredns\",\"summary\":\"coredns replicas 2 -> 4 (mitigation)\"\"",
-          "evidence not cited: logs/app.jsonl ~ \"SERVFAIL\" (the resolution failure itself)"
+          "evidence not cited: logs/app.jsonl ~ \"SERVFAIL\" (the resolution failure itself)",
+          "statement unrelated to the line it cites: \"DNS-related errors (SERVFAIL) started appearing in logs for \"",
+          "statement unrelated to the line it cites: \"DNS failures continued with high frequency across multiple s\"",
+          "statement unrelated to the line it cites: \"Mitigation was performed by scaling coredns replicas from 2 \"",
+          "statement unrelated to the line it cites: \"The DNS failure is confirmed by the sudden and sustained SER\"",
+          "statement unrelated to the line it cites: \"Scaling coredns replicas was the chosen mitigation, implying\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -174,7 +185,10 @@
           "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\"\"",
           "citation does not resolve: logs/app.jsonl:1275 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\"\"",
           "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\"\"",
-          "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)"
+          "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)",
+          "statement unrelated to the line it cites: \"Lock wait timeout warnings on the orders table started appea\"",
+          "statement unrelated to the line it cites: \"The CheckoutErrorRateHigh and DbLockWaits alerts fired at 09\"",
+          "statement unrelated to the line it cites: \"The batch job reconcile_orders_daily was the blocking query \""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -188,6 +202,7 @@
     "completion_tokens": 22890,
     "cost_usd": 0.8304,
     "evidence_recall": 0.8056,
+    "grounding_rate": 0.4167,
     "llm_calls": 14,
     "model": "gpt-4.1-mini",
     "outcomes": {
@@ -204,6 +219,6 @@
     "seconds_per_case": 0.005
   },
   "seed": 1,
-  "started_at": "2026-08-29T23:24:34.140468+00:00",
+  "started_at": "2026-08-30T01:01:09.352952+00:00",
   "variant": "baseline"
 }

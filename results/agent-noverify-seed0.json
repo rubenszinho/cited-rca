@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "f51c15dfec949ed582cd268ded52176b3c3b2c84-dirty",
-  "duration_s": 0.6559,
+  "commit": "0ecff2a992480ede130181e49aa30278c8a16dd4-dirty",
+  "duration_s": 0.5299,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -22,7 +22,10 @@
           "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\"",
           "citation does not resolve: changes.jsonl:2 ~ \"\"ts\":\"2026-03-17T09:22:00.000Z\",\"ref\":\"v2026.3.17-a1\"\"",
           "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\"\"",
-          "evidence not cited: logs/app.jsonl ~ \"reading 'percentOff'\" (the exception naming the field and handler)"
+          "evidence not cited: logs/app.jsonl ~ \"reading 'percentOff'\" (the exception naming the field and handler)",
+          "statement unrelated to the line it cites: \"Errors in logs show repeated 'TypeError: Cannot read propert\"",
+          "statement unrelated to the line it cites: \"P95 latency increased from ~163ms at 09:22 to over 378ms by \"",
+          "statement unrelated to the line it cites: \"The error messages explicitly reference a null pointer excep\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -33,9 +36,11 @@
         "cause_correct": true,
         "citations_valid": true,
         "evidence_recall": 1,
-        "notes": [],
-        "outcome": "sound",
-        "passed": true,
+        "notes": [
+          "statement unrelated to the line it cites: \"At 09:18:00Z, re-authentication rate per minute spiked drama\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
         "red_herring_blamed": false
       },
       {
@@ -45,7 +50,8 @@
         "evidence_recall": 1,
         "notes": [
           "citation does not resolve: logs/app.jsonl:699 ~ \"\"ts\":\"2026-03-17T09:26:20.000Z\",\"service\":\"api\",\"level\":\"error\",\"msg\":\"statement timeout after 5000ms\",\"route\":\"/orders/history\"\"",
-          "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:12:00.000Z\",\"kind\":\"deploy\",\"summary\":\"api: unrelated copy change on the account page\"\""
+          "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:12:00.000Z\",\"kind\":\"deploy\",\"summary\":\"api: unrelated copy change on the account page\"\"",
+          "statement unrelated to the line it cites: \"Database CPU usage increased steadily after the migration, r\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -65,7 +71,11 @@
           "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:08:00.000Z\",\"kind\":\"deploy\",\"summary\":\"worker: retry backoff tuning\"\"",
           "evidence not cited: logs/app.jsonl ~ \"certificate has expired\" (the TLS error naming the peer and expiry instant)",
           "evidence not cited: logs/app.jsonl ~ \"2026-03-17T09:30:00Z\" (the notAfter matching onset exactly)",
-          "evidence not cited: metrics/callbacks.csv ~ \"2026-03-17T09:30:00.000Z\" (the delivered_per_min series at onset, delivery collapsing at the same minute)"
+          "evidence not cited: metrics/callbacks.csv ~ \"2026-03-17T09:30:00.000Z\" (the delivered_per_min series at onset, delivery collapsing at the same minute)",
+          "statement unrelated to the line it cites: \"A deployment was made at 09:08:00 with retry backoff tuning,\"",
+          "statement unrelated to the line it cites: \"Starting at 09:30:02, logs show repeated errors of callback \"",
+          "statement unrelated to the line it cites: \"The TLS certificate used by the worker service expired exact\"",
+          "statement unrelated to the line it cites: \"Repeated error logs of callback delivery failures with TLS c\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -143,7 +153,9 @@
           "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:44:00.000Z\",\"kind\":\"scale\",\"ref\":\"coredns\",\"summary\":\"coredns replicas 2 -> 4 (mitigation)\"\"",
           "citation does not resolve: logs/app.jsonl:458 ~ \"\"ts\":\"2026-03-17T09:16:08.000Z\",\"level\":\"error\",\"msg\":\"dial tcp: lookup payments.internal: SERVFAIL\"\"",
           "evidence not cited: logs/app.jsonl ~ \"SERVFAIL\" (the resolution failure itself)",
-          "evidence not cited: alerts.jsonl ~ \"MultiServiceErrorSpike\" (three unrelated services failing at once points below the application layer)"
+          "evidence not cited: alerts.jsonl ~ \"MultiServiceErrorSpike\" (three unrelated services failing at once points below the application layer)",
+          "statement unrelated to the line it cites: \"DNS SERVFAIL errors continued throughout the incident window\"",
+          "statement unrelated to the line it cites: \"At 09:44, the number of coredns replicas was increased from \""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -171,7 +183,10 @@
           "citation does not resolve: alerts.jsonl:1 ~ \"\"CheckoutErrorRateHigh\",\"state\":\"firing\"\"",
           "citation does not resolve: alerts.jsonl:2 ~ \"\"DbLockWaits\",\"state\":\"firing\"\"",
           "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\"\"",
-          "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)"
+          "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)",
+          "statement unrelated to the line it cites: \"Repeated warnings of 'lock wait timeout on orders' from the \"",
+          "statement unrelated to the line it cites: \"Alerts for 'CheckoutErrorRateHigh' and 'DbLockWaits' fired a\"",
+          "statement unrelated to the line it cites: \"The batch job reschedule caused lock contention, as shown by\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -185,22 +200,23 @@
     "completion_tokens": 26282,
     "cost_usd": 0.7571,
     "evidence_recall": 0.6296,
+    "grounding_rate": 0.3333,
     "llm_calls": 17,
     "model": "gpt-4.1-mini",
     "outcomes": {
       "invalid": 3,
-      "sound": 2,
-      "unsupported": 7,
+      "sound": 1,
+      "unsupported": 8,
       "wrong_cause": 0
     },
-    "pass_rate": 0.1667,
+    "pass_rate": 0.0833,
     "prompt_tokens": 120949,
     "provider_errors": 0,
     "red_herring_rate": 0.1111,
     "replayed_calls": 17,
-    "seconds_per_case": 0.006
+    "seconds_per_case": 0.005
   },
   "seed": 0,
-  "started_at": "2026-08-29T23:24:39.839381+00:00",
+  "started_at": "2026-08-30T01:01:14.316934+00:00",
   "variant": "agent-noverify"
 }

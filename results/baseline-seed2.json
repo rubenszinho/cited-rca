@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/baseline/run.ts",
-  "commit": "f51c15dfec949ed582cd268ded52176b3c3b2c84-dirty",
-  "duration_s": 0.5521,
+  "commit": "0ecff2a992480ede130181e49aa30278c8a16dd4-dirty",
+  "duration_s": 0.5502,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -21,7 +21,9 @@
           "citation does not resolve: logs/app.jsonl:645 ~ \"\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\"",
           "citation does not resolve: changes.jsonl:2 ~ \"\"ts\":\"2026-03-17T09:22:00.000Z\",\"ref\":\"v2026.3.17-a1\"\"",
           "citation does not resolve: changes.jsonl:1 ~ \"{\"summary\":\"checkout: bump logging library\"}\"",
-          "citation does not resolve: changes.jsonl:2 ~ \"{\"summary\":\"checkout: add tiered discount support\"}\""
+          "citation does not resolve: changes.jsonl:2 ~ \"{\"summary\":\"checkout: add tiered discount support\"}\"",
+          "statement unrelated to the line it cites: \"The error message 'TypeError: Cannot read properties of null\"",
+          "statement unrelated to the line it cites: \"The timing of the deploy at 09:22:00 immediately preceding t\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -36,7 +38,8 @@
           "citation does not resolve: logs/app.jsonl:535 ~ \"\"ts\":\"2026-03-17T09:18:07.000Z\",\"service\":\"api\",\"level\":\"error\",\"msg\":\"request rejected: session invalid\",\"status\":401\"",
           "citation does not resolve: logs/app.jsonl:533 ~ \"\"ts\":\"2026-03-17T09:18:06.000Z\",\"msg\":\"session binding mismatch, forcing re-auth\"\"",
           "citation does not resolve: logs/app.jsonl:535 ~ \"\"ts\":\"2026-03-17T09:18:07.000Z\",\"msg\":\"request rejected: session invalid\",\"status\":401\"",
-          "citation does not resolve: metrics/http.csv:19 ~ \"error_rate,0.0025\""
+          "citation does not resolve: metrics/http.csv:19 ~ \"error_rate,0.0025\"",
+          "statement unrelated to the line it cites: \"The re-authentication rate spiked dramatically from 9 per mi\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -123,7 +126,11 @@
           "citation does not resolve: logs/app.jsonl:1901 ~ \"\"ts\":\"2026-03-17T09:46:10.000Z\",\"level\":\"error\",\"msg\":\"too many connections\",\"active\":100,\"max\":100\"",
           "citation does not resolve: logs/app.jsonl:789 ~ \"\"msg\":\"cache miss, recomputing\",\"concurrent\":212\"",
           "evidence not cited: metrics/cache.csv ~ \"2026-03-17T09:25:00.000Z\" (the hit_rate series at onset, hit rate collapsing rather than degrading)",
-          "evidence not cited: logs/app.jsonl ~ \"cache miss, recomputing\" (concurrent recomputation of the same key, which is what makes it a stampede)"
+          "evidence not cited: logs/app.jsonl ~ \"cache miss, recomputing\" (concurrent recomputation of the same key, which is what makes it a stampede)",
+          "statement unrelated to the line it cites: \"At 09:24:00, a manual FLUSHALL was performed on the catalog \"",
+          "statement unrelated to the line it cites: \"Concurrently, logs show repeated warnings of 'cache miss, re\"",
+          "statement unrelated to the line it cites: \"Database proxy logs show 'too many connections' errors start\"",
+          "statement unrelated to the line it cites: \"Cache miss warnings continue throughout the incident, indica\""
         ],
         "outcome": "wrong-cause",
         "passed": false,
@@ -172,7 +179,9 @@
           "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\"\"",
           "citation does not resolve: logs/app.jsonl:1275 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\"\"",
           "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\"\"",
-          "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)"
+          "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)",
+          "statement unrelated to the line it cites: \"Lock wait timeouts on orders were repeatedly logged starting\"",
+          "statement unrelated to the line it cites: \"The batch job reconcile_orders_daily was the blocking query \""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -186,6 +195,7 @@
     "completion_tokens": 20948,
     "cost_usd": 0.7614,
     "evidence_recall": 0.7778,
+    "grounding_rate": 0.6667,
     "llm_calls": 13,
     "model": "gpt-4.1-mini",
     "outcomes": {
@@ -202,6 +212,6 @@
     "seconds_per_case": 0.005
   },
   "seed": 2,
-  "started_at": "2026-08-29T23:24:34.703179+00:00",
+  "started_at": "2026-08-30T01:01:09.909203+00:00",
   "variant": "baseline"
 }

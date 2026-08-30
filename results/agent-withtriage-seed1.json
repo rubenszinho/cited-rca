@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "f51c15dfec949ed582cd268ded52176b3c3b2c84-dirty",
-  "duration_s": 0.6607,
+  "commit": "0ecff2a992480ede130181e49aa30278c8a16dd4-dirty",
+  "duration_s": 0.6315,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -19,7 +19,8 @@
         "evidence_recall": 1,
         "notes": [
           "citation does not resolve: logs/app.jsonl:645 ~ \"\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\"",
-          "citation does not resolve: logs/app.jsonl:645 ~ \"\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\"\""
+          "citation does not resolve: logs/app.jsonl:645 ~ \"\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\"\"",
+          "statement unrelated to the line it cites: \"The error messages consistently reference a null 'percentOff\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -35,7 +36,9 @@
           "citation does not resolve: logs/app.jsonl:535 ~ \"\"request rejected: session invalid\",\"status\":401\"",
           "citation does not resolve: logs/app.jsonl:533 ~ \"\"session binding mismatch, forcing re-auth\",\"flag\":\"strict_session_binding\"\"",
           "citation does not resolve: logs/app.jsonl:535 ~ \"\"request rejected: session invalid\",\"status\":401\"",
-          "evidence not cited: logs/app.jsonl ~ \"session binding mismatch\" (the warning naming the flag)"
+          "evidence not cited: logs/app.jsonl ~ \"session binding mismatch\" (the warning naming the flag)",
+          "statement unrelated to the line it cites: \"Logs show repeated 'session binding mismatch, forcing re-aut\"",
+          "statement unrelated to the line it cites: \"The logs explicitly mention 'session binding mismatch, forci\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -165,6 +168,7 @@
     "completion_tokens": 37365,
     "cost_usd": 1.268,
     "evidence_recall": 0.7879,
+    "grounding_rate": 0.8182,
     "llm_calls": 36,
     "model": "gpt-4.1-mini",
     "outcomes": {
@@ -178,9 +182,9 @@
     "provider_errors": 0,
     "red_herring_rate": 0.0909,
     "replayed_calls": 36,
-    "seconds_per_case": 0.007
+    "seconds_per_case": 0.009
   },
   "seed": 1,
-  "started_at": "2026-08-29T23:24:45.006031+00:00",
+  "started_at": "2026-08-30T01:01:18.542155+00:00",
   "variant": "agent-withtriage"
 }

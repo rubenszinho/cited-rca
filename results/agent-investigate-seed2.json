@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "9159ebafb31d62a1b9e9c0a4301803f4cdbd4fc0-dirty",
-  "duration_s": 0.6468,
+  "commit": "0ecff2a992480ede130181e49aa30278c8a16dd4-dirty",
+  "duration_s": 0.6426,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -19,7 +19,8 @@
         "evidence_recall": 1,
         "notes": [
           "citation does not resolve: logs/app.jsonl:645 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\"",
-          "citation does not resolve: logs/app.jsonl:1580 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\""
+          "citation does not resolve: logs/app.jsonl:1580 ~ \"\"msg\":\"TypeError: Cannot read properties of null (reading 'percentOff')\",\"handler\":\"applyDiscount\",\"release\":\"v2026.3.17-a1\"\"",
+          "statement unrelated to the line it cites: \"The error logs consistently show a TypeError in applyDiscoun\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -30,9 +31,11 @@
         "cause_correct": true,
         "citations_valid": true,
         "evidence_recall": 1,
-        "notes": [],
-        "outcome": "sound",
-        "passed": true,
+        "notes": [
+          "statement unrelated to the line it cites: \"At 09:18, the re-authentication rate per minute spiked drama\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
         "red_herring_blamed": false
       },
       {
@@ -42,7 +45,9 @@
         "evidence_recall": 1,
         "notes": [
           "citation does not resolve: logs/app.jsonl:699 ~ \"\"msg\":\"statement timeout after 5000ms\",\"route\":\"/orders/history\"\"",
-          "citation does not resolve: logs/app.jsonl:699 ~ \"\"msg\":\"statement timeout after 5000ms\",\"route\":\"/orders/history\"\""
+          "citation does not resolve: logs/app.jsonl:699 ~ \"\"msg\":\"statement timeout after 5000ms\",\"route\":\"/orders/history\"\"",
+          "statement unrelated to the line it cites: \"Database CPU usage increased from ~30% to over 70% by 09:50,\"",
+          "statement unrelated to the line it cites: \"API latency p95 rose sharply starting at 09:26, reaching ove\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -58,7 +63,8 @@
           "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:08:00.000Z\",\"kind\":\"deploy\",\"summary\":\"worker: retry backoff tuning\"\"",
           "citation does not resolve: logs/app.jsonl:922 ~ \"\"tls: failed to verify certificate: certificate has expired\",\"notAfter\":\"2026-03-17T09:30:00Z\"\"",
           "evidence not cited: metrics/callbacks.csv ~ \"2026-03-17T09:30:00.000Z\" (the delivered_per_min series at onset, delivery collapsing at the same minute)",
-          "red herring used as evidence: \"v2026.3.17-c2\" (the only deploy in the window, and it touched retry logic)"
+          "red herring used as evidence: \"v2026.3.17-c2\" (the only deploy in the window, and it touched retry logic)",
+          "statement unrelated to the line it cites: \"The TLS certificate used by the worker service expired exact\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -100,7 +106,8 @@
           "citation does not resolve: alerts.jsonl:1 ~ \"\"name\":\"ApiWriteErrors\",\"state\":\"firing\"\"",
           "citation does not resolve: alerts.jsonl:2 ~ \"\"name\":\"DiskSpaceCritical\",\"state\":\"firing\"\"",
           "evidence not cited: metrics/disk.csv ~ \"2026-03-17T09:34:00.000Z\" (the api3_used_pct series at onset, one node climbing while its peers stay flat)",
-          "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)"
+          "evidence not cited: changes.jsonl ~ \"debug_request_logging\" (the flag that started the growth, 32 minutes before onset)",
+          "statement unrelated to the line it cites: \"Alerts for disk space critical and API write errors coincide\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -159,7 +166,8 @@
         "notes": [
           "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\",\"waited_ms\":4800\"",
           "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\",\"waited_ms\":4800\"",
-          "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)"
+          "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)",
+          "statement unrelated to the line it cites: \"Warnings of lock wait timeouts on orders caused by 'reconcil\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -173,22 +181,23 @@
     "completion_tokens": 60268,
     "cost_usd": 2.6357,
     "evidence_recall": 0.8056,
+    "grounding_rate": 0.5,
     "llm_calls": 71,
     "model": "gpt-4.1-mini",
     "outcomes": {
       "invalid": 0,
-      "sound": 3,
-      "unsupported": 7,
+      "sound": 2,
+      "unsupported": 8,
       "wrong_cause": 2
     },
-    "pass_rate": 0.25,
+    "pass_rate": 0.1667,
     "prompt_tokens": 577237,
     "provider_errors": 0,
     "red_herring_rate": 0.3333,
     "replayed_calls": 71,
-    "seconds_per_case": 0.012
+    "seconds_per_case": 0.011
   },
   "seed": 2,
-  "started_at": "2026-08-29T23:30:09.504552+00:00",
+  "started_at": "2026-08-30T01:01:21.633478+00:00",
   "variant": "agent-investigate"
 }

@@ -1,7 +1,7 @@
 {
   "cmd": "pnpm exec tsx src/agent/run.ts",
-  "commit": "f51c15dfec949ed582cd268ded52176b3c3b2c84-dirty",
-  "duration_s": 0.7626,
+  "commit": "0ecff2a992480ede130181e49aa30278c8a16dd4-dirty",
+  "duration_s": 0.5379,
   "env": {
     "container": "host",
     "machine": "x86_64",
@@ -27,9 +27,11 @@
         "cause_correct": true,
         "citations_valid": true,
         "evidence_recall": 1,
-        "notes": [],
-        "outcome": "sound",
-        "passed": true,
+        "notes": [
+          "statement unrelated to the line it cites: \"At 09:18:00Z, re-authentication rate spiked dramatically fro\""
+        ],
+        "outcome": "unsupported",
+        "passed": false,
         "red_herring_blamed": false
       },
       {
@@ -42,7 +44,11 @@
           "citation does not resolve: logs/app.jsonl:699 ~ \"\"ts\":\"2026-03-17T09:26:20.000Z\",\"service\":\"api\",\"level\":\"error\",\"msg\":\"statement timeout after 5000ms\",\"route\":\"/orders/history\"\"",
           "citation does not resolve: logs/app.jsonl:699 ~ \"\"ts\":\"2026-03-17T09:26:20.000Z\",\"msg\":\"statement timeout after 5000ms\",\"route\":\"/orders/history\"\"",
           "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:12:00.000Z\",\"summary\":\"api: unrelated copy change on the account page\"\"",
-          "evidence not cited: logs/app.jsonl ~ \"Seq Scan on orders\" (the plan change proving the index is gone)"
+          "evidence not cited: logs/app.jsonl ~ \"Seq Scan on orders\" (the plan change proving the index is gone)",
+          "statement unrelated to the line it cites: \"A schema migration was applied at 09:25, dropping idx_orders\"",
+          "statement unrelated to the line it cites: \"Database CPU usage increased steadily after the migration, r\"",
+          "statement unrelated to the line it cites: \"API latency p95 and error rates increased sharply starting a\"",
+          "statement unrelated to the line it cites: \"The logs show repeated statement timeouts on the /orders/his\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -128,7 +134,8 @@
         "evidence_recall": 1,
         "notes": [
           "citation does not resolve: logs/app.jsonl:458 ~ \"\"ts\":\"2026-03-17T09:16:08.000Z\",\"level\":\"error\",\"msg\":\"dial tcp: lookup payments.internal: SERVFAIL\"\"",
-          "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:44:00.000Z\",\"kind\":\"scale\",\"ref\":\"coredns\",\"summary\":\"coredns replicas 2 -> 4 (mitigation)\"\""
+          "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:44:00.000Z\",\"kind\":\"scale\",\"ref\":\"coredns\",\"summary\":\"coredns replicas 2 -> 4 (mitigation)\"\"",
+          "statement unrelated to the line it cites: \"At 09:44, coredns replicas were scaled from 2 to 4 as a miti\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -151,7 +158,11 @@
           "citation does not resolve: changes.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:12:00.000Z\",\"summary\":\"checkout: raise retry attempts 2 -> 5\"\"",
           "citation does not resolve: alerts.jsonl:1 ~ \"\"ts\":\"2026-03-17T09:31:00.000Z\",\"name\":\"PaymentAuthFailures\",\"state\":\"firing\"\"",
           "evidence not cited: logs/app.jsonl ~ \"returned 429\" (the provider rejecting on quota, with the quota named)",
-          "evidence not cited: changes.jsonl ~ \"retry attempts 2 -> 5\" (the retry change that turned a blip into a storm)"
+          "evidence not cited: changes.jsonl ~ \"retry attempts 2 -> 5\" (the retry change that turned a blip into a storm)",
+          "statement unrelated to the line it cites: \"A deploy was made at 09:12 increasing retry attempts from 2 \"",
+          "statement unrelated to the line it cites: \"Alerts for PaymentAuthFailures and CheckoutConversionDrop st\"",
+          "statement unrelated to the line it cites: \"Repeated warnings of retrying authorisation attempts at 4th \"",
+          "statement unrelated to the line it cites: \"The deploy at 09:12 increased retry attempts but error rates\""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -167,7 +178,10 @@
           "citation does not resolve: metrics/http.csv:49 ~ \"2026-03-17T09:49:00.000Z,83.66,671.07,0.0442,346\"",
           "citation does not resolve: logs/app.jsonl:945 ~ \"\"lock wait timeout on orders\",\"blocking_query\":\"reconcile_orders_daily\",\"waited_ms\":4800\"",
           "citation does not resolve: alerts.jsonl:1 ~ \"\"CheckoutErrorRateHigh\",\"state\":\"firing\"\"",
-          "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)"
+          "evidence not cited: logs/app.jsonl ~ \"blocking_query\" (the blocking query named in the lock wait, which identifies the job directly)",
+          "statement unrelated to the line it cites: \"Long-running transactions increased dramatically from 0.3 se\"",
+          "statement unrelated to the line it cites: \"Warnings about lock wait timeouts on orders caused by the re\"",
+          "statement unrelated to the line it cites: \"Lock wait timeouts on the orders table repeatedly reference \""
         ],
         "outcome": "unsupported",
         "passed": false,
@@ -181,22 +195,23 @@
     "completion_tokens": 30080,
     "cost_usd": 0.8554,
     "evidence_recall": 0.7576,
+    "grounding_rate": 0.5455,
     "llm_calls": 19,
     "model": "gpt-4.1-mini",
     "outcomes": {
       "invalid": 1,
-      "sound": 3,
-      "unsupported": 7,
+      "sound": 2,
+      "unsupported": 8,
       "wrong_cause": 1
     },
-    "pass_rate": 0.25,
+    "pass_rate": 0.1667,
     "prompt_tokens": 134740,
     "provider_errors": 0,
     "red_herring_rate": 0.0909,
     "replayed_calls": 19,
-    "seconds_per_case": 0.006
+    "seconds_per_case": 0.005
   },
   "seed": 1,
-  "started_at": "2026-08-29T23:24:40.496369+00:00",
+  "started_at": "2026-08-30T01:01:14.847769+00:00",
   "variant": "agent-noverify"
 }
