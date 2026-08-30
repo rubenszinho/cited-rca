@@ -139,9 +139,16 @@ def main() -> int:
 
     for seed in range(args.seed_start, args.seed_start + args.seeds):
         record = run_seed(args, seed, commit)
-        if record.get("error") or record["exit_code"] != 0:
+        # A provider error is not a workflow result, and the solution catches
+        # them per case rather than crashing - so the process still exits 0.
+        # Counting only the exit code let a clean clone report "6/6 runs ok"
+        # for six runs in which every one of twelve cases failed to reach a
+        # model at all, and the zeros then flowed into the results table.
+        provider_errors = record["metrics"].get("provider_errors", 0)
+        if record.get("error") or record["exit_code"] != 0 or provider_errors:
             failures += 1
-            print(f"seed {seed}: FAILED ({record.get('error', '')[:120]})", file=sys.stderr)
+            reason = record.get("error") or f"{provider_errors} provider error(s)"
+            print(f"seed {seed}: FAILED ({reason[:120]})", file=sys.stderr)
 
         dest = RESULTS / f"{args.variant}-seed{seed}.json"
         dest.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n", encoding="utf-8")

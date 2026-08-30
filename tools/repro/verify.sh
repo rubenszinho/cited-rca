@@ -59,6 +59,9 @@ SEEDS=6 ./bin/mise exec -- task project:ablate
 
 # Compares the graded outcome of every case, not the rendered table: wall-clock
 # timings differ between machines and are not part of the claim.
+say "recomputing the paired comparisons the prose quotes"
+./bin/mise exec -- task project:paired
+
 say "checking that no document quotes a figure without a run behind it"
 ./bin/mise exec -- task project:verify:claims
 

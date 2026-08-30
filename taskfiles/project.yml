@@ -178,9 +178,11 @@ tasks:
       - '{{.PY}} harness/paired.py agent-memory agent'
 
   report:
-    desc: Regenerate docs/RESULTS.md and the paired comparisons from the runs
+    desc: Regenerate docs/RESULTS.md from the recorded runs
+    # Deliberately does NOT run :paired. `eval` calls this after baseline and
+    # agent but before `ablate`, so a paired comparison here has no rival runs
+    # to compare against and aborts the whole evaluation.
     cmds:
-      - task: paired
       - '{{.PY}} harness/compare.py --out docs/RESULTS.md'
 
   repro:
