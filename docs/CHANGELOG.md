@@ -115,11 +115,11 @@ three.
 
 ```
 paired on 6 seeds, withtriage minus shipped
-  +0.083, +0.083, 0.000, 0.000, +0.167, -0.083
-  mean +0.04, stdev 0.09   wins 3, ties 2, loses 1
+  +0.083, +0.083, -0.083, +0.083, +0.167, -0.167
+  mean +0.028, stdev 0.126   wins 4, ties 0, loses 2
 ```
 
-The mean difference is under half its own spread and it loses one seed outright. By
+The mean difference is well under its own spread and it loses two seeds outright. By
 the rule that has decided every feature here — the primary metric, named before
 the runs — that is not an improvement, and triage stays out.
 

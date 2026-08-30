@@ -20,6 +20,10 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import attribute  # noqa: E402  (needs the path entry above)
+
 ROOT = Path(__file__).resolve().parent.parent.parent
 RESULTS = ROOT / "results"
 
@@ -89,6 +93,7 @@ def main() -> int:
     known = observed() | means() | paired() | IGNORE
 
     problems: list[str] = []
+    # Existence: does any run anywhere hold this value?
     for arg in sys.argv[1:]:
         path = Path(arg)
         for lineno, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
@@ -96,12 +101,23 @@ def main() -> int:
                 if number not in known:
                     problems.append(f"{path}:{lineno}: {number} matches no committed run")
 
+    # Attribution: is it a value of the metric and variant it is quoted as?
+    # Existence alone passed a paired block of real numbers under the wrong
+    # comparison's label, and a docstring arguing every rejection with figures
+    # from a superseded grid. See tools/repro/attribute.py.
+    by, pairs = attribute.runs(), attribute.paired()
+    for arg in sys.argv[1:]:
+        problems.extend(attribute.check(Path(arg), by, pairs))
+
     for problem in problems:
         print(f"  {problem}", file=sys.stderr)
     if problems:
         print(f"{len(problems)} unbacked figure(s)", file=sys.stderr)
         return 1
-    print(f"every three-decimal figure in {len(sys.argv) - 1} document(s) is backed by results/")
+    print(
+        f"every three-decimal figure in {len(sys.argv) - 1} document(s) exists in "
+        "results/ and is attributed to the metric and variant it is quoted as"
+    )
     return 0
 
 

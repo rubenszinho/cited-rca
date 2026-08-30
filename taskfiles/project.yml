@@ -196,7 +196,12 @@ tasks:
     # found a whole section quoting a re-recorded grid, one figure
     # sign-inverted and one attributed to a model with no committed runs.
     cmds:
-      - '{{.PY}} tools/repro/verify_claims.py docs/CHANGELOG.md README.md'
+      # features.ts is in the list because it is prose too: it argues every
+      # rejection with figures, a judge reads it to understand the shipped
+      # configuration, and it carried a superseded grid's numbers for exactly as
+      # long as the gate could not see it.
+      - '{{.PY}} tools/repro/verify_claims.py docs/CHANGELOG.md README.md
+        src/agent/features.ts'
 
   verify:citations:
     desc: Check that every committed review cites a line that is in the repository

@@ -17,6 +17,20 @@
  * is: a statement that shares no distinctive term with any line it cites is
  * not describing those lines. That does not catch a plausible-but-wrong
  * paraphrase, and it is not meant to — it closes the floor, not the ceiling.
+ *
+ * The ceiling has been measured, so it can be stated rather than hinted at. A
+ * reviewer ran three nonsense reports against the shipped workflow:
+ *
+ *   "Badgers operate the load balancer."            0/12, all unsupported
+ *   ... plus generic filler naming the source       0/12
+ *   ... plus three tokens copied from the line     12/12 sound
+ *
+ * The check therefore costs an attacker three parroted tokens. Worth being
+ * precise about what that does and does not buy: parroting needs only the
+ * bundle, which anything on the solution path can read, but a report still has
+ * to name the right cause and cite the required lines to pass, and both of
+ * those need truth.json, which nothing on the solution path can reach. It is a
+ * ceiling on what grounding_rate proves, not a route to a score.
  */
 import { resolve } from './citation.ts';
 import type { IncidentBundle } from './bundle.ts';
