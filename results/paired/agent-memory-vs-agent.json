@@ -1,5 +1,5 @@
 {
-  "commit": "30267fb88f6fbdef56653d3effe50f0c096b00fa",
+  "commit": "bd851b249f0bfc43a104c04d811e80416a7a0c26",
   "differences": {
     "cases": {
       "losses": 0,
@@ -213,17 +213,17 @@
     },
     "seconds_per_case": {
       "losses": 0,
-      "mean": 0.000333,
+      "mean": 0.0,
       "per_seed": [
         0.0,
-        0.001,
         0.0,
-        0.001,
+        0.0,
+        0.0,
         0.0,
         0.0
       ],
-      "stdev": 0.000516,
-      "wins": 2
+      "stdev": 0.0,
+      "wins": 0
     }
   },
   "left": "agent-memory",

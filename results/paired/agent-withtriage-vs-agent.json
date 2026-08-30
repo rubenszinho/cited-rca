@@ -1,5 +1,5 @@
 {
-  "commit": "30267fb88f6fbdef56653d3effe50f0c096b00fa",
+  "commit": "bd851b249f0bfc43a104c04d811e80416a7a0c26",
   "differences": {
     "cases": {
       "losses": 0,
@@ -215,15 +215,15 @@
       "losses": 0,
       "mean": 0.000833,
       "per_seed": [
+        0.001,
         0.0,
-        0.002,
-        0.0,
+        0.001,
         0.001,
         0.001,
         0.001
       ],
-      "stdev": 0.000753,
-      "wins": 4
+      "stdev": 0.000408,
+      "wins": 5
     }
   },
   "left": "agent-withtriage",
