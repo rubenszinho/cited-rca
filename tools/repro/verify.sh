@@ -52,6 +52,9 @@ say "replaying every variant with no API key"
 
 # Compares the graded outcome of every case, not the rendered table: wall-clock
 # timings differ between machines and are not part of the claim.
+say "checking that no document quotes a figure without a run behind it"
+./bin/mise exec -- task project:verify:claims
+
 say "checking that every committed review cites a line present in the clone"
 ./bin/mise exec -- task project:verify:citations
 

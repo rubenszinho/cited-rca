@@ -246,17 +246,17 @@ is a dependency of _producing_ the result, not of _checking_ it.
 
 ## Layout
 
-| Path              | What it is                                                       |
-| ----------------- | ---------------------------------------------------------------- |
-| `src/agent/`      | the workflow: triage, search, draft, verify, repair              |
-| `src/baseline/`   | the single-prompt baseline                                       |
-| `src/grade.ts`    | deterministic grading                                            |
-| `src/citation.ts` | citation resolution, shared by grader and verifier               |
-| `src/llm/`        | provider-agnostic client and the cassette layer                  |
-| `fixtures/`       | the incident generator and the twelve committed cases            |
-| `harness/`        | runs a variant across repeats, aggregates into a results table   |
-| `tools/`          | the forge shell's tooling, plus trajectory capture and redaction |
-| `docs/`           | changelog, results, tool disclosure, chassis documentation       |
+| Path              | What it is                                                                  |
+| ----------------- | --------------------------------------------------------------------------- |
+| `src/agent/`      | the workflow: search, draft, verify, repair (triage/memory/investigate off) |
+| `src/baseline/`   | the single-prompt baseline                                                  |
+| `src/grade.ts`    | deterministic grading                                                       |
+| `src/citation.ts` | citation resolution, shared by grader and verifier                          |
+| `src/llm/`        | provider-agnostic client and the cassette layer                             |
+| `fixtures/`       | the incident generator and the twelve committed cases                       |
+| `harness/`        | runs a variant across repeats, aggregates into a results table              |
+| `tools/`          | the forge shell's tooling, plus trajectory capture and redaction            |
+| `docs/`           | changelog, results, tool disclosure, chassis documentation                  |
 
 ## What existed before this hackathon
 

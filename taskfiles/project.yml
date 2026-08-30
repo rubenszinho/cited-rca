@@ -164,6 +164,14 @@ tasks:
     cmds:
       - ./tools/repro/verify.sh
 
+  verify:claims:
+    desc: Fail if a document quotes a figure no committed run produced
+    # The tables were always backed by results/; the prose was not. A reviewer
+    # found a whole section quoting a re-recorded grid, one figure
+    # sign-inverted and one attributed to a model with no committed runs.
+    cmds:
+      - '{{.PY}} tools/repro/verify_claims.py docs/CHANGELOG.md README.md docs/VIDEO.md'
+
   verify:citations:
     desc: Check that every committed review cites a line that is in the repository
     # Parses the rendered markdown rather than calling the project's own code,

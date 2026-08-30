@@ -17,19 +17,24 @@ No other assistant, autocomplete, or MCP server was used.
 
 ## Agents inside the deliverable
 
-The workflow is a fixed sequence of model calls with deterministic tooling
-between them, rather than a single agent with a tool loop. An iterative variant
+**What ships is search, draft, verify, repair.** Triage, cross-incident memory
+and an iterative investigation loop are all implemented and all switched off:
+each was measured and each lost. Nothing in the shipped path chooses an action —
+the four search queries are fixed constants. That is a result, recorded in
+[`CHANGELOG.md`](CHANGELOG.md), not an unfinished design.
+
+The workflow is therefore a fixed sequence of model calls with deterministic
+tooling between them, rather than an agent with a tool loop. An iterative variant
 exists and was measured; it lost, and the reasoning is in the changelog. Each step is its own
 prompt with its own contract, which is what lets the changelog attribute the
 improvement to a specific step instead of to the whole.
 
-| Step       | Where                 | What it is given                                                                         | What it returns                                                  |
-| ---------- | --------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `triage`   | `src/agent/prompt.ts` | change and alert timelines in full, plus metric movement **computed and ranked in code** | onset estimate, reasoning, and the log searches to run           |
-| _(search)_ | `src/agent/tools.ts`  | the queries triage asked for                                                             | up to 12 addressed log lines per query, spread across the window |
-| `draft`    | `src/agent/prompt.ts` | the same timelines, the ranked movement, its own triage, and the search results          | the full RCA                                                     |
-| `verify`   | `src/agent/verify.ts` | the draft and the bundle                                                                 | the citations that do not resolve — **no model involved**        |
-| `repair`   | `src/agent/solve.ts`  | the draft plus the specific failures                                                     | a corrected RCA, up to twice                                     |
+| Step       | Where                 | What it is given                                                               | What it returns                                                  |
+| ---------- | --------------------- | ------------------------------------------------------------------------------ | ---------------------------------------------------------------- |
+| _(search)_ | `src/agent/tools.ts`  | four fixed queries; no model picks them                                        | up to 12 addressed log lines per query, spread across the window |
+| `draft`    | `src/agent/prompt.ts` | both timelines in full, metric movement ranked in code, and the search results | the full RCA                                                     |
+| `verify`   | `src/agent/verify.ts` | the draft and the bundle                                                       | the citations that do not resolve — **no model involved**        |
+| `repair`   | `src/agent/solve.ts`  | the draft plus the specific failures                                           | a corrected RCA, up to twice                                     |
 
 The baseline is one call: `src/baseline/solve.ts`.
 

@@ -60,17 +60,16 @@ more than its score:
 | ------------------- | ------ | ----------- | ----------- | ------- |
 | `baseline`          | 3      | **30**      | 3           | 0       |
 | `agent`             | **11** | 19          | 2           | 4       |
-| `agent-investigate` | 7      | 14          | 4           | **11**  |
+| `agent-investigate` | 9      | 19          | 6           | 2       |
 
 The baseline almost never gets the cause wrong. It almost never supports it
 either — 30 of 36 runs are a correct diagnosis with an argument that does not
 hold up. That is the failure this project exists to remove, and it is invisible
 in any metric that only asks whether the answer was right.
 
-The workflow trades some of that for a new failure the baseline does not have:
-it returns no parseable report at all in 4 runs, against the baseline's 0.
-More turns to reason in is also more turns to fail in, and the investigating
-variant shows where that ends — 11 invalid runs out of 36.
+The workflow trades some of that for a failure the baseline does not have: it
+returns no parseable report at all in 4 runs out of 36, against the baseline's 0.
+More turns to reason in is also more turns to fail in.
 
 ## Experiments that were removed
 
@@ -103,172 +102,40 @@ The finding survived. 0.914 cause accuracy with no log and no name — on prompt
 that contain nothing about the answer. Knowing and showing really are separate
 capabilities, and now the number says so.
 
-### Memory: better at the answer, worse at the argument
+### Memory: worse at the argument, and on this model worse at the answer too
 
-_(Measured first on claude-sonnet-4.5, where memory produced perfect cause
-accuracy; re-measured on gpt-4.1-mini, where it produced the worst cause
-accuracy of any variant that kept search, 0.823 against 0.942. The verdict is
-the same on both and the mechanism below is what I observed on the first.)_
-
-Memory produced the only perfect cause accuracy in the whole set — 1.000, every
-case, every repeat — and the lowest red-herring rate, 0.250. It also lowered
-the primary metric, 0.667 to 0.639.
-
-The mechanism is specific. It helped case 11 and broke case 10, three passes
-out of three down to one. On case 10 it recalled that these signals meant DNS,
-then reached for the DNS-shaped entry in the change timeline — a coredns
-scale-up applied 28 minutes _after_ onset, as a mitigation — and cited it as
-supporting evidence. Recall made it more confident about the cause and less
-careful about what supports it.
-
-I could have shipped it by pointing at 1.000 cause accuracy. Pass rate was named
-the primary metric before any of this ran, and promoting a secondary metric
-after seeing results is how an evaluation stops meaning anything. So it is off,
-and this paragraph exists instead.
-
-### The baseline was a strawman, and fixing it mattered more than any iteration
-
-The first baseline prompt was 34,000 tokens per case. It included every error
-line in the log — for case 01 that is 333 identical copies of the same
-`TypeError`.
-
-No engineer pastes that. A real one pastes the distinct shapes and a count. So
-the baseline now collapses repeats, keeping the first occurrences of each
-distinct message plus a total, which took the prompt to 7,000 tokens.
-
-**What it taught me:** the easiest way to manufacture an improvement is to
-handicap the baseline, and it is easy to do by accident rather than by
-dishonesty. I did not set out to weaken it; I just rendered the log the obvious
-way. Any comparison against a baseline you built yourself is worth re-reading
-with the question "would a competent person actually do this?"
-
-### Requiring the metric column name as evidence — wrong, and it looked like a model failure
-
-Ground truth originally required citing the metric _series_ by name, e.g.
-`metrics/http.csv ~ "error_rate"`. The first live run scored a correct,
-well-argued report at 0.67 recall.
-
-The model was right and the fixture was wrong. A column name appears only in
-the CSV header, so full recall required citing a header row — which shows
-nothing. The model had cited the data row at onset, which is the line that
-actually demonstrates the change.
-
-All twelve cases had it. Metric evidence now resolves to the row at onset.
-Re-grading the same recorded response scored 1.0.
-
-**What it taught me:** when a graded run disagrees with an answer that looks
-correct, the grader is a suspect too. Running one case end to end before
-committing to a full evaluation is what surfaced it — a full run would have
-produced a plausible-looking table with every variant equally depressed, and
-nothing in it would have flagged that the ceiling was artificial.
-
-### Three red herrings that could never fire
-
-Same root cause: they pointed at CSV headers. A red herring nobody can trip
-over measures nothing, so all three were replaced with discrete artefacts that
-are genuinely tempting — an error naming the database while database metrics
-stay flat, a fleet-scoped alert when only one node is affected, and a
-conversion-drop alert that reads as a checkout regression.
-
-**What it taught me:** a distractor has to be checkable to count. I had written
-prose explaining why each one was tempting and never verified that a report
-could actually cite it. `fixtures/cases.test.ts` now asserts that every
-evidence and red-herring reference resolves to a real line.
-
-## Notes on building it with an agent
-
-### The quality gate rejected nine of my own functions
-
-The ratchet in the chassis holds new code to 25 lines per function, 15
-cyclomatic complexity, 5 parameters. It rejected nine functions written during
-this build, including the grader's own `grade()` at 47 lines. All were split.
-No threshold was raised.
-
-That is the gate working as designed on the person who wrote it, which is the
-only test of such a thing that means anything.
-
-### The gate itself was confidently wrong once
-
-`lizard` reported `groupByShape` as 43 lines. It is 5. A regex literal confuses
-its TypeScript tokenizer, and the reported span swallowed the two functions
-that followed it.
-
-The failure mode is worth naming: the tool did not error, it produced a
-plausible number. Had I trusted it, I would have refactored working code to
-satisfy a measurement that was not measuring that code. Replacing the regex
-with a JSON parse fixed the reading and produced better code anyway.
-
-**What it taught me:** a deterministic gate is more trustworthy than a model,
-not perfectly trustworthy. When a gate reports something surprising, checking
-the gate is a legitimate first move — and the version pin on the metrics tool
-in `mise.toml` exists precisely because that class of change must never arrive
-implicitly.
-
-### A case where my ground truth was arguable, and the model was right
-
-Case 05 is connection-pool exhaustion. Every variant answered
-`bad_deploy_regression`; the truth file said `resource_exhaustion_pool`.
-
-The model had a case. The deploy in that window added the CSV export that holds
-pool connections across an external call, so it did introduce the code that
-exhausts the pool. The real answer was layered — a change introduced a latent
-fault, load later triggered it — and a single-value enum cannot express that.
-
-I rewrote the case so the answer is unambiguous: the connection-holding code has
-been in production for weeks, reporting traffic rises across the whole window,
-and the only change in it touches a 404 page. Now nothing in the change timeline
-explains the incident, which is the point — it is the one case in twelve where
-correlating the deploy is the wrong instinct, and the deploy is a red herring.
-
-Cause accuracy went from 0.917 to **1.000**. The workflow now gets every root
-cause right, on every case, on every repeat.
-
-It still fails the case, on evidence: it does not cite the flat database CPU
-that rules out a slow database. That is an honest miss rather than a broken
-fixture, and it is the difference between naming the cause and proving it —
-the distinction this whole project is built on.
-
-**What it taught me:** when every variant agrees on an answer my key calls
-wrong, the key is the thing to check first. Three of the defects found in this
-project were in the measurement rather than the thing measured.
-
-### The investigation loop: more agency, more variance
-
-Letting the workflow choose its next search from what the last one returned —
-rather than firing four fixed queries once — is the most agentic thing in this
-project. It is also the closest call.
+Cross-incident memory carries forward the signals seen and the verdict reached,
+and surfaces the closest priors on a new incident.
 
 ```
-agent (fixed search)   0.667, 0.667, 0.667
-agent-investigate      0.750, 0.750, 0.583
+agent            pass 0.167, 0.417, 0.333   cause 0.942   herrings 0.218
+agent-memory     pass 0.167, 0.417, 0.250   cause 0.823   herrings 0.351
 ```
 
-The shipped configuration returns the same number on every repeat. The
-investigating one swings across a range that contains it. Its mean is higher by
-0.028; its own standard deviation is 0.096.
+Lower on the primary metric, and clearly worse on both of the things it was
+supposed to help: cause accuracy and red herrings. Recall made it reach for the
+shape it had learned to expect rather than the line in front of it — on case 10
+it recalled that these signals meant DNS, then cited a coredns scale-up applied
+28 minutes _after_ onset, as supporting evidence for the cause.
 
-Case level is where it becomes interesting. It **wins** cases 06 and 11 — both
-previously 0/3, both failures caused by citing a red herring — and **loses**
-cases 01 and 10, both previously 3/3. Red-herring rate falls from 0.333 to
-0.222, consistent with what it won.
+**Removed.** It became more confident about the cause and less careful about
+what supports it.
 
-So it is not that following up on evidence does not work. It works on exactly
-the cases where one pass of generic queries misses the distinguishing line. It
-also wanders on cases the simple version gets right first time, because three
-more rounds of searching is three more chances to find something interesting
-and irrelevant.
+### The investigation loop: more turns to reason in, more turns to wander
 
-**Not shipped**, on the rule that has decided every other feature here: the gain
-is not larger than its own noise. It costs 3.8× the calls and 2.6× the money for
-a difference of one case in thirty-six.
+Letting the workflow choose its next search from what the last one returned is
+the most agentic thing built here. It is also the clearest loss.
 
-**What it taught me:** agency is not free, and its cost is not only tokens. More
-autonomy widened the outcome distribution in both directions. For a task whose
-whole selling point is that its output can be trusted, a version that is
-sometimes better and sometimes worse is a poor trade against one that is the
-same every time. If I ran this again I would give the loop a stopping rule
-tied to evidence sufficiency rather than a round budget, and measure whether
-that recovers the reach without the wandering.
+```
+agent                pass 0.167, 0.417, 0.333   cause 0.942   herrings 0.218
+agent-investigate    pass 0.333, 0.167, 0.250   cause 0.823   herrings 0.384
+```
+
+Mean 0.250 against 0.306, with a red-herring rate three-quarters higher and the
+same cause accuracy as memory. Three extra rounds of searching is three more
+chances to find something interesting and irrelevant, and it cites what it finds.
+
+**Removed.** Agency is not free, and its cost is not only tokens.
 
 ### Two features I could not measure, handled differently
 
